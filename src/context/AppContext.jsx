@@ -233,7 +233,12 @@ export const AppContextProvider = ({ children }) => {
 
   // Supabase Auth Methods
   const loginWithGoogle = () => {
-    return supabase.auth.signInWithOAuth({ provider: 'google' });
+    return supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
   };
 
   const loginWithEmail = (email, password) => {
