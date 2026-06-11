@@ -176,7 +176,7 @@ export default function Subjects() {
       </section>
 
       {/* Bento Grid of Subjects */}
-      <div className="bento-grid">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {subjects.map((sub) => {
           const colors = getSubjectColorClasses(sub.color);
           const hasPending = sub.pendingCount > 0;

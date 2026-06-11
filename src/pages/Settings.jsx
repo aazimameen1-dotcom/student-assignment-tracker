@@ -40,7 +40,7 @@ export default function Settings() {
   const activeSubjectsCount = subjects.filter(s => s.pendingCount > 0).length;
 
   return (
-    <div className="animate-fade-in max-w-md mx-auto px-margin-mobile py-8 text-left pb-24">
+    <div className="animate-fade-in max-w-xl mx-auto px-margin-mobile py-8 text-left pb-24">
       {/* Top Header Row (Back & Title) */}
       <header className="flex items-center gap-4 mb-8">
         <button 

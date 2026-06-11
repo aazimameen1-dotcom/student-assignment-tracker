@@ -198,23 +198,6 @@ export default function Navigation() {
           >
             logout
           </button>
-
-          {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center gap-6 ml-4">
-            {navItems.map((item) => (
-              <button
-                key={item.view}
-                onClick={() => setCurrentView(item.view)}
-                className={`font-mono text-label-md transition-colors cursor-pointer ${
-                  currentView === item.view 
-                    ? 'text-primary font-bold border-b-2 border-primary pb-1' 
-                    : 'text-on-surface-variant hover:text-primary'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
         </div>
       </header>
 

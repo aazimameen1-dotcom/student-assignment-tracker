@@ -161,7 +161,7 @@ export default function Calendar() {
         
         {/* Left Side: Calendar Grid Panel */}
         <section className="flex-grow lg:max-w-4xl">
-          <div className="bg-surface-container-lowest border border-outline-variant p-6 rounded-2xl shadow-sm">
+          <div className="bg-surface-container-lowest border border-outline-variant p-3 sm:p-6 rounded-2xl shadow-sm">
             
             {/* Header controls */}
             <div className="flex items-center justify-between mb-8">
@@ -178,13 +178,13 @@ export default function Calendar() {
 
             {/* Week Headers */}
             <div className="calendar-grid text-center mb-4 font-semibold">
-              <span className="font-mono text-label-md text-on-surface-variant">MON</span>
-              <span className="font-mono text-label-md text-on-surface-variant">TUE</span>
-              <span className="font-mono text-label-md text-on-surface-variant">WED</span>
-              <span className="font-mono text-label-md text-on-surface-variant">THU</span>
-              <span className="font-mono text-label-md text-on-surface-variant">FRI</span>
-              <span className="font-mono text-label-md text-on-surface-variant">SAT</span>
-              <span className="font-mono text-label-md text-on-surface-variant">SUN</span>
+              <span className="font-mono text-[10px] sm:text-xs md:text-sm text-on-surface-variant">MON</span>
+              <span className="font-mono text-[10px] sm:text-xs md:text-sm text-on-surface-variant">TUE</span>
+              <span className="font-mono text-[10px] sm:text-xs md:text-sm text-on-surface-variant">WED</span>
+              <span className="font-mono text-[10px] sm:text-xs md:text-sm text-on-surface-variant">THU</span>
+              <span className="font-mono text-[10px] sm:text-xs md:text-sm text-on-surface-variant">FRI</span>
+              <span className="font-mono text-[10px] sm:text-xs md:text-sm text-on-surface-variant">SAT</span>
+              <span className="font-mono text-[10px] sm:text-xs md:text-sm text-on-surface-variant">SUN</span>
             </div>
 
             {/* Grid days */}
@@ -205,15 +205,15 @@ export default function Calendar() {
                         : 'text-on-surface-variant/30 font-light'
                     }`}
                   >
-                    <span className="font-body text-body-md">{day.num}</span>
+                    <span className="font-body text-sm sm:text-base">{day.num}</span>
                     
                     {/* Event Dots */}
                     {dayTasks.length > 0 && (
-                      <div className="flex gap-1 mt-1 justify-center max-w-full overflow-hidden px-1">
+                      <div className="flex gap-0.5 sm:gap-1 mt-1 justify-center max-w-full overflow-hidden px-1">
                         {dayTasks.slice(0, 3).map((task) => (
                           <div 
                             key={task.id}
-                            className={`w-1.5 h-1.5 rounded-full ${
+                            className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${
                               isSelected ? 'bg-white' : getSubjectDotColor(task.subject)
                             }`}
                           />
