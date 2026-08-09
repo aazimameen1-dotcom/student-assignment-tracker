@@ -11,8 +11,11 @@ export default function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
   
   // Form fields
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -22,7 +25,7 @@ export default function Login() {
       await loginWithGoogle();
     } catch (err) {
       console.error(err);
-      setError('Google popup authentication failed. Please ensure popup blockers are disabled.');
+      setError('Google authentication failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -31,18 +34,23 @@ export default function Login() {
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
-      setError('Please fill out all fields.');
+      setError('Please fill out all required fields.');
       return;
     }
+    if (isSignUp && password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    
     setLoading(true);
     setError('');
     setSuccess('');
 
     try {
       if (isSignUp) {
-        const { error: signUpErr } = await signUpWithEmail(email, password);
+        const { error: signUpErr } = await signUpWithEmail(email, password, { full_name: fullName });
         if (signUpErr) throw signUpErr;
-        setSuccess('Account created! Check your email for confirmation or sign in directly.');
+        setSuccess('Account created! Check your email to verify or sign in directly.');
         setIsSignUp(false);
       } else {
         const { error: signInErr } = await loginWithEmail(email, password);
@@ -57,115 +65,172 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-surface via-surface-container-low to-surface-container flex flex-col justify-center items-center px-6 py-12 select-none animate-fade-in">
-      <div className="w-full max-w-md bg-surface-container-lowest/80 backdrop-blur-md border border-outline-variant p-8 rounded-3xl shadow-xl text-center flex flex-col items-center">
-        
-        {/* Logo Icon */}
-        <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4 shadow-inner">
-          <span className="material-symbols-outlined text-[32px] animate-pulse" style={{ fontVariationSettings: "'FILL' 1" }}>
-            school
-          </span>
+    <div className="min-h-screen w-full flex flex-col md:flex-row bg-slate-50 select-none animate-fade-in">
+      
+      {/* Left Panel: Assignify Dark Indigo Hero (PDF Page 1 & 2) */}
+      <div className="w-full md:w-1/2 bg-[#1e1b4b] text-white p-8 md:p-16 flex flex-col justify-center items-center text-center md:items-start md:text-left relative overflow-hidden min-h-[240px] md:min-h-screen">
+        {/* Subtle Background Glow */}
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="relative z-10 max-w-md">
+          <h1 className="font-headline text-4xl md:text-6xl font-extrabold tracking-tight mb-4 text-white">
+            Assignify
+          </h1>
+          <p className="font-body text-base md:text-xl text-purple-200 font-light leading-relaxed">
+            Stay on top of every deadline, in one place.
+          </p>
         </div>
+      </div>
 
-        {/* Title */}
-        <h1 className="font-headline text-3xl font-extrabold tracking-tight text-primary mb-1">StudyTrack</h1>
-        <h2 className="font-headline text-sm font-medium text-on-surface-variant mb-6 uppercase tracking-wider">Academic Clarity System</h2>
-
-        {/* Status Alerts */}
-        {error && (
-          <div className="w-full mb-4 p-3 rounded-xl bg-error-container text-on-error-container font-mono text-[11px] text-left border border-error/10 animate-shake">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="w-full mb-4 p-3 rounded-xl bg-emerald-100 text-emerald-800 font-mono text-[11px] text-left border border-emerald-200 animate-fade-in">
-            {success}
-          </div>
-        )}
-
-        {/* Email Login Form */}
-        <form onSubmit={handleEmailSubmit} className="w-full space-y-4">
+      {/* Right Panel: Auth Form Card (PDF Page 1 & 2) */}
+      <div className="w-full md:w-1/2 p-6 md:p-16 flex flex-col justify-center items-center bg-white">
+        <div className="w-full max-w-md space-y-6">
+          
           <div className="text-left">
-            <label className="block font-mono text-[11px] text-on-surface-variant mb-1 ml-1 uppercase">Email Address</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@school.edu"
-              className="w-full px-4 py-3 border border-outline-variant rounded-xl bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-on-surface text-sm transition-all"
-            />
+            <h2 className="font-headline text-2xl md:text-3xl font-bold text-slate-900">
+              {isSignUp ? 'Create your account' : 'Sign in to get started'}
+            </h2>
+            <p className="text-xs md:text-sm text-slate-500 mt-1">
+              {isSignUp ? 'Enter your details below to build your profile' : 'Welcome back! Please enter your details.'}
+            </p>
           </div>
 
-          <div className="text-left">
-            <label className="block font-mono text-[11px] text-on-surface-variant mb-1 ml-1 uppercase">Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-4 py-3 border border-outline-variant rounded-xl bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-on-surface text-sm transition-all"
-            />
+          {/* Status Alerts */}
+          {error && (
+            <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs border border-red-200 animate-fade-in">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="p-3 rounded-xl bg-emerald-50 text-emerald-700 text-xs border border-emerald-200 animate-fade-in">
+              {success}
+            </div>
+          )}
+
+          {/* Form Container */}
+          <form onSubmit={handleEmailSubmit} autoComplete="off" className="bg-slate-100/70 p-6 rounded-2xl border border-slate-200 space-y-4">
+            
+            {isSignUp && (
+              <div className="text-left">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Full name</label>
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Enter your full name"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 text-sm"
+                />
+              </div>
+            )}
+
+            <div className="text-left">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 text-sm"
+              />
+            </div>
+
+            <div className="text-left">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 text-sm"
+              />
+            </div>
+
+            {isSignUp && (
+              <div className="text-left">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Confirm Password</label>
+                <input
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 text-sm"
+                />
+              </div>
+            )}
+
+            {!isSignUp && (
+              <div className="flex items-center justify-between text-xs py-1">
+                <label className="flex items-center gap-2 cursor-pointer text-slate-600">
+                  <input 
+                    type="checkbox" 
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="rounded text-purple-600 focus:ring-purple-500 h-4 w-4"
+                  />
+                  <span>Remember me</span>
+                </label>
+                <a href="#forgot" onClick={(e) => { e.preventDefault(); alert("Password reset link sent to your email!"); }} className="text-purple-600 hover:underline font-medium">
+                  Forgot Password
+                </a>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold rounded-xl text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer mt-2"
+            >
+              {loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Login'}
+            </button>
+          </form>
+
+          {/* Toggle between Sign In and Create Account */}
+          <div className="text-center text-xs text-slate-600">
+            {isSignUp ? (
+              <span>Already have an account? {' '}
+                <button onClick={() => { setIsSignUp(false); setError(''); }} className="text-purple-600 font-bold hover:underline bg-transparent border-none cursor-pointer">
+                  Sign in
+                </button>
+              </span>
+            ) : (
+              <span>Not a member? {' '}
+                <button onClick={() => { setIsSignUp(true); setError(''); }} className="text-purple-600 font-bold hover:underline bg-transparent border-none cursor-pointer">
+                  Create an account
+                </button>
+              </span>
+            )}
           </div>
 
-          {/* Action Buttons */}
+          {/* Divider */}
+          <div className="relative flex py-2 items-center">
+            <div className="flex-grow border-t border-slate-200"></div>
+            <span className="flex-shrink mx-4 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">OR CONTINUE WITH</span>
+            <div className="flex-grow border-t border-slate-200"></div>
+          </div>
+
+          {/* Google Login Button */}
           <button
-            type="submit"
+            onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full py-4 bg-primary text-on-primary rounded-2xl font-mono text-label-md hover:bg-primary/95 transition-all active:scale-[0.98] shadow-md cursor-pointer mt-2"
+            className="w-full py-3 px-4 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-3 cursor-pointer shadow-sm"
           >
-            {loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Sign In'}
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Google Account</span>
           </button>
 
-          {/* Toggle Sign Up / Sign In */}
-          <div className="pt-2">
-            <button
-              type="button"
-              onClick={() => { setIsSignUp(!isSignUp); setError(''); setSuccess(''); }}
-              className="font-mono text-[11px] text-primary hover:underline cursor-pointer"
-            >
-              {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Create one"}
-            </button>
-          </div>
-        </form>
-
-        {/* Divider line */}
-        <div className="relative my-6 w-full flex items-center justify-center">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-outline-variant/40"></div>
-          </div>
-          <span className="relative px-3 bg-surface-container-lowest text-[10px] font-mono uppercase tracking-wider text-on-surface-variant/70">
-            Or continue with
-          </span>
         </div>
-
-        {/* Google Login Button */}
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          disabled={loading}
-          className="w-full py-3.5 border border-outline-variant hover:border-primary/45 rounded-2xl flex items-center justify-center gap-3 font-mono text-label-md text-on-surface hover:bg-surface-container-low transition-all active:scale-[0.98] shadow-sm cursor-pointer"
-        >
-          {loading ? (
-            <div className="flex items-center gap-2">
-              <span className="w-4 h-4 rounded-full border-2 border-primary border-t-transparent animate-spin"></span>
-              Loading...
-            </div>
-          ) : (
-            <>
-              <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
-                <path 
-                  fill="#EA4335" 
-                  d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.2-5.137 4.2a5.86 5.86 0 0 1-5.877-5.86 5.86 5.86 0 0 1 5.877-5.86c1.378 0 2.623.49 3.593 1.42l3.11-3.11c-2.1-1.95-4.87-3.14-8.08-3.14A10.22 10.22 0 0 0 2 12.23a10.22 10.22 0 0 0 10.24 10.23c5.52 0 9.87-3.87 9.87-9.88 0-.6-.08-1.22-.22-1.785z"
-                />
-              </svg>
-              Google Account
-            </>
-          )}
-        </button>
-
       </div>
     </div>
   );
 }
+

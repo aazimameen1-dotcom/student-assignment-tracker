@@ -3,333 +3,302 @@ import { AppContext } from '../context/AppContext';
 
 export default function Dashboard() {
   const { 
-    tasks, 
-    subjects, 
+    user,
     setCurrentView, 
-    setSelectedTaskId, 
-    addTask,
-    addSubject,
-    user
+    setSelectedTaskId
   } = useContext(AppContext);
 
-  const [showLogToast, setShowLogToast] = useState(false);
-  const [showSubjectModal, setShowSubjectModal] = useState(false);
-  const [newSubName, setNewSubName] = useState('');
-  const [newSubCode, setNewSubCode] = useState('');
-  const [newSubDesc, setNewSubDesc] = useState('');
-  const [newSubColor, setNewSubColor] = useState('blue');
+  const [seeAllSubjects, setSeeAllSubjects] = useState(false);
 
-  // Dynamic greeting based on time of day
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    const fullName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Guest';
-    const firstName = fullName.split(' ')[0];
-    if (hour < 12) return `Good morning, ${firstName}.`;
-    if (hour < 18) return `Good afternoon, ${firstName}.`;
-    return `Good evening, ${firstName}.`;
-  };
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.user_metadata?.name?.split(' ')[0] || 'Alex';
 
-  // Dynamic stats
-  const incompleteTasksThisWeek = tasks.filter(t => t.category === 'This Week' && t.status !== 'completed');
-  const completedTasksCount = tasks.filter(t => t.status === 'completed').length;
-  const totalTasksCount = tasks.length;
-  const weeklyCompletionRate = totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0;
+  // All 6 Wireframe Subjects from PDF
+  const defaultSubjects = [
+    {
+      code: 'DIC110H',
+      title: 'Global Literature',
+      desc: 'Explore literary works from different cultures and languages, and analyze how themes and narratives connect across societies.',
+      icon: 'auto_stories',
+      color: 'bg-indigo-50 border-indigo-200 text-indigo-900',
+      badgeColor: 'bg-[#231f5c]'
+    },
+    {
+      code: 'DIC107T',
+      title: 'Web Designing',
+      desc: 'Learn the principles of layout, visual hierarchy, and user experience to build intuitive, functional websites.',
+      icon: 'palette',
+      color: 'bg-purple-50 border-purple-200 text-purple-900',
+      badgeColor: 'bg-purple-600'
+    },
+    {
+      code: 'DIC102C',
+      title: 'Python',
+      desc: 'Build a foundation in programming logic and syntax through hands-on coding exercises and projects.',
+      icon: 'code',
+      color: 'bg-blue-50 border-blue-200 text-blue-900',
+      badgeColor: 'bg-blue-600'
+    },
+    {
+      code: 'DIC103M',
+      title: 'Mathematics',
+      desc: 'The fundamental study of patterns, structures, and pure logic, providing quantitative reasoning for algorithmic thinking.',
+      icon: 'functions',
+      color: 'bg-purple-50 border-purple-200 text-purple-900',
+      badgeColor: 'bg-indigo-600'
+    },
+    {
+      code: 'DIC105E',
+      title: 'Disaster Management',
+      desc: 'A comprehensive study of risk assessment, emergency response, and mitigation strategies to effectively manage crises.',
+      icon: 'public',
+      color: 'bg-[#eef2ff] border-indigo-200 text-indigo-900',
+      badgeColor: 'bg-slate-700'
+    },
+    {
+      code: 'DIC102S',
+      title: 'Physics',
+      desc: 'A foundational study of the natural world, utilizing mathematical frameworks to understand forces of nature and properties of matter.',
+      icon: 'science',
+      color: 'bg-purple-50 border-purple-200 text-purple-900',
+      badgeColor: 'bg-[#231f5c]'
+    }
+  ];
 
-  // Get next 3 upcoming deadlines (incomplete tasks)
-  const upcomingDeadlines = tasks
-    .filter(t => t.status !== 'completed')
-    .slice(0, 3);
+  const visibleSubjects = seeAllSubjects ? defaultSubjects : defaultSubjects.slice(0, 3);
 
-  const handleDailyLog = () => {
-    setShowLogToast(true);
-    setTimeout(() => setShowLogToast(false), 3000);
-  };
-
-  const handleAddSubject = (e) => {
-    e.preventDefault();
-    if (!newSubName || !newSubCode) return;
-    addSubject({
-      name: newSubName,
-      code: newSubCode,
-      desc: newSubDesc,
-      color: newSubColor
-    });
-    setNewSubName('');
-    setNewSubCode('');
-    setNewSubDesc('');
-    setNewSubColor('blue');
-    setShowSubjectModal(false);
-  };
-
-  const viewTaskDetails = (taskId) => {
-    setSelectedTaskId(taskId);
-    setCurrentView('assignment-details');
-  };
+  const upcomingDeadlines = [
+    {
+      id: 'dl-1',
+      title: 'Global Literature Essay',
+      text: 'Your biographical analysis essay on Toba Tek Singh is due Monday, August 24 by 11:59 PM. Please focus on the literary devices discussed in our last lecture.'
+    },
+    {
+      id: 'dl-2',
+      title: 'Mathematics Problem Set',
+      text: 'Problem sets covering evaluation metrics and differentiation are due Wednesday, August 19 by 5:00 PM. Show all mathematical steps clearly. Late submissions will not be accepted.'
+    },
+    {
+      id: 'dl-3',
+      title: 'Web Design Submission',
+      text: 'Interactive wireframe submissions are due Friday, August 14 by 11:59 PM. Prioritize intuitive user flows over complex coding, and submit your links through the student portal.'
+    }
+  ];
 
   return (
-    <div className="animate-fade-in max-w-container-max-width mx-auto px-margin-mobile md:px-margin-desktop py-8">
+    <div className="animate-fade-in max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-8 text-left pb-24">
       
-      {/* Toast Notification for Daily Log */}
-      {showLogToast && (
-        <div className="fixed top-20 right-6 z-50 bg-primary text-on-primary px-6 py-3 rounded-lg shadow-lg font-mono text-label-md flex items-center gap-2 animate-bounce">
-          <span className="material-symbols-outlined">check_circle</span>
-          Daily productivity log submitted!
+      {/* Welcome Banner Header (PDF Page 13 & 14) */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-headline text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+            Welcome back, {firstName}!
+          </h1>
         </div>
-      )}
+        <div className="w-12 h-12 md:w-16 md:h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 shadow-sm">
+          <span className="material-symbols-outlined text-3xl md:text-4xl">menu_book</span>
+        </div>
+      </div>
 
-      {/* Header Section */}
-      <section className="mb-10 text-left">
-        <p className="font-mono text-label-md text-primary mb-2 uppercase tracking-wide">
-          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-        </p>
-        <h2 className="font-headline text-headline-lg font-bold text-on-surface">{getGreeting()}</h2>
-        <p className="font-body text-body-md text-on-surface-variant mt-1">
-          You have {incompleteTasksThisWeek.length} deadlines approaching this week. Stay focused.
-        </p>
-      </section>
-
-      {/* Bento Grid Layout */}
-      <div className="bento-grid">
+      {/* Top Bento Stats Overview (PDF Page 13 & 14) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
-        {/* Weekly Progress Card (Asymmetric Large) */}
-        <div className="col-span-1 md:col-span-4 glass-card p-8 rounded-2xl flex flex-col items-center justify-center text-center">
-          <h3 className="font-headline text-headline-sm mb-6 font-semibold">Weekly Goal</h3>
+        {/* Card 1: Assignment Overview */}
+        <div className="assignify-card-lavender p-6 flex flex-col justify-between shadow-sm">
+          <div className="bg-[#231f5c] text-white px-3 py-1 rounded-lg text-xs font-semibold self-start mb-4">
+            Assignment Overview
+          </div>
           
-          <div className="relative w-44 h-44 mb-6">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-              <circle 
-                className="text-surface-container-highest" 
-                cx="18" 
-                cy="18" 
-                fill="transparent" 
-                r="15.915" 
-                stroke="currentColor" 
-                strokeWidth="2.5"
+          <div className="text-center my-2">
+            <span className="text-5xl font-extrabold text-slate-900 block font-headline">25</span>
+            <span className="text-xs text-slate-600 font-medium">Total Tasks</span>
+          </div>
+
+          <div className="w-full bg-slate-200 rounded-full h-2 my-3 overflow-hidden">
+            <div className="bg-purple-600 h-2 rounded-full" style={{ width: '72%' }}></div>
+          </div>
+          <p className="text-[11px] text-slate-600 font-medium text-center mb-4">18 Completed(72%)</p>
+
+          <div className="flex items-center justify-around text-xs pt-2 border-t border-indigo-200/60">
+            <div className="flex items-center gap-1 text-emerald-700 font-semibold">
+              <span className="material-symbols-outlined text-sm bg-emerald-100 rounded-full p-0.5">check</span>
+              <span>Completed</span>
+            </div>
+            <div className="flex items-center gap-1 text-amber-700 font-semibold">
+              <span className="material-symbols-outlined text-sm bg-amber-100 rounded-full p-0.5">star</span>
+              <span>6 in progress</span>
+            </div>
+            <div className="flex items-center gap-1 text-red-700 font-semibold">
+              <span className="material-symbols-outlined text-sm bg-red-100 rounded-full p-0.5">close</span>
+              <span>1 overdue</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2: Academic Progress */}
+        <div className="assignify-card-lavender p-6 flex flex-col justify-between shadow-sm">
+          <div className="bg-[#231f5c] text-white px-3 py-1 rounded-lg text-xs font-semibold self-start mb-4">
+            Academic Progress
+          </div>
+
+          <div className="flex flex-col items-center my-2">
+            <div className="relative w-28 h-28 flex items-center justify-center">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                <path
+                  className="text-indigo-200"
+                  strokeWidth="3.5"
+                  stroke="currentColor"
+                  fill="none"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <path
+                  className="text-[#231f5c]"
+                  strokeDasharray="78, 100"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  stroke="currentColor"
+                  fill="none"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+              </svg>
+              <span className="absolute font-headline text-2xl font-extrabold text-slate-900">78%</span>
+            </div>
+          </div>
+
+          <div className="text-center pt-2">
+            <p className="text-xs text-slate-700 font-semibold">Avg progress across Subjects</p>
+            <p className="text-[11px] text-purple-700 font-bold mt-0.5">Ahead of schedule</p>
+          </div>
+        </div>
+
+        {/* Card 3: Grade Summary Graph */}
+        <div className="assignify-card-lavender p-6 flex flex-col justify-between shadow-sm">
+          <div className="bg-[#231f5c] text-white px-3 py-1 rounded-lg text-xs font-semibold self-start mb-2">
+            Grade Summary
+          </div>
+
+          <div className="my-2 bg-white/60 p-4 rounded-xl border border-indigo-100 relative h-36 flex flex-col justify-between">
+            <div className="flex justify-between items-center text-[10px] font-bold text-purple-900">
+              <span className="bg-purple-100 px-2 py-0.5 rounded">1st Semester 8.7 SGPA</span>
+              <span className="bg-purple-200 px-2 py-0.5 rounded">2nd Semester 9.21 SGPA</span>
+            </div>
+
+            {/* Simulated Line Graph Curve matching PDF */}
+            <svg className="w-full h-20 overflow-visible" viewBox="0 0 200 60">
+              <path
+                d="M 10 45 Q 60 15, 100 35 T 190 10"
+                fill="none"
+                stroke="#8b5cf6"
+                strokeWidth="3.5"
+                strokeLinecap="round"
               />
-              <circle 
-                className="text-primary transition-all duration-1000 ease-out" 
-                cx="18" 
-                cy="18" 
-                fill="transparent" 
-                r="15.915" 
-                stroke="currentColor" 
-                strokeDasharray={`${weeklyCompletionRate} ${100 - weeklyCompletionRate}`} 
-                strokeDashoffset="0"
-                strokeWidth="2.5"
+              <path
+                d="M 10 50 Q 70 30, 120 40 T 190 20"
+                fill="none"
+                stroke="#231f5c"
+                strokeWidth="3.5"
                 strokeLinecap="round"
               />
             </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="font-headline text-headline-lg font-bold text-primary">{weeklyCompletionRate}%</span>
-              <span className="font-mono text-[11px] text-on-surface-variant uppercase tracking-wider">Completed</span>
-            </div>
-          </div>
-          
-          <p className="font-body text-body-sm text-on-surface-variant">
-            {completedTasksCount} of {totalTasksCount} tasks completed overall
-          </p>
-          <button 
-            onClick={handleDailyLog}
-            className="mt-6 w-full py-3 bg-primary text-on-primary rounded-lg font-mono text-label-md hover:bg-primary-container transition-all active:scale-95 shadow-sm cursor-pointer"
-          >
-            Complete Daily Log
-          </button>
-        </div>
-
-        {/* Upcoming Deadlines (High Density) */}
-        <div className="col-span-1 md:col-span-8 flex flex-col gap-4 text-left">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="font-headline text-headline-sm font-semibold">At a Glance</h3>
-            <button 
-              onClick={() => setCurrentView('tasks')}
-              className="font-mono text-label-md text-primary flex items-center gap-1 hover:underline cursor-pointer"
-            >
-              View All <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-            </button>
           </div>
 
-          {upcomingDeadlines.length > 0 ? (
-            upcomingDeadlines.map((task) => {
-              const daysLeft = task.timeLeft;
-              const isUrgent = daysLeft.toLowerCase().includes('left') || daysLeft.toLowerCase().includes('tomorrow') || daysLeft.toLowerCase().includes('today');
-
-              return (
-                <div 
-                  key={task.id}
-                  onClick={() => viewTaskDetails(task.id)}
-                  className="glass-card p-5 rounded-2xl flex items-center gap-4 hover:border-primary/40 transition-colors cursor-pointer group"
-                >
-                  {/* Calendar Widget in Card */}
-                  <div className={`flex-shrink-0 w-16 h-16 rounded-xl flex flex-col items-center justify-center border ${
-                    isUrgent 
-                      ? 'bg-error-container/20 border-error-container/40 text-error' 
-                      : 'bg-surface-container-highest border-outline-variant text-on-surface'
-                  }`}>
-                    <span className="font-mono text-[10px] font-bold uppercase">
-                      {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}
-                    </span>
-                    <span className="font-headline text-headline-sm font-bold">
-                      {new Date(task.dueDate).getDate()}
-                    </span>
-                  </div>
-
-                  {/* Task details */}
-                  <div className="flex-grow min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="px-2 py-0.5 bg-surface-container-high text-on-surface-variant text-[10px] font-mono rounded uppercase border border-outline-variant">
-                        {task.subject}
-                      </span>
-                      {isUrgent ? (
-                        <span className="font-mono text-[10px] text-error font-bold flex items-center gap-0.5">
-                          <span className="material-symbols-outlined text-[14px]">alarm</span> 
-                          {task.timeLeft}
-                        </span>
-                      ) : (
-                        <span className="font-mono text-[10px] text-on-surface-variant">
-                          {task.timeLeft}
-                        </span>
-                      )}
-                    </div>
-                    <h4 className="font-body text-body-md font-semibold text-on-surface truncate group-hover:text-primary transition-colors">
-                      {task.title}
-                    </h4>
-                  </div>
-
-                  <span className="material-symbols-outlined text-on-surface-variant p-2 rounded-full hover:bg-surface-container transition-colors">
-                    chevron_right
-                  </span>
-                </div>
-              );
-            })
-          ) : (
-            <div className="glass-card p-8 rounded-2xl text-center text-on-surface-variant flex flex-col items-center gap-2">
-              <span className="material-symbols-outlined text-4xl text-primary">verified</span>
-              <p className="font-body text-body-md font-medium">All caught up! No pending deadlines.</p>
-            </div>
-          )}
-        </div>
-
-        {/* Subject Quick Links */}
-        <div className="col-span-1 md:col-span-12 text-left">
-          <h3 className="font-headline text-headline-sm mb-4 font-semibold">My Subjects</h3>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {subjects.slice(0, 3).map((sub) => (
-              <div 
-                key={sub.code}
-                onClick={() => setCurrentView('subjects')}
-                className="glass-card p-6 rounded-2xl hover:bg-surface-container-low transition-all cursor-pointer group"
-              >
-                <div className="w-10 h-10 bg-primary-container/10 text-primary rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <span className="material-symbols-outlined">
-                    {sub.code.startsWith('CS') ? 'code' : sub.code.startsWith('MATH') ? 'calculate' : sub.code.startsWith('HIST') ? 'history_edu' : 'trending_up'}
-                  </span>
-                </div>
-                <h4 className="font-body text-body-md font-bold mb-1 truncate">{sub.code}</h4>
-                <p className="font-body text-body-sm text-on-surface-variant">{sub.pendingCount} Active Tasks</p>
-              </div>
-            ))}
-
-            {/* Add Subject quick card */}
-            <div 
-              onClick={() => setShowSubjectModal(true)}
-              className="glass-card p-6 rounded-2xl hover:bg-surface-container-low transition-all cursor-pointer flex flex-col justify-center border-dashed border-2 border-outline-variant"
-            >
-              <div className="w-10 h-10 bg-surface-container rounded-lg flex items-center justify-center mb-4 text-outline group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined">add</span>
-              </div>
-              <h4 className="font-body text-body-md font-bold mb-1 text-outline">Add Subject</h4>
-              <p className="font-body text-body-sm text-outline">New semester?</p>
-            </div>
-          </div>
+          <p className="text-[11px] text-slate-500 text-center font-medium">Consistent upward SGPA trajectory</p>
         </div>
 
       </div>
 
-      {/* Add Subject Modal */}
-      {showSubjectModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 w-full max-w-md shadow-xl animate-fade-in text-left">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-headline text-headline-sm font-semibold">Add New Subject</h3>
+      {/* Subjects Section (PDF Page 13 & 14) */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="bg-[#231f5c] text-white px-4 py-1.5 rounded-xl font-bold text-sm">
+            Subjects
+          </div>
+          <button 
+            onClick={() => setSeeAllSubjects(!seeAllSubjects)}
+            className="text-xs font-bold text-purple-700 hover:text-purple-900 cursor-pointer hover:underline"
+          >
+            {seeAllSubjects ? 'see less' : 'see all'}
+          </button>
+        </div>
+
+        {/* Subjects Grid */}
+        <div className="space-y-4">
+          {visibleSubjects.map((sub) => (
+            <div 
+              key={sub.code}
+              className={`${sub.color} p-6 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-all`}
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-white text-[#231f5c] flex items-center justify-center shadow-sm flex-shrink-0">
+                  <span className="material-symbols-outlined text-2xl">{sub.icon}</span>
+                </div>
+                <div>
+                  <h3 className="font-headline font-bold text-lg text-slate-900">{sub.title}</h3>
+                  <p className="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">{sub.desc}</p>
+                </div>
+              </div>
+
               <button 
-                onClick={() => setShowSubjectModal(false)}
-                className="material-symbols-outlined text-on-surface-variant hover:bg-surface-container rounded-full p-1 cursor-pointer"
+                onClick={() => setCurrentView('subjects')}
+                className="px-6 py-2.5 bg-[#231f5c] hover:bg-purple-900 text-white font-bold text-xs rounded-xl shadow transition-all cursor-pointer whitespace-nowrap self-start md:self-auto"
               >
-                close
+                View Details
               </button>
             </div>
-
-            <form onSubmit={handleAddSubject} className="space-y-4">
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Subject Code *</label>
-                <input 
-                  type="text" 
-                  value={newSubCode}
-                  onChange={(e) => setNewSubCode(e.target.value)}
-                  placeholder="e.g. ECON 302"
-                  required
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary"
-                />
-              </div>
-
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Subject Name *</label>
-                <input 
-                  type="text" 
-                  value={newSubName}
-                  onChange={(e) => setNewSubName(e.target.value)}
-                  placeholder="e.g. Intermediate Macroeconomics"
-                  required
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary"
-                />
-              </div>
-
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Description</label>
-                <input 
-                  type="text" 
-                  value={newSubDesc}
-                  onChange={(e) => setNewSubDesc(e.target.value)}
-                  placeholder="e.g. Analysis of monetary policies"
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary"
-                />
-              </div>
-
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Theme Accent Color</label>
-                <select 
-                  value={newSubColor}
-                  onChange={(e) => setNewSubColor(e.target.value)}
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary"
-                >
-                  <option value="blue">Blue (Corporate-Modern)</option>
-                  <option value="indigo">Indigo (Technical-Focus)</option>
-                  <option value="purple">Purple (Creative-Reflection)</option>
-                  <option value="emerald">Emerald (Goal-Velocity)</option>
-                  <option value="slate">Slate (Metadata-Neutral)</option>
-                </select>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button 
-                  type="button"
-                  onClick={() => setShowSubjectModal(false)}
-                  className="flex-1 py-3 border border-outline text-on-surface rounded-lg font-mono text-label-md hover:bg-surface-container transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit"
-                  className="flex-1 py-3 bg-primary text-on-primary rounded-lg font-mono text-label-md hover:bg-primary-container transition-all cursor-pointer shadow-sm"
-                >
-                  Save Subject
-                </button>
-              </div>
-            </form>
-          </div>
+          ))}
         </div>
-      )}
+      </div>
+
+      {/* Upcoming Deadlines Section (PDF Page 13 & 14) */}
+      <div className="space-y-4">
+        <div className="bg-[#231f5c] text-white px-4 py-1.5 rounded-xl font-bold text-sm inline-block">
+          Upcoming Deadlines
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {upcomingDeadlines.map((dl) => (
+            <div 
+              key={dl.id}
+              onClick={() => setCurrentView('subjects')}
+              className="assignify-card-lavender p-6 flex flex-col justify-between hover:border-purple-300 transition-all cursor-pointer shadow-sm"
+            >
+              <p className="text-xs text-slate-700 leading-relaxed">{dl.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer Section (PDF Page 6, 13, 14) */}
+      <footer className="bg-[#1e1b4b] text-white p-8 md:p-12 rounded-3xl mt-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-xs">
+        <div className="space-y-2">
+          <h4 className="font-bold text-sm text-purple-300 mb-3">Support & Feedback</h4>
+          <p className="text-purple-200/80 hover:text-white cursor-pointer">Help & FAQ</p>
+          <p className="text-purple-200/80 hover:text-white cursor-pointer">Report a Bug</p>
+          <p className="text-purple-200/80 hover:text-white cursor-pointer">Suggest a Feature</p>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="font-bold text-sm text-purple-300 mb-3">Academic Utility</h4>
+          <p className="text-purple-200/80 hover:text-white cursor-pointer">Academic Calendar</p>
+          <p className="text-purple-200/80 hover:text-white cursor-pointer">University Portal</p>
+          <p className="text-purple-200/80 hover:text-white cursor-pointer">Study Resources</p>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="font-bold text-sm text-purple-300 mb-3">System & Settings</h4>
+          <p className="text-purple-200/80 hover:text-white cursor-pointer">Sync Status</p>
+          <p className="text-purple-200/80 hover:text-white cursor-pointer">theme</p>
+          <p className="text-purple-200/80 hover:text-white cursor-pointer">version 2.0</p>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="font-bold text-sm text-purple-300 mb-3">Legal & Privacy</h4>
+          <p className="text-purple-200/80 hover:text-white cursor-pointer">Privacy Policy</p>
+          <p className="text-purple-200/80 hover:text-white cursor-pointer">Export My Data</p>
+          <p className="text-purple-200/80 hover:text-white cursor-pointer">Copyright © 2026 Assignify</p>
+        </div>
+      </footer>
+
     </div>
   );
 }
+

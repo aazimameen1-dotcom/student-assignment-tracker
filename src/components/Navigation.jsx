@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useRef, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 
 export default function Navigation() {
@@ -15,10 +15,11 @@ export default function Navigation() {
     setSelectedTaskId
   } = useContext(AppContext);
 
-  const [showNotificationsDropdown, setShowNotificationsDropdown] = React.useState(false);
-  const dropdownRef = React.useRef(null);
+  const [showDrawer, setShowDrawer] = useState(false);
+  const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowNotificationsDropdown(false);
@@ -35,11 +36,33 @@ export default function Navigation() {
   const unreadNotifications = notifications.filter(n => !readNotificationIds.includes(n.id));
   const hasUnread = unreadNotifications.length > 0;
 
+  // Determine title badge text based on currentView
+  const getHeaderTitle = () => {
+    switch (currentView) {
+      case 'profile':
+        return 'Your Profile';
+      case 'subjects':
+      case 'assignment-details':
+        return 'Course Progress';
+      case 'tasks':
+        return 'Tasks & Deliverables';
+      case 'calendar':
+        return 'Academic Calendar';
+      case 'settings':
+        return 'Settings';
+      default:
+        return 'Assignify';
+    }
+  };
+
   const navItems = [
     { view: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { view: 'tasks', label: 'Tasks', icon: 'assignment' },
+    { view: 'subjects', label: 'Course Progress', icon: 'auto_stories' },
+    { view: 'tasks', label: 'Tasks & Deliverables', icon: 'assignment' },
     { view: 'calendar', label: 'Calendar', icon: 'calendar_month' },
-    { view: 'subjects', label: 'Subjects', icon: 'category' }
+    { view: 'profile', label: 'Your Profile', icon: 'person' },
+    { view: 'landing', label: 'Landing Page', icon: 'home' },
+    { view: 'settings', label: 'Settings', icon: 'settings' }
   ];
 
   // Helper for dynamic user avatar
@@ -55,90 +78,108 @@ export default function Navigation() {
         />
       );
     }
-    // Fallback letter avatar
-    const nameToUse = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Guest User';
-    const initial = nameToUse ? nameToUse[0].toUpperCase() : 'G';
+    const nameToUse = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Alex Morgan';
+    const initial = nameToUse ? nameToUse[0].toUpperCase() : 'A';
     return (
-      <div className="w-full h-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm">
+      <div className="w-full h-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm">
         {initial}
       </div>
     );
   };
 
+  const handleBackNav = () => {
+    if (currentView === 'dashboard') return;
+    if (currentView === 'assignment-details') {
+      setCurrentView('subjects');
+    } else {
+      setCurrentView('dashboard');
+    }
+  };
+
   return (
     <>
-      {/* Top App Bar */}
-      <header className="fixed top-0 left-0 w-full h-16 z-40 bg-surface border-b border-outline-variant flex items-center justify-between px-margin-mobile md:px-margin-desktop">
+      {/* Assignify Header Bar (Exact PDF design: #231f5c indigo bar) */}
+      <header className="fixed top-0 left-0 w-full h-16 z-40 bg-[#231f5c] text-white shadow-md flex items-center justify-between px-4 md:px-8">
+        
+        {/* Left Side: Hamburger Menu + Back Arrow + Title Badge */}
         <div className="flex items-center gap-3">
-          <div 
-            onClick={() => setCurrentView('profile')}
-            className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden border border-outline-variant cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+          <button 
+            onClick={() => setShowDrawer(true)}
+            className="p-1.5 hover:bg-white/10 rounded-lg transition-colors cursor-pointer text-white flex items-center justify-center"
+            title="Open Menu"
           >
-            {renderAvatar()}
-          </div>
-          <div className="cursor-pointer" onClick={() => setCurrentView('dashboard')}>
-            <h1 className="font-headline text-headline-sm md:text-headline-md font-bold text-primary leading-none">StudyTrack</h1>
-            {user && (
-              <span className="hidden md:inline font-mono text-[9px] text-on-surface-variant opacity-60">
-                {user.email}
-              </span>
-            )}
+            <span className="material-symbols-outlined text-[26px]">menu</span>
+          </button>
+
+          {currentView !== 'dashboard' && (
+            <button 
+              onClick={handleBackNav}
+              className="p-1.5 hover:bg-white/10 rounded-lg transition-colors cursor-pointer text-white flex items-center justify-center"
+              title="Go Back"
+            >
+              <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+            </button>
+          )}
+
+          {/* White Pill Badge showing Page Title */}
+          <div 
+            onClick={() => setCurrentView('dashboard')}
+            className="bg-white text-[#231f5c] px-4 py-1.5 rounded-xl font-headline font-bold text-sm md:text-base shadow-sm cursor-pointer hover:bg-slate-100 transition-colors"
+          >
+            {getHeaderTitle()}
           </div>
         </div>
-        
-        {/* Right side controls */}
-        <div className="flex items-center gap-2">
-          {/* Notification Button */}
+
+        {/* Center / Search bar when on dashboard desktop view */}
+        <div className="hidden md:flex flex-1 max-w-xs mx-6">
+          <div className="relative w-full">
+            <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
+            <input 
+              type="text" 
+              placeholder="Search subjects, assignments..."
+              className="w-full pl-9 pr-4 py-1.5 bg-white/10 text-white placeholder-slate-300 rounded-xl text-xs focus:outline-none focus:bg-white/20 transition-all border border-white/10"
+            />
+          </div>
+        </div>
+
+        {/* Right Side: Notifications + Profile Avatar */}
+        <div className="flex items-center gap-3">
+          {/* Notifications Button */}
           <div className="relative" ref={dropdownRef}>
             <button 
               onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
-              className="material-symbols-outlined text-on-surface-variant p-2 rounded-full hover:bg-surface-container transition-colors relative cursor-pointer"
+              className="p-1.5 hover:bg-white/10 rounded-full transition-colors relative cursor-pointer text-white flex items-center"
+              title="Notifications"
             >
-              notifications
+              <span className="material-symbols-outlined text-[22px]">notifications</span>
               {hasUnread && (
-                <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-error border border-white animate-pulse"></span>
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-red-500 border border-[#231f5c] animate-pulse"></span>
               )}
             </button>
 
             {/* Notifications Dropdown */}
             {showNotificationsDropdown && (
-              <div className="absolute right-0 mt-2 w-80 bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-xl z-50 py-3 text-left overflow-hidden animate-fade-in">
-                <div className="px-4 py-2 border-b border-outline-variant/30 flex justify-between items-center">
-                  <h4 className="font-headline text-body-md font-bold text-on-surface">Notifications</h4>
+              <div className="absolute right-0 mt-2 w-80 bg-white text-slate-800 rounded-2xl shadow-2xl z-50 py-3 text-left border border-slate-200 overflow-hidden animate-fade-in">
+                <div className="px-4 py-2 border-b border-slate-100 flex justify-between items-center">
+                  <h4 className="font-headline text-sm font-bold text-slate-900">Notifications</h4>
                   {hasUnread && (
                     <button 
                       onClick={() => markAllNotificationsAsRead(unreadNotifications.map(n => n.id))}
-                      className="font-mono text-[10px] text-primary hover:underline font-bold bg-transparent border-none cursor-pointer"
+                      className="text-[11px] text-purple-600 font-semibold hover:underline bg-transparent border-none cursor-pointer"
                     >
                       Mark all read
                     </button>
                   )}
                 </div>
 
-                <div className="max-h-72 overflow-y-auto divide-y divide-outline-variant/15">
-                  {!notificationsEnabled ? (
-                    <div className="p-4 text-center text-on-surface-variant italic font-body text-body-sm">
-                      Deadline reminders are currently disabled. You can enable them in Settings.
-                    </div>
-                  ) : notifications.length === 0 ? (
-                    <div className="p-4 text-center text-on-surface-variant italic font-body text-body-sm">
+                <div className="max-h-72 overflow-y-auto divide-y divide-slate-100">
+                  {notifications.length === 0 ? (
+                    <div className="p-4 text-center text-slate-500 text-xs italic">
                       No new notifications.
                     </div>
                   ) : (
                     notifications.map(n => {
                       const isUnread = !readNotificationIds.includes(n.id);
-                      
-                      const typeIcons = {
-                        warning: 'warning',
-                        error: 'error',
-                        info: 'info'
-                      };
-                      const typeColors = {
-                        warning: 'text-amber-500',
-                        error: 'text-error',
-                        info: 'text-primary'
-                      };
-
                       return (
                         <div 
                           key={n.id}
@@ -150,25 +191,14 @@ export default function Navigation() {
                             }
                             setShowNotificationsDropdown(false);
                           }}
-                          className={`p-3 hover:bg-surface-container-low transition-colors cursor-pointer flex gap-3 items-start relative ${
-                            isUnread ? 'bg-surface-container/20' : ''
+                          className={`p-3 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3 items-start ${
+                            isUnread ? 'bg-purple-50/50' : ''
                           }`}
                         >
-                          <span className={`material-symbols-outlined text-[20px] mt-0.5 ${typeColors[n.type] || 'text-on-surface-variant'}`}>
-                            {typeIcons[n.type] || 'notifications'}
-                          </span>
-                          <div className="flex-1 overflow-hidden">
-                            <div className="flex items-center gap-1.5">
-                              <p className={`font-body text-body-sm leading-tight text-on-surface ${isUnread ? 'font-bold' : ''}`}>
-                                {n.title}
-                              </p>
-                              {isUnread && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
-                              )}
-                            </div>
-                            <p className="font-body text-[11px] text-on-surface-variant mt-0.5 leading-normal">
-                              {n.message}
-                            </p>
+                          <span className="material-symbols-outlined text-purple-600 text-lg mt-0.5">info</span>
+                          <div className="flex-1">
+                            <p className={`text-xs text-slate-900 ${isUnread ? 'font-bold' : ''}`}>{n.title}</p>
+                            <p className="text-[11px] text-slate-500 mt-0.5">{n.message}</p>
                           </div>
                         </div>
                       );
@@ -178,101 +208,138 @@ export default function Navigation() {
               </div>
             )}
           </div>
-          
-          {/* Settings Button */}
-          <button 
-            onClick={() => setCurrentView('settings')}
-            title="Settings"
-            className={`material-symbols-outlined p-2 rounded-full hover:bg-surface-container transition-colors active:scale-95 cursor-pointer ${
-              currentView === 'settings' ? 'text-primary font-bold' : 'text-on-surface-variant'
-            }`}
-          >
-            settings
-          </button>
 
-          {/* Sign Out Button in Header */}
-          <button 
-            onClick={logout}
-            title="Sign Out"
-            className="material-symbols-outlined text-on-surface-variant p-2 rounded-full hover:bg-surface-container text-error hover:text-red-700 transition-colors active:scale-95 cursor-pointer"
+          {/* User Profile Avatar */}
+          <div 
+            onClick={() => setCurrentView('profile')}
+            className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/40 cursor-pointer hover:border-white transition-all shadow-sm"
+            title="View Profile"
           >
-            logout
-          </button>
+            {renderAvatar()}
+          </div>
         </div>
       </header>
 
-      {/* Slim Desktop Sidebar Navigation (Hidden on Mobile) */}
-      <aside className="hidden md:flex fixed left-0 top-16 h-[calc(100vh-64px)] w-20 flex-col items-center py-8 bg-surface border-r border-outline-variant space-y-6 z-35">
-        {navItems.map((item) => {
-          const isActive = currentView === item.view || (item.view === 'tasks' && currentView === 'assignment-details');
+      {/* Slide-out Drawer Navigation Menu */}
+      {showDrawer && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setShowDrawer(false)}
+          ></div>
+
+          {/* Sidebar Panel */}
+          <div className="relative w-72 max-w-[80%] bg-[#231f5c] text-white h-full shadow-2xl flex flex-col z-10 animate-fade-in">
+            {/* Drawer Header */}
+            <div className="p-6 border-b border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden border border-white/30">
+                  {renderAvatar()}
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-white">
+                    {user?.user_metadata?.full_name || 'Alex Morgan'}
+                  </h3>
+                  <p className="text-[11px] text-purple-200 opacity-80">{user?.user_metadata?.student_id || 'STU102938'}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowDrawer(false)}
+                className="text-white/70 hover:text-white p-1 rounded-lg"
+              >
+                <span className="material-symbols-outlined text-xl">close</span>
+              </button>
+            </div>
+
+            {/* Navigation Items */}
+            <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+              {navItems.map((item) => {
+                const isActive = currentView === item.view || (item.view === 'subjects' && currentView === 'assignment-details');
+                return (
+                  <button
+                    key={item.view}
+                    onClick={() => {
+                      setCurrentView(item.view);
+                      setShowDrawer(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all cursor-pointer ${
+                      isActive 
+                        ? 'bg-purple-600 text-white font-bold shadow-md' 
+                        : 'text-purple-100 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-xl">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Drawer Footer */}
+            <div className="p-4 border-t border-white/10">
+              <button 
+                onClick={() => {
+                  setShowDrawer(false);
+                  logout();
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-xs text-red-300 hover:bg-red-500/20 hover:text-red-100 transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-lg">logout</span>
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Slim Desktop Sidebar Rail (Hidden on Mobile) */}
+      <aside className="hidden md:flex fixed left-0 top-16 h-[calc(100vh-64px)] w-16 flex-col items-center py-6 bg-[#231f5c] text-white border-r border-white/10 space-y-5 z-35 shadow-sm">
+        {navItems.slice(0, 5).map((item) => {
+          const isActive = currentView === item.view || (item.view === 'subjects' && currentView === 'assignment-details');
           return (
             <button
               key={item.view}
               onClick={() => setCurrentView(item.view)}
               title={item.label}
-              className={`p-3 rounded-xl transition-all cursor-pointer ${
+              className={`p-2.5 rounded-xl transition-all cursor-pointer ${
                 isActive 
-                  ? 'bg-primary-container text-on-primary-container shadow-sm scale-105' 
-                  : 'text-on-surface-variant hover:bg-surface-container-high hover:text-primary'
+                  ? 'bg-purple-600 text-white shadow-md scale-105' 
+                  : 'text-purple-200/70 hover:bg-white/10 hover:text-white'
               }`}
             >
-              <span 
-                className="material-symbols-outlined text-[24px]"
-                style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}
-              >
-                {item.icon}
-              </span>
+              <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
             </button>
           );
         })}
-        
-        {/* Logout at bottom of desktop rail */}
-        <div className="mt-auto space-y-4">
-          <button 
-            onClick={logout}
-            className="p-3 text-error hover:bg-red-50 hover:text-red-700 rounded-xl transition-colors cursor-pointer flex items-center justify-center"
-            title="Sign Out"
-          >
-            <span className="material-symbols-outlined text-[24px]">logout</span>
-          </button>
+
+        <div className="mt-auto space-y-3">
           <button 
             onClick={() => setCurrentView('settings')}
-            className={`p-3 rounded-xl transition-all cursor-pointer ${
-              currentView === 'settings' 
-                ? 'bg-primary-container text-on-primary-container shadow-sm scale-105' 
-                : 'text-on-surface-variant hover:bg-surface-container-high hover:text-primary'
-            }`}
             title="Settings"
+            className={`p-2.5 rounded-xl transition-all cursor-pointer ${
+              currentView === 'settings' ? 'bg-purple-600 text-white' : 'text-purple-200/70 hover:bg-white/10 hover:text-white'
+            }`}
           >
-            <span 
-              className="material-symbols-outlined text-[24px]"
-              style={{ fontVariationSettings: currentView === 'settings' ? "'FILL' 1" : "'FILL' 0" }}
-            >
-              settings
-            </span>
+            <span className="material-symbols-outlined text-[22px]">settings</span>
           </button>
         </div>
       </aside>
 
-      {/* Bottom Nav Bar (Mobile Only) */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full z-45 pb-safe border-t border-outline-variant bg-surface h-16 flex justify-around items-center">
-        {navItems.map((item) => {
-          const isActive = currentView === item.view || (item.view === 'tasks' && currentView === 'assignment-details');
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 w-full z-45 border-t border-slate-200 bg-[#231f5c] text-white h-16 flex justify-around items-center">
+        {navItems.slice(0, 5).map((item) => {
+          const isActive = currentView === item.view || (item.view === 'subjects' && currentView === 'assignment-details');
           return (
             <button
               key={item.view}
               onClick={() => setCurrentView(item.view)}
-              className={`flex flex-col items-center justify-center flex-1 h-full py-2 cursor-pointer transition-colors ${
-                isActive ? 'text-primary font-bold' : 'text-on-surface-variant'
+              className={`flex flex-col items-center justify-center flex-1 h-full py-1 cursor-pointer transition-colors ${
+                isActive ? 'text-white font-bold' : 'text-purple-300/70'
               }`}
             >
-              <span 
-                className="material-symbols-outlined text-[22px]"
-                style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}
-              >
-                {item.icon}
-              </span>
-              <span className="font-mono text-[10px] mt-0.5">{item.label}</span>
+              <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+              <span className="text-[10px] mt-0.5 leading-none">{item.label.split(' ')[0]}</span>
             </button>
           );
         })}
@@ -280,3 +347,4 @@ export default function Navigation() {
     </>
   );
 }
+

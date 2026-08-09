@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { AppContext } from './context/AppContext';
 import Navigation from './components/Navigation';
 import Login from './pages/Login';
+import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import Tasks from './pages/Tasks';
 import AssignmentDetails from './pages/AssignmentDetails';
@@ -25,13 +26,23 @@ function App() {
     );
   }
 
-  // Route guarding: force user to authenticate
+  // Render Landing Page if explicitly requested or unauthenticated on landing view
+  if (currentView === 'landing') {
+    return <Landing />;
+  }
+
+  // Route guarding: force guest users to authenticate or see landing
   if (!user) {
-    return <Login />;
+    if (currentView === 'login') {
+      return <Login />;
+    }
+    return <Landing />;
   }
 
   const renderActiveView = () => {
     switch (currentView) {
+      case 'landing':
+        return <Landing />;
       case 'dashboard':
         return <Dashboard />;
       case 'tasks':
