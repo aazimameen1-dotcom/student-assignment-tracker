@@ -5,6 +5,7 @@ export default function Dashboard() {
   const { 
     user,
     setCurrentView, 
+    setSelectedSubjectKey,
     setSelectedTaskId
   } = useContext(AppContext);
 
@@ -12,9 +13,10 @@ export default function Dashboard() {
 
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.user_metadata?.name?.split(' ')[0] || 'Alex';
 
-  // All 6 Wireframe Subjects from PDF
+  // All 6 Wireframe Subjects from PDF with mapping keys
   const defaultSubjects = [
     {
+      key: 'global-literature',
       code: 'DIC110H',
       title: 'Global Literature',
       desc: 'Explore literary works from different cultures and languages, and analyze how themes and narratives connect across societies.',
@@ -23,6 +25,7 @@ export default function Dashboard() {
       badgeColor: 'bg-[#231f5c]'
     },
     {
+      key: 'web-design',
       code: 'DIC107T',
       title: 'Web Designing',
       desc: 'Learn the principles of layout, visual hierarchy, and user experience to build intuitive, functional websites.',
@@ -31,6 +34,7 @@ export default function Dashboard() {
       badgeColor: 'bg-purple-600'
     },
     {
+      key: 'python',
       code: 'DIC102C',
       title: 'Python',
       desc: 'Build a foundation in programming logic and syntax through hands-on coding exercises and projects.',
@@ -39,6 +43,7 @@ export default function Dashboard() {
       badgeColor: 'bg-blue-600'
     },
     {
+      key: 'mathematics',
       code: 'DIC103M',
       title: 'Mathematics',
       desc: 'The fundamental study of patterns, structures, and pure logic, providing quantitative reasoning for algorithmic thinking.',
@@ -47,6 +52,7 @@ export default function Dashboard() {
       badgeColor: 'bg-indigo-600'
     },
     {
+      key: 'disaster-management',
       code: 'DIC105E',
       title: 'Disaster Management',
       desc: 'A comprehensive study of risk assessment, emergency response, and mitigation strategies to effectively manage crises.',
@@ -55,6 +61,7 @@ export default function Dashboard() {
       badgeColor: 'bg-slate-700'
     },
     {
+      key: 'physics',
       code: 'DIC102S',
       title: 'Physics',
       desc: 'A foundational study of the natural world, utilizing mathematical frameworks to understand forces of nature and properties of matter.',
@@ -65,6 +72,13 @@ export default function Dashboard() {
   ];
 
   const visibleSubjects = seeAllSubjects ? defaultSubjects : defaultSubjects.slice(0, 3);
+
+  const handleCourseClick = (key) => {
+    if (setSelectedSubjectKey) {
+      setSelectedSubjectKey(key);
+    }
+    setCurrentView('subjects');
+  };
 
   const upcomingDeadlines = [
     {
@@ -225,7 +239,8 @@ export default function Dashboard() {
           {visibleSubjects.map((sub) => (
             <div 
               key={sub.code}
-              className={`${sub.color} p-6 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-all`}
+              onClick={() => handleCourseClick(sub.key)}
+              className={`${sub.color} p-6 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-all cursor-pointer`}
             >
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-xl bg-white text-[#231f5c] flex items-center justify-center shadow-sm flex-shrink-0">
@@ -238,7 +253,10 @@ export default function Dashboard() {
               </div>
 
               <button 
-                onClick={() => setCurrentView('subjects')}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCourseClick(sub.key);
+                }}
                 className="px-6 py-2.5 bg-[#231f5c] hover:bg-purple-900 text-white font-bold text-xs rounded-xl shadow transition-all cursor-pointer whitespace-nowrap self-start md:self-auto"
               >
                 View Details

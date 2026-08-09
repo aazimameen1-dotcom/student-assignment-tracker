@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { AppContext } from '../context/AppContext';
 
 export default function Subjects() {
-  const [selectedSubjectKey, setSelectedSubjectKey] = useState('web-design');
+  const { selectedSubjectKey: ctxSubjectKey, setSelectedSubjectKey: setCtxSubjectKey } = useContext(AppContext);
+  
+  // Active selected course state (synchronized with AppContext)
+  const selectedKey = ctxSubjectKey || 'web-design';
+  const setSelectedKey = (key) => {
+    if (setCtxSubjectKey) setCtxSubjectKey(key);
+  };
+
   const [activeTab, setActiveTab] = useState('pending'); // pending, completed, upcoming
   const [assignmentReminder, setAssignmentReminder] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDeadline, setNewDeadline] = useState('14th August');
 
-  // Complete Wireframe Subject Datasets matching PDF Pages 5, 7-12, 15-19
+  // Complete Wireframe Datasets matching PDF Pages 5, 7-12, 15-19
   const courseData = {
     'web-design': {
       code: 'DIC107T',
@@ -113,7 +121,7 @@ export default function Subjects() {
       credits: '3 Credits',
       overallProgress: 72,
       submissionRate: 95,
-      description: 'Explore the world through its stories. This course examines how narrative, voice, and cultural context shape literature across borders, moving from close reading to comparative analysis.',
+      description: 'Explore the world through its stories. This course examines how narrative, voice, and cultural context shape literature across borders, moving from close reading to comparative analysis of texts.',
       modules: [
         { name: 'Comparative Narratives', pct: 95 },
         { name: 'Cultural Contexts', pct: 47 },
@@ -121,7 +129,7 @@ export default function Subjects() {
         { name: 'Postcolonial Literature', pct: 62 },
         { name: 'Critical Analysis Essay', pct: 32 }
       ],
-      hoursSpent: [3.5, 6.0, 5.0, 9.0, 9.5, 8.0, 7.5],
+      hoursSpent: [2.2, 4.0, 3.5, 7.5, 8.0, 7.1, 6.8],
       pendingTasks: [
         { id: 'gl-p1', name: 'Comparative Essay Outline', deadline: '14th August', priority: 'high' },
         { id: 'gl-p2', name: 'Cultural Reading Response', deadline: '12th August', priority: 'high' },
@@ -204,7 +212,16 @@ export default function Subjects() {
     }
   };
 
-  const currentCourse = courseData[selectedSubjectKey] || courseData['web-design'];
+  const courseList = [
+    { key: 'web-design', title: 'Web Design' },
+    { key: 'python', title: 'Python' },
+    { key: 'disaster-management', title: 'Disaster Mgmt' },
+    { key: 'global-literature', title: 'Global Literature' },
+    { key: 'physics', title: 'Physics' },
+    { key: 'mathematics', title: 'Mathematics' }
+  ];
+
+  const currentCourse = courseData[selectedKey] || courseData['web-design'];
 
   const handleAddAssignment = (e) => {
     e.preventDefault();
@@ -221,527 +238,309 @@ export default function Subjects() {
   };
 
   return (
-      <div className="animate-fade-in max-w-container-max-width mx-auto px-margin-mobile md:px-margin-desktop py-8 text-left pb-24">
-      {/* Header */}
-      <section className="mb-10">
-        <h2 className="font-headline text-headline-lg font-bold text-on-surface mb-2">Subject Mastery</h2>
-        <p className="font-body text-body-md text-on-surface-variant max-w-2xl">
-          Organize your academic journey. Track progress, manage pending assignments, and focus on what matters most in your curriculum.
-        </p>
-      </section>
-
-      {/* Bento Grid of Subjects */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {subjects.map((sub) => {
-          const colors = getSubjectColorClasses(sub.color);
-          const hasPending = sub.pendingCount > 0;
-
+    <div className="animate-fade-in max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-8 text-left pb-24 select-none">
+      
+      {/* Top Subject Switcher Tabs Bar */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-indigo-100 no-scrollbar">
+        {courseList.map((c) => {
+          const isSelected = selectedKey === c.key;
           return (
-            <div 
-              key={sub.code}
-              className="paper-card rounded-2xl p-6 flex flex-col justify-between min-h-[220px] relative"
+            <button
+              key={c.key}
+              onClick={() => setSelectedKey(c.key)}
+              className={`px-5 py-2.5 rounded-xl font-headline text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                isSelected
+                  ? 'bg-[#231f5c] text-white shadow-md'
+                  : 'bg-white text-slate-700 hover:bg-purple-50 border border-slate-200'
+              }`}
             >
-              <div>
-                <div className="flex justify-between items-start mb-4">
-                  <span className={`px-3 py-1 rounded-full font-mono text-label-md border border-outline-variant/40 ${colors.chip}`}>
-                    {sub.code}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <span 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setTaskSubjectCode(sub.code);
-                        setTaskTitle('');
-                        setTaskDesc('');
-                        setShowTaskModal(true);
-                      }}
-                      className="material-symbols-outlined text-outline cursor-pointer p-1 rounded-full hover:bg-surface-container hover:text-primary transition-all text-[20px]"
-                      title="Add Task to this Subject"
-                    >
-                      add_task
-                    </span>
-                    <div className="relative">
-                      <span 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveMenuCode(activeMenuCode === sub.code ? null : sub.code);
-                        }}
-                        className="material-symbols-outlined text-outline cursor-pointer p-1 rounded-full hover:bg-surface-container transition-colors"
-                      >
-                        more_vert
-                      </span>
-                    {activeMenuCode === sub.code && (
-                      <div className="absolute right-0 top-8 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg py-1 z-10 w-28 text-left overflow-hidden">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditSubCode(sub.code);
-                            setEditSubName(sub.name);
-                            setEditSubDesc(sub.desc || '');
-                            setEditSubColor(sub.color || 'blue');
-                            setShowEditModal(true);
-                            setActiveMenuCode(null);
-                          }}
-                          className="w-full text-left px-3 py-2 hover:bg-surface-container text-on-surface font-mono text-[11px] flex items-center gap-1.5 cursor-pointer border-none border-b border-outline-variant/30"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">edit</span>
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            if (confirm(`Are you sure you want to delete ${sub.code}? This will also delete all tasks associated with it.`)) {
-                              await deleteSubject(sub.code);
-                            }
-                            setActiveMenuCode(null);
-                          }}
-                          className="w-full text-left px-3 py-2 hover:bg-error-container/20 text-error font-mono text-[11px] flex items-center gap-1.5 cursor-pointer border-none"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">delete</span>
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-                <h3 className="font-headline text-headline-sm font-semibold mb-1 text-on-surface">
-                  {sub.name}
-                </h3>
-                <p className="font-body text-body-sm text-on-surface-variant line-clamp-1">
-                  {sub.desc}
-                </p>
-              </div>
-
-              <div className="mt-8">
-                <div className="flex justify-between items-end mb-2">
-                  <div className={`flex items-center gap-2 ${hasPending ? 'text-primary' : 'text-emerald-600'}`}>
-                    <span className="material-symbols-outlined text-[20px]">
-                      {hasPending ? 'assignment' : 'verified'}
-                    </span>
-                    <span className="font-mono text-label-md font-bold">
-                      {hasPending ? `${sub.pendingCount} PENDING` : 'ALL COMPLETED'}
-                    </span>
-                  </div>
-                  <span className="font-mono text-label-md text-outline">{sub.progress}%</span>
-                </div>
-                <div className="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full transition-all duration-1000 ${colors.bar}`}
-                    style={{ width: `${sub.progress}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
+              {c.title}
+            </button>
           );
         })}
-
-        {/* Add New Subject Action Card */}
-        <button 
-          onClick={() => setShowSubjectModal(true)}
-          className="border-2 border-dashed border-outline-variant rounded-2xl p-6 flex flex-col items-center justify-center min-h-[220px] hover:bg-surface-container-low transition-all group active:scale-95 cursor-pointer"
-        >
-          <span className="material-symbols-outlined text-4xl text-outline mb-4 group-hover:text-primary transition-colors">
-            add_circle
-          </span>
-          <span className="font-headline text-headline-sm font-semibold text-outline group-hover:text-primary transition-colors">
-            Add New Subject
-          </span>
-        </button>
       </div>
 
-      {/* Study Insights Section */}
-      <section className="mt-16 bg-surface-container-low rounded-2xl p-8 flex flex-col md:flex-row gap-8 items-center border border-outline-variant/30">
-        <div className="flex-1">
-          <h3 className="font-headline text-headline-md font-bold mb-3 text-on-surface">Weekly Learning Velocity</h3>
-          <p className="font-body text-body-md text-on-surface-variant mb-6">
-            You've completed {totalCompletedTasks} tasks across {totalSubjectsCount} subjects this week. Your completion rate is 15% higher than last month.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <button className="bg-primary text-on-primary px-6 py-2.5 rounded font-mono text-label-md uppercase active:opacity-80 transition-opacity shadow-sm cursor-pointer">
-              View detailed report
-            </button>
-            <button className="border border-outline text-on-surface px-6 py-2.5 rounded font-mono text-label-md uppercase bg-surface-container-lowest hover:bg-surface transition-colors cursor-pointer">
-              Adjust goals
-            </button>
-          </div>
-        </div>
+      {/* Main Course Progress Section matching PDF Pages 5 & 7-12 */}
+      <div className="space-y-6">
         
-        <div className="w-full md:w-48 h-48 flex items-center justify-center relative">
-          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-            <circle 
-              className="text-surface-container-highest" 
-              cx="18" 
-              cy="18" 
-              fill="transparent" 
-              r="15.915" 
-              stroke="currentColor" 
-              strokeWidth="2.5"
-            />
-            <circle 
-              className="text-primary transition-all duration-1000 ease-out" 
-              cx="18" 
-              cy="18" 
-              fill="transparent" 
-              r="15.915" 
-              stroke="currentColor" 
-              strokeDasharray={`${weeklyVelocity} ${100 - weeklyVelocity}`} 
-              strokeDashoffset="0"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-headline text-headline-lg font-bold text-primary">{weeklyVelocity}%</span>
-            <span className="font-mono text-[10px] text-outline uppercase tracking-widest font-bold">Weekly</span>
+        {/* Banner Title Card */}
+        <div className="bg-[#231f5c] text-white p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+          <div>
+            <span className="text-xs text-purple-200 uppercase font-mono font-bold tracking-wider">{currentCourse.code} • {currentCourse.credits}</span>
+            <h1 className="font-headline text-2xl md:text-3xl font-extrabold text-white mt-0.5">
+              Your Progress in {currentCourse.title}
+            </h1>
+            <p className="text-xs text-purple-100 opacity-90 mt-1">Instructor: {currentCourse.instructor}</p>
           </div>
+          <button 
+            onClick={() => setShowAddModal(true)}
+            className="px-4 py-2 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold text-xs rounded-xl shadow transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            <span className="material-symbols-outlined text-base">add</span>
+            <span>Add Assignment</span>
+          </button>
         </div>
-      </section>
 
-      {/* Add Subject Modal */}
-      {showSubjectModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 w-full max-w-md shadow-xl animate-fade-in text-left">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-headline text-headline-sm font-semibold text-on-surface">Add New Subject</h3>
-              <button 
-                onClick={() => setShowSubjectModal(false)}
-                className="material-symbols-outlined text-on-surface-variant hover:bg-surface-container rounded-full p-1 cursor-pointer"
-              >
-                close
-              </button>
+        {/* Bento Stat Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          
+          {/* Card 1: Overall Completion Circular Gauge */}
+          <div className="col-span-1 md:col-span-4 assignify-card-lavender p-6 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
+            <div className="relative w-44 h-44 flex items-center justify-center my-2">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                <path
+                  className="text-indigo-200/60"
+                  strokeWidth="3.8"
+                  stroke="currentColor"
+                  fill="none"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <path
+                  className="text-[#231f5c]"
+                  strokeDasharray={`${currentCourse.overallProgress}, 100`}
+                  strokeWidth="3.8"
+                  strokeLinecap="round"
+                  stroke="currentColor"
+                  fill="none"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+              </svg>
+              <div className="absolute flex flex-col items-center">
+                <span className="font-headline text-3xl font-extrabold text-slate-900">{currentCourse.overallProgress}%</span>
+                <span className="text-xs text-slate-600 font-semibold mt-0.5">complete</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Submission Rate Gauge */}
+          <div className="col-span-1 md:col-span-4 assignify-card-purple p-6 rounded-2xl flex flex-col justify-between items-center text-center shadow-sm">
+            <div className="bg-[#231f5c] text-white px-3 py-1 rounded-lg text-[11px] font-bold self-start">
+              Submission rate
             </div>
 
-            <form onSubmit={handleAddSubject} className="space-y-4">
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Subject Code *</label>
-                <input 
-                  type="text" 
-                  value={newSubCode}
-                  onChange={(e) => setNewSubCode(e.target.value)}
-                  placeholder="e.g. CSCI-301"
-                  required
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
+            <div className="relative w-28 h-28 flex items-center justify-center my-3">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                <path
+                  className="text-purple-200"
+                  strokeWidth="3.5"
+                  stroke="currentColor"
+                  fill="none"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 />
-              </div>
-
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Subject Name *</label>
-                <input 
-                  type="text" 
-                  value={newSubName}
-                  onChange={(e) => setNewSubName(e.target.value)}
-                  placeholder="e.g. Computer Science"
-                  required
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
+                <path
+                  className="text-[#8b5cf6]"
+                  strokeDasharray={`${currentCourse.submissionRate}, 100`}
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  stroke="currentColor"
+                  fill="none"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 />
-              </div>
-
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Description</label>
-                <input 
-                  type="text" 
-                  value={newSubDesc}
-                  onChange={(e) => setNewSubDesc(e.target.value)}
-                  placeholder="e.g. Data Structures & Algorithms"
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                />
-              </div>
-
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Theme Accent Color</label>
-                <select 
-                  value={newSubColor}
-                  onChange={(e) => setNewSubColor(e.target.value)}
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                >
-                  <option value="blue">Blue</option>
-                  <option value="indigo">Indigo</option>
-                  <option value="purple">Purple</option>
-                  <option value="emerald">Emerald</option>
-                  <option value="slate">Slate</option>
-                  <option value="amber">Amber</option>
-                </select>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button 
-                  type="button"
-                  onClick={() => setShowSubjectModal(false)}
-                  className="flex-1 py-3 border border-outline text-on-surface rounded-lg font-mono text-label-md hover:bg-surface-container transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit"
-                  className="flex-1 py-3 bg-primary text-on-primary rounded-lg font-mono text-label-md hover:bg-primary-container transition-all cursor-pointer shadow-sm"
-                >
-                  Save Subject
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Add Task Modal */}
-      {showTaskModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 w-full max-w-lg shadow-xl animate-fade-in text-left max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-headline text-headline-sm font-semibold text-on-surface">Add Task to {taskSubjectCode}</h3>
-              <button 
-                onClick={() => setShowTaskModal(false)}
-                className="material-symbols-outlined text-on-surface-variant hover:bg-surface-container rounded-full p-1 cursor-pointer"
-              >
-                close
-              </button>
+              </svg>
+              <span className="absolute font-headline text-xl font-bold text-slate-900">{currentCourse.submissionRate}%</span>
             </div>
 
-            <form onSubmit={handleAddTask} className="space-y-4">
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Task Title *</label>
-                <input 
-                  type="text" 
-                  value={taskTitle}
-                  onChange={(e) => setTaskTitle(e.target.value)}
-                  placeholder="e.g. Write Literature Review"
-                  required
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                />
-              </div>
+            <p className="text-xs text-purple-950 font-semibold">Submission rate in {currentCourse.title}</p>
+          </div>
 
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Timeline Group</label>
-                <select 
-                  value={taskCategory}
-                  onChange={(e) => setTaskCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                >
-                  <option value="This Week">This Week</option>
-                  <option value="Next Week">Next Week</option>
-                  <option value="Later">Later</option>
-                </select>
-              </div>
+          {/* Card 3: August 2026 Calendar Widget */}
+          <div className="col-span-1 md:col-span-4 bg-white p-5 rounded-2xl border border-indigo-100 shadow-sm space-y-3 font-mono">
+            <div className="flex justify-between items-center text-xs text-slate-700 font-bold">
+              <span>August 2026</span>
+              <span className="text-slate-400 cursor-pointer">&lt; &gt;</span>
+            </div>
+            
+            <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-slate-400 font-bold">
+              <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
+            </div>
 
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Description</label>
-                <textarea 
-                  value={taskDesc}
-                  onChange={(e) => setTaskDesc(e.target.value)}
-                  placeholder="Summarize criteria and deliverables..."
-                  rows="3"
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface resize-none"
-                />
-              </div>
+            <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-700">
+              <span className="text-slate-300">30</span>
+              <span className="text-purple-700 relative">1<span className="w-1 h-1 bg-red-500 rounded-full absolute bottom-0 left-1/2 -translate-x-1/2"></span></span>
+              <span>2</span><span>3</span><span>4</span>
+              <span className="text-purple-700 relative">5<span className="w-1 h-1 bg-red-500 rounded-full absolute bottom-0 left-1/2 -translate-x-1/2"></span></span>
+              <span className="text-purple-700 relative">6<span className="w-1 h-1 bg-red-500 rounded-full absolute bottom-0 left-1/2 -translate-x-1/2"></span></span>
+              
+              <span>7</span>
+              <span className="text-purple-700 relative">8<span className="w-1 h-1 bg-red-500 rounded-full absolute bottom-0 left-1/2 -translate-x-1/2"></span></span>
+              <span>9</span><span>10</span><span>11</span>
+              <span className="text-purple-700 relative">12<span className="w-1 h-1 bg-red-500 rounded-full absolute bottom-0 left-1/2 -translate-x-1/2"></span></span>
+              <span>13</span>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-mono text-label-md text-on-surface-variant mb-1">Due Date</label>
-                  <input 
-                    type="date" 
-                    value={taskDueDate}
-                    onChange={(e) => setTaskDueDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                  />
-                </div>
+              <span className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">14</span>
+              <span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span>
+            </div>
+          </div>
 
-                <div>
-                  <label className="block font-mono text-label-md text-on-surface-variant mb-1">Due Time</label>
-                  <input 
-                    type="text" 
-                    value={taskDueTime}
-                    onChange={(e) => setTaskDueTime(e.target.value)}
-                    placeholder="e.g. 11:59 PM"
-                    className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                  />
-                </div>
-              </div>
+        </div>
 
-              {/* Course Contact Section */}
-              <div className="border-t border-outline-variant/30 pt-4">
-                <h4 className="font-headline text-headline-sm font-semibold mb-3 text-on-surface">Course Contact (Optional)</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-mono text-label-md text-on-surface-variant mb-1">Professor Name</label>
-                    <input 
-                      type="text" 
-                      value={taskProfName}
-                      onChange={(e) => setTaskProfName(e.target.value)}
-                      placeholder="e.g. Dr. Sarah Thompson"
-                      className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                    />
+        {/* Detailed Layout Grid: Modules, Tasks, Course Description */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+          
+          {/* Left Column: Detailed Module Progress */}
+          <div className="col-span-1 md:col-span-4 assignify-card-lavender p-6 rounded-2xl space-y-6 shadow-sm">
+            <div className="bg-[#231f5c] text-white px-3 py-1 rounded-lg text-xs font-bold inline-block">
+              Detailed Module Progress
+            </div>
+
+            <div className="space-y-4">
+              {currentCourse.modules.map((m, idx) => (
+                <div key={idx} className="space-y-1">
+                  <div className="flex justify-between text-xs font-bold text-slate-800">
+                    <span>{m.name}</span>
+                    <span className="font-mono text-purple-700">{m.pct}%</span>
                   </div>
-
-                  <div>
-                    <label className="block font-mono text-label-md text-on-surface-variant mb-1">Office Hours</label>
-                    <input 
-                      type="text" 
-                      value={taskProfHours}
-                      onChange={(e) => setTaskProfHours(e.target.value)}
-                      placeholder="e.g. Mon/Wed 2-4PM"
-                      className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                    />
+                  <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                    <div className="bg-[#8b5cf6] h-2 rounded-full" style={{ width: `${m.pct}%` }}></div>
                   </div>
                 </div>
-              </div>
+              ))}
+            </div>
 
-              {/* Milestones Checklist Section */}
-              <div className="border-t border-outline-variant/30 pt-4">
-                <h4 className="font-headline text-headline-sm font-semibold mb-3 text-on-surface">Milestones Checklist</h4>
+            {/* Reminder Toggle Box */}
+            <div className="pt-4 border-t border-indigo-200/60 flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-800">Assignment Reminder</span>
+              <button 
+                onClick={() => setAssignmentReminder(!assignmentReminder)}
+                className={`w-11 h-6 rounded-full p-1 transition-colors cursor-pointer ${assignmentReminder ? 'bg-purple-600' : 'bg-slate-300'}`}
+              >
+                <div className={`w-4 h-4 rounded-full bg-white transition-transform ${assignmentReminder ? 'translate-x-5' : 'translate-x-0'}`}></div>
+              </button>
+            </div>
+          </div>
+
+          {/* Middle Column: Tasks & Deliverables Table */}
+          <div className="col-span-1 md:col-span-8 space-y-6">
+            
+            <div className="assignify-card-lavender p-6 rounded-2xl space-y-4 shadow-sm">
+              
+              <div className="flex items-center justify-between border-b border-indigo-200/60 pb-3">
+                <h3 className="font-headline text-base font-bold text-slate-900">Task and deliverables</h3>
                 
-                {/* Add Milestone input row */}
-                <div className="flex gap-2 mb-3">
-                  <input 
-                    type="text" 
-                    value={taskNewMilestoneTitle}
-                    onChange={(e) => setTaskNewMilestoneTitle(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddMilestone(e);
-                      }
-                    }}
-                    placeholder="Add a milestone (e.g. Final Draft)"
-                    className="flex-1 px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                  />
+                {/* Pending / Completed / Upcoming Filter Tabs */}
+                <div className="flex bg-white p-1 rounded-xl border border-indigo-100 text-xs font-bold">
                   <button 
-                    type="button"
-                    onClick={handleAddMilestone}
-                    className="px-4 bg-secondary-container text-on-secondary-container rounded-lg font-mono text-label-md hover:bg-secondary-fixed-dim transition-colors flex items-center justify-center cursor-pointer"
+                    onClick={() => setActiveTab('pending')}
+                    className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${activeTab === 'pending' ? 'bg-[#231f5c] text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
                   >
-                    Add
+                    Pending
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('completed')}
+                    className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${activeTab === 'completed' ? 'bg-[#231f5c] text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    Completed
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('upcoming')}
+                    className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${activeTab === 'upcoming' ? 'bg-[#231f5c] text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
+                  >
+                    Upcoming
                   </button>
                 </div>
+              </div>
 
-                {/* Milestones List */}
-                {taskMilestonesList.length > 0 ? (
-                  <div className="space-y-2 max-h-32 overflow-y-auto p-1 bg-surface-container-low rounded-lg border border-outline-variant/30">
-                    {taskMilestonesList.map((m) => (
-                      <div key={m.id} className="flex justify-between items-center bg-surface-container-lowest px-3 py-2 rounded-md border border-outline-variant/20">
-                        <span className="font-body text-body-sm text-on-surface truncate pr-2">{m.title}</span>
-                        <button 
-                          type="button"
-                          onClick={() => handleRemoveMilestone(m.id)}
-                          className="material-symbols-outlined text-on-surface-variant hover:text-error text-[18px] cursor-pointer"
-                        >
-                          close
-                        </button>
-                      </div>
-                    ))}
+              {/* Tasks List Table */}
+              <div className="space-y-2 text-xs">
+                {activeTab === 'pending' && currentCourse.pendingTasks.map((t) => (
+                  <div key={t.id} className="bg-white p-3.5 rounded-xl border border-indigo-100 flex items-center justify-between shadow-xs">
+                    <div className="flex items-center gap-3">
+                      <span className="w-2 h-2 rounded-full bg-purple-600"></span>
+                      <span className="font-bold text-slate-900">{t.name}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-slate-500 font-mono">{t.deadline}</span>
+                      <span className={`material-symbols-outlined text-sm ${t.priority === 'high' ? 'text-black' : 'text-slate-300'}`}>flag</span>
+                    </div>
                   </div>
-                ) : (
-                  <p className="font-body text-[12px] text-on-surface-variant italic">No milestones added. List will be empty unless items are added.</p>
+                ))}
+
+                {activeTab === 'completed' && currentCourse.completedTasks.map((t) => (
+                  <div key={t.id} className="bg-white p-3.5 rounded-xl border border-indigo-100 flex items-center justify-between shadow-xs">
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-emerald-600 text-sm">check_circle</span>
+                      <span className="font-bold text-slate-900">{t.name}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-slate-500 font-mono">{t.date}</span>
+                      <span className="font-bold text-purple-700 font-mono bg-purple-50 px-2 py-0.5 rounded">{t.grade}</span>
+                    </div>
+                  </div>
+                ))}
+
+                {activeTab === 'upcoming' && (
+                  <div className="bg-white p-4 rounded-xl border border-indigo-100 text-center text-slate-500 italic">
+                    Upcoming modules and assignments for next semester will be announced soon.
+                  </div>
                 )}
               </div>
 
-              <div className="flex gap-3 pt-4">
-                <button 
-                  type="button"
-                  onClick={() => setShowTaskModal(false)}
-                  className="flex-1 py-3 border border-outline text-on-surface rounded-lg font-mono text-label-md hover:bg-surface-container transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit"
-                  className="flex-1 py-3 bg-primary text-on-primary rounded-lg font-mono text-label-md hover:bg-primary-container transition-all cursor-pointer shadow-sm"
-                >
-                  Create Task
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Subject Modal */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 w-full max-w-md shadow-xl animate-fade-in text-left">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-headline text-headline-sm font-semibold text-on-surface">Edit Subject</h3>
-              <button 
-                onClick={() => setShowEditModal(false)}
-                className="material-symbols-outlined text-on-surface-variant hover:bg-surface-container rounded-full p-1 cursor-pointer"
-              >
-                close
-              </button>
             </div>
 
-            <form onSubmit={handleEditSubject} className="space-y-4">
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Subject Code (Immutable)</label>
-                <input 
-                  type="text" 
-                  value={editSubCode}
-                  disabled
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface-container-high text-on-surface-variant opacity-75 cursor-not-allowed"
-                />
+            {/* Course Description Box */}
+            <div className="assignify-card-lavender p-6 rounded-2xl space-y-3 text-xs shadow-sm">
+              <div className="bg-[#231f5c] text-white px-3 py-1 rounded-lg font-bold inline-block">
+                Course Description
               </div>
+              <div className="space-y-1 font-semibold text-slate-800">
+                <p>Instructor: {currentCourse.instructor}</p>
+                <p>Course Code: {currentCourse.code}</p>
+                <p>Credit Hours: {currentCourse.credits}</p>
+              </div>
+              <p className="text-slate-700 leading-relaxed pt-2 border-t border-indigo-200/60">
+                {currentCourse.description}
+              </p>
+            </div>
 
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Add Assignment Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4 text-left border border-slate-200">
+            <div className="flex justify-between items-center">
+              <h3 className="font-headline text-lg font-bold text-slate-900">Add Assignment to {currentCourse.title}</h3>
+              <button onClick={() => setShowAddModal(false)} className="material-symbols-outlined text-slate-400 hover:text-slate-700">close</button>
+            </div>
+
+            <form onSubmit={handleAddAssignment} className="space-y-4 text-xs">
               <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Subject Name *</label>
+                <label className="block font-semibold text-slate-700 mb-1">Assignment Title</label>
                 <input 
                   type="text" 
-                  value={editSubName}
-                  onChange={(e) => setEditSubName(e.target.value)}
-                  placeholder="e.g. Computer Science"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="e.g. UX Case Study Report"
+                  className="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600"
                   required
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
                 />
               </div>
 
               <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Description</label>
+                <label className="block font-semibold text-slate-700 mb-1">Deadline Date</label>
                 <input 
                   type="text" 
-                  value={editSubDesc}
-                  onChange={(e) => setEditSubDesc(e.target.value)}
-                  placeholder="e.g. Data Structures & Algorithms"
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
+                  value={newDeadline}
+                  onChange={(e) => setNewDeadline(e.target.value)}
+                  placeholder="e.g. 18th August"
+                  className="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  required
                 />
               </div>
 
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Theme Accent Color</label>
-                <select 
-                  value={editSubColor}
-                  onChange={(e) => setEditSubColor(e.target.value)}
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                >
-                  <option value="blue">Blue</option>
-                  <option value="indigo">Indigo</option>
-                  <option value="purple">Purple</option>
-                  <option value="emerald">Emerald</option>
-                  <option value="slate">Slate</option>
-                  <option value="amber">Amber</option>
-                </select>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button 
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  className="flex-1 py-3 border border-outline text-on-surface rounded-lg font-mono text-label-md hover:bg-surface-container transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit"
-                  className="flex-1 py-3 bg-primary text-on-primary rounded-lg font-mono text-label-md hover:bg-primary-container transition-all cursor-pointer shadow-sm"
-                >
-                  Save Changes
-                </button>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-2.5 bg-slate-200 rounded-xl font-bold text-slate-700">Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 bg-[#231f5c] text-white rounded-xl font-bold shadow">Add Task</button>
               </div>
             </form>
           </div>
         </div>
       )}
+
     </div>
   );
 }
-
-

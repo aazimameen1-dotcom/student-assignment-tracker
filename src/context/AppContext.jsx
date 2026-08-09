@@ -10,6 +10,7 @@ export const AppContextProvider = ({ children }) => {
 
   // Navigation & Routing state
   const [currentView, setCurrentView] = useState('dashboard');
+  const [selectedSubjectKey, setSelectedSubjectKey] = useState('web-design');
   const [selectedTaskId, setSelectedTaskId] = useState('econ-302');
   const [selectedDate, setSelectedDate] = useState('2024-10-12'); // Oct 12, 2024 to match mockup default
 
@@ -615,6 +616,8 @@ export const AppContextProvider = ({ children }) => {
       setTheme,
       currentView,
       setCurrentView,
+      selectedSubjectKey,
+      setSelectedSubjectKey,
       selectedTaskId,
       setSelectedTaskId,
       selectedDate,
