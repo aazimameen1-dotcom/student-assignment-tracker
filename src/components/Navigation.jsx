@@ -12,11 +12,16 @@ export default function Navigation() {
     readNotificationIds,
     markNotificationAsRead,
     markAllNotificationsAsRead,
-    setSelectedTaskId
+    setSelectedTaskId,
+    setSelectedSubjectKey,
+    tasks = [],
+    enrolledSubjects = []
   } = useContext(AppContext);
 
   const [showDrawer, setShowDrawer] = useState(false);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -130,16 +135,95 @@ export default function Navigation() {
           </div>
         </div>
 
-        {/* Center / Search bar when on dashboard desktop view */}
-        <div className="hidden md:flex flex-1 max-w-xs mx-6">
+        {/* Center / Search bar with live results dropdown */}
+        <div className="hidden md:flex flex-1 max-w-sm mx-6 relative">
           <div className="relative w-full">
-            <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
+            <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-300 text-sm">search</span>
             <input 
               type="text" 
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSearchDropdown(true);
+              }}
+              onFocus={() => setShowSearchDropdown(true)}
               placeholder="Search subjects, assignments..."
-              className="w-full pl-9 pr-4 py-1.5 bg-white/10 text-white placeholder-slate-300 rounded-xl text-xs focus:outline-none focus:bg-white/20 transition-all border border-white/10"
+              className="w-full pl-9 pr-8 py-1.5 bg-white/10 text-white placeholder-slate-300 rounded-xl text-xs focus:outline-none focus:bg-white/20 transition-all border border-white/10"
             />
+            {searchQuery && (
+              <button 
+                onClick={() => { setSearchQuery(''); setShowSearchDropdown(false); }}
+                className="absolute right-2.5 top-2 text-slate-300 hover:text-white"
+              >
+                <span className="material-symbols-outlined text-sm">close</span>
+              </button>
+            )}
           </div>
+
+          {/* Search Dropdown Results */}
+          {showSearchDropdown && searchQuery.trim().length > 0 && (
+            <div className="absolute top-10 left-0 w-full bg-white text-slate-800 rounded-2xl shadow-2xl z-50 p-2 border border-slate-200 text-left animate-fade-in max-h-80 overflow-y-auto">
+              {/* Tasks Results */}
+              <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase font-mono">Assignments</div>
+              {tasks.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.subject.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
+                <p className="px-3 py-1.5 text-xs text-slate-400 italic">No matching tasks</p>
+              ) : (
+                tasks.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.subject.toLowerCase().includes(searchQuery.toLowerCase())).map(t => (
+                  <div 
+                    key={t.id}
+                    onClick={() => {
+                      setSelectedTaskId(t.id);
+                      setCurrentView('assignment-details');
+                      setSearchQuery('');
+                      setShowSearchDropdown(false);
+                    }}
+                    className="p-2 hover:bg-purple-50 rounded-xl cursor-pointer flex items-center justify-between transition-colors"
+                  >
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">{t.title}</p>
+                      <p className="text-[10px] text-slate-500">{t.subject} • {t.timeLeft}</p>
+                    </div>
+                    <span className="material-symbols-outlined text-xs text-purple-600">chevron_right</span>
+                  </div>
+                ))
+              )}
+
+              {/* Subjects Results */}
+              <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase font-mono mt-2 border-t border-slate-100 pt-2">Subjects</div>
+              {enrolledSubjects.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.code.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
+                <p className="px-3 py-1.5 text-xs text-slate-400 italic">No matching subjects</p>
+              ) : (
+                enrolledSubjects.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.code.toLowerCase().includes(searchQuery.toLowerCase())).map(s => (
+                  <div 
+                    key={s.code}
+                    onClick={() => {
+                      if (setSelectedSubjectKey) {
+                        const keyMap = {
+                          'DIC107T': 'web-design',
+                          'DIC102C': 'python',
+                          'DIC105E': 'disaster-management',
+                          'DIC110H': 'global-literature',
+                          'DIC102S': 'physics',
+                          'DIC103M': 'mathematics'
+                        };
+                        setSelectedSubjectKey(keyMap[s.code] || 'web-design');
+                      }
+                      setCurrentView('subjects');
+                      setSearchQuery('');
+                      setShowSearchDropdown(false);
+                    }}
+                    className="p-2 hover:bg-purple-50 rounded-xl cursor-pointer flex items-center justify-between transition-colors"
+                  >
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">{s.name}</p>
+                      <p className="text-[10px] text-slate-500">{s.code}</p>
+                    </div>
+                    <span className="material-symbols-outlined text-xs text-purple-600">chevron_right</span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right Side: Notifications + Profile Avatar */}

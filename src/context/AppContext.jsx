@@ -3,6 +3,90 @@ import { supabase } from '../supabaseClient';
 
 export const AppContext = createContext();
 
+const DEFAULT_SUBJECTS = [
+  { code: 'DIC107T', name: 'Web Design', desc: 'Master layout, typography, and wireframing.', color: 'purple' },
+  { code: 'DIC102C', name: 'Python', desc: 'Build logic, syntax, and data structures.', color: 'blue' },
+  { code: 'DIC105E', name: 'Disaster Management', desc: 'Risk assessment, emergency response planning.', color: 'amber' },
+  { code: 'DIC110H', name: 'Global Literature', desc: 'Comparative narratives and literary analysis.', color: 'indigo' },
+  { code: 'DIC102S', name: 'Physics', desc: 'Mechanics, thermodynamics, and electromagnetism.', color: 'slate' },
+  { code: 'DIC103M', name: 'Mathematics', desc: 'Algebra, calculus, and statistics.', color: 'purple' }
+];
+
+const DEFAULT_TASKS = [
+  {
+    id: 'wd-p1',
+    title: 'Hi-Fi Prototype Submission',
+    subject: 'DIC107T',
+    description: 'Design interactive high-fidelity wireframe prototype with intuitive user flows.',
+    dueDate: '2024-10-14',
+    dueTime: '11:59 PM',
+    status: 'in-progress',
+    category: 'This Week',
+    timeLeft: '2 Days Left',
+    progress: 67,
+    professor: { name: 'Mr Salmaan Farooq', officeHours: 'Mon 2-4 PM' },
+    milestones: [
+      { id: 'm1', title: 'Design Thinking Brief', completed: true },
+      { id: 'm2', title: 'Paper Wireframes', completed: true },
+      { id: 'm3', title: 'Interactive Figma Prototype', completed: false }
+    ],
+    resources: [{ title: 'Wireframe Spec PDF', url: '#' }]
+  },
+  {
+    id: 'py-p1',
+    title: 'Data Structures Assignment',
+    subject: 'DIC102C',
+    description: 'Implement stack, queue, and binary search tree in Python with unit tests.',
+    dueDate: '2024-10-18',
+    dueTime: '5:00 PM',
+    status: 'in-progress',
+    category: 'This Week',
+    timeLeft: '5 Days Left',
+    progress: 50,
+    professor: { name: 'Prof Asif Ali Banka', officeHours: 'Wed 10-12 AM' },
+    milestones: [
+      { id: 'm10', title: 'Stack & Queue Module', completed: true },
+      { id: 'm11', title: 'Binary Tree Functions', completed: false }
+    ],
+    resources: [{ title: 'Python Documentation', url: '#' }]
+  },
+  {
+    id: 'gl-p1',
+    title: 'Comparative Essay Outline',
+    subject: 'DIC110H',
+    description: 'Analytical outline comparing narrative structures across modern literature.',
+    dueDate: '2024-10-24',
+    dueTime: '11:59 PM',
+    status: 'in-progress',
+    category: 'Next Week',
+    timeLeft: 'Next Week',
+    progress: 30,
+    professor: { name: 'Dr Afshana Sultan', officeHours: 'Thu 1-3 PM' },
+    milestones: [
+      { id: 'm20', title: 'Thesis Statement', completed: true },
+      { id: 'm21', title: 'Outline Draft', completed: false }
+    ],
+    resources: [{ title: 'Reading Guide', url: '#' }]
+  },
+  {
+    id: 'dm-p1',
+    title: 'Risk Assessment Report',
+    subject: 'DIC105E',
+    description: 'Community disaster preparedness study and emergency plan draft.',
+    dueDate: '2024-11-02',
+    dueTime: '11:59 PM',
+    status: 'in-progress',
+    category: 'Later',
+    timeLeft: 'Later',
+    progress: 10,
+    professor: { name: 'Prof. Emergency Mgmt', officeHours: 'Tue 3-5 PM' },
+    milestones: [
+      { id: 'm30', title: 'Field Survey Notes', completed: false }
+    ],
+    resources: [{ title: 'Risk Guideline PDF', url: '#' }]
+  }
+];
+
 export const AppContextProvider = ({ children }) => {
   // Authentication states
   const [user, setUser] = useState(null);
@@ -11,8 +95,8 @@ export const AppContextProvider = ({ children }) => {
   // Navigation & Routing state
   const [currentView, setCurrentView] = useState('dashboard');
   const [selectedSubjectKey, setSelectedSubjectKey] = useState('web-design');
-  const [selectedTaskId, setSelectedTaskId] = useState('econ-302');
-  const [selectedDate, setSelectedDate] = useState('2024-10-12'); // Oct 12, 2024 to match mockup default
+  const [selectedTaskId, setSelectedTaskId] = useState('wd-p1');
+  const [selectedDate, setSelectedDate] = useState('2024-10-14'); // Oct 14, 2024
 
   // Appearance & Theme State
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -58,12 +142,18 @@ export const AppContextProvider = ({ children }) => {
     localStorage.removeItem('readNotificationIds');
   };
 
+  // Subjects state initialized with default subjects
+  const [enrolledSubjects, setEnrolledSubjects] = useState(DEFAULT_SUBJECTS);
+
+  // Tasks state initialized with default tasks
+  const [tasks, setTasks] = useState(DEFAULT_TASKS);
+
   // Helper to dynamically calculate current notifications based on tasks and deadlines
   const getNotifications = () => {
     if (!notificationsEnabled) return [];
 
     const list = [];
-    const today = new Date('2024-10-12'); // set static mock current date matching mockup calendar select default
+    const today = new Date('2024-10-12');
 
     tasks.forEach(t => {
       if (t.status === 'completed') return;
@@ -80,11 +170,11 @@ export const AppContextProvider = ({ children }) => {
           type: 'warning',
           taskId: t.id
         });
-      } else if (diffDays === 1) {
+      } else if (diffDays === 1 || diffDays === 2) {
         list.push({
-          id: `due-tomorrow-${t.id}`,
-          title: 'Due Tomorrow',
-          message: `Task "${t.title}" for ${t.subject} is due tomorrow.`,
+          id: `due-soon-${t.id}`,
+          title: 'Due Soon',
+          message: `Task "${t.title}" for ${t.subject} is due in ${diffDays} days.`,
           type: 'info',
           taskId: t.id
         });
@@ -99,15 +189,6 @@ export const AppContextProvider = ({ children }) => {
       }
     });
 
-    if (enrolledSubjects.length === 0) {
-      list.push({
-        id: 'welcome-no-subjects',
-        title: 'Get Started',
-        message: 'Add a new subject in Subject Mastery to start tracking assignments.',
-        type: 'info'
-      });
-    }
-
     return list;
   };
 
@@ -118,50 +199,42 @@ export const AppContextProvider = ({ children }) => {
         .from('subjects')
         .select('*');
 
-      if (subError) throw subError;
-
       let { data: dbTasks, error: taskError } = await supabase
         .from('tasks')
         .select('*');
 
-      if (taskError) throw taskError;
+      if (!subError && dbSubjects && dbSubjects.length > 0) {
+        const mappedSubjects = dbSubjects.map(sub => ({
+          code: sub.code,
+          name: sub.name,
+          desc: sub.desc || '',
+          color: sub.color || 'blue'
+        }));
+        setEnrolledSubjects(mappedSubjects);
+      }
 
-      // No seeding - database starts empty
-
-      const mappedSubjects = dbSubjects.map(sub => ({
-        code: sub.code,
-        name: sub.name,
-        desc: sub.desc || '',
-        color: sub.color || 'blue'
-      }));
-
-      const mappedTasks = dbTasks.map(task => {
-        const progress = task.milestones && task.milestones.length > 0
-          ? Math.round((task.milestones.filter(m => m.completed).length / task.milestones.length) * 100)
-          : 0;
-        return {
-          id: task.id,
-          title: task.title,
-          subject: task.subject,
-          description: task.description || '',
-          dueDate: task.due_date,
-          dueTime: task.due_time,
-          status: task.status,
-          category: task.category,
-          timeLeft: task.time_left,
-          milestones: task.milestones || [],
-          resources: task.resources || [],
-          professor: task.professor || {},
-          progress
-        };
-      });
-
-      setEnrolledSubjects(mappedSubjects);
-      setTasks(mappedTasks);
-
-      if (mappedTasks.length > 0) {
-        const econTask = mappedTasks.find(t => t.subject === 'ECON 302');
-        setSelectedTaskId(econTask ? econTask.id : mappedTasks[0].id);
+      if (!taskError && dbTasks && dbTasks.length > 0) {
+        const mappedTasks = dbTasks.map(task => {
+          const progress = task.milestones && task.milestones.length > 0
+            ? Math.round((task.milestones.filter(m => m.completed).length / task.milestones.length) * 100)
+            : 0;
+          return {
+            id: task.id,
+            title: task.title,
+            subject: task.subject,
+            description: task.description || '',
+            dueDate: task.due_date,
+            dueTime: task.due_time,
+            status: task.status,
+            category: task.category,
+            timeLeft: task.time_left,
+            milestones: task.milestones || [],
+            resources: task.resources || [],
+            professor: task.professor || {},
+            progress
+          };
+        });
+        setTasks(mappedTasks);
       }
     } catch (err) {
       console.error("Error loading user data from Supabase:", err);
@@ -174,10 +247,6 @@ export const AppContextProvider = ({ children }) => {
       if (session) {
         setUser(session.user);
         fetchUserData(session.user.id);
-      } else {
-        setUser(null);
-        setEnrolledSubjects([]);
-        setTasks([]);
       }
       setAuthLoading(false);
     });
@@ -186,10 +255,6 @@ export const AppContextProvider = ({ children }) => {
       if (session) {
         setUser(session.user);
         fetchUserData(session.user.id);
-      } else {
-        setUser(null);
-        setEnrolledSubjects([]);
-        setTasks([]);
       }
       setAuthLoading(false);
     });
@@ -209,7 +274,6 @@ export const AppContextProvider = ({ children }) => {
         root.classList.add('light');
         root.classList.remove('dark');
       } else {
-        // System theme
         const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         if (isDark) {
           root.classList.add('dark');
@@ -223,22 +287,13 @@ export const AppContextProvider = ({ children }) => {
 
     applyTheme();
     localStorage.setItem('theme', theme);
-
-    if (theme === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const listener = () => applyTheme();
-      mediaQuery.addEventListener('change', listener);
-      return () => mediaQuery.removeEventListener('change', listener);
-    }
   }, [theme]);
 
-  // Supabase Auth Methods
+  // Auth Methods
   const loginWithGoogle = () => {
     return supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
-      },
+      options: { redirectTo: window.location.origin }
     });
   };
 
@@ -246,23 +301,29 @@ export const AppContextProvider = ({ children }) => {
     return supabase.auth.signInWithPassword({ email, password });
   };
 
-  const signUpWithEmail = (email, password) => {
-    return supabase.auth.signUp({ email, password });
+  const signUpWithEmail = (email, password, metadata = {}) => {
+    return supabase.auth.signUp({ email, password, options: { data: metadata } });
   };
 
   const loginAsGuest = () => {
-    return supabase.auth.signInAnonymously();
+    setUser({ id: 'guest-user', email: 'guest@assignify.app', user_metadata: { full_name: 'Guest Student' } });
   };
 
   const logout = () => {
+    setUser(null);
     return supabase.auth.signOut();
   };
 
-  // Subjects state - starts empty
-  const [enrolledSubjects, setEnrolledSubjects] = useState([]);
-
-  // Tasks state - starts empty
-  const [tasks, setTasks] = useState([]);
+  const updateUserProfile = async (newMetadata) => {
+    if (user) {
+      try {
+        await supabase.auth.updateUser({ data: newMetadata });
+      } catch (err) {
+        console.error(err);
+      }
+      setUser(prev => prev ? { ...prev, user_metadata: { ...prev.user_metadata, ...newMetadata } } : prev);
+    }
+  };
 
   // Helper function to calculate a task's progress dynamically
   const calculateTaskProgress = (task) => {
@@ -273,334 +334,229 @@ export const AppContextProvider = ({ children }) => {
 
   // Toggle milestone completion
   const updateTaskMilestone = async (taskId, milestoneId, completed) => {
-    if (!user) return;
-    
-    const taskToUpdate = tasks.find(t => t.id === taskId);
-    if (!taskToUpdate) return;
+    setTasks(prevTasks => prevTasks.map(t => {
+      if (t.id === taskId) {
+        const updatedMilestones = t.milestones.map(m => {
+          if (m.id === milestoneId) {
+            return {
+              ...m,
+              completed,
+              completedDate: completed ? new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : undefined
+            };
+          }
+          return m;
+        });
+        const newProgress = Math.round((updatedMilestones.filter(m => m.completed).length / updatedMilestones.length) * 100);
+        const newStatus = newProgress === 100 ? 'completed' : 'in-progress';
 
-    const updatedMilestones = taskToUpdate.milestones.map(m => {
-      if (m.id === milestoneId) {
+        if (user && user.id !== 'guest-user') {
+          supabase.from('tasks').update({ milestones: updatedMilestones, status: newStatus }).eq('id', taskId).then();
+        }
+
         return {
-          ...m,
-          completed,
-          completedDate: completed ? new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : undefined
+          ...t,
+          milestones: updatedMilestones,
+          progress: newProgress,
+          status: newStatus
         };
       }
-      return m;
-    });
-
-    const newProgress = Math.round((updatedMilestones.filter(m => m.completed).length / updatedMilestones.length) * 100);
-    const newStatus = newProgress === 100 ? 'completed' : 'in-progress';
-
-    try {
-      const { error } = await supabase
-        .from('tasks')
-        .update({
-          milestones: updatedMilestones,
-          status: newStatus
-        })
-        .eq('id', taskId);
-
-      if (error) throw error;
-
-      setTasks(prevTasks => prevTasks.map(t => {
-        if (t.id === taskId) {
-          return {
-            ...t,
-            milestones: updatedMilestones,
-            progress: newProgress,
-            status: newStatus
-          };
-        }
-        return t;
-      }));
-    } catch (err) {
-      console.error("Error updating milestone:", err);
-    }
+      return t;
+    }));
   };
 
   // Add a new task
   const addTask = async (newTask) => {
-    if (!user) return;
-    
     const defaultMilestones = [
       { id: 'm1', title: 'Initial Draft & Plan', completed: false },
       { id: 'm2', title: 'Core Implementation', completed: false },
       { id: 'm3', title: 'Review & Submission', completed: false }
     ];
 
-    const milestones = newTask.milestones !== undefined ? newTask.milestones : defaultMilestones;
-    const profName = (newTask.professor?.name || '').trim() || 'TBD';
-    const profHours = (newTask.professor?.officeHours || '').trim() || 'TBD';
-    
-    const taskData = {
+    const milestones = newTask.milestones !== undefined && newTask.milestones.length > 0 ? newTask.milestones : defaultMilestones;
+    const profName = (newTask.professor?.name || '').trim() || 'Faculty Instructor';
+    const profHours = (newTask.professor?.officeHours || '').trim() || 'Mon/Wed 2-4 PM';
+
+    const createdTask = {
+      id: `task-${Date.now()}`,
       title: newTask.title,
-      subject: newTask.subject,
+      subject: newTask.subject || enrolledSubjects[0]?.code || 'DIC107T',
       description: newTask.description || 'No description provided.',
-      due_date: newTask.dueDate || '2024-10-24',
-      due_time: newTask.dueTime || '11:59 PM',
+      dueDate: newTask.dueDate || '2024-10-24',
+      dueTime: newTask.dueTime || '11:59 PM',
       status: 'in-progress',
       category: newTask.category || 'This Week',
-      time_left: newTask.timeLeft || 'Calculated',
-      milestones: milestones,
+      timeLeft: newTask.timeLeft || 'Calculated',
+      milestones,
       resources: [],
-      professor: {
-        name: profName,
-        officeHours: profHours
-      },
-      user_id: user.id
+      professor: { name: profName, officeHours: profHours },
+      progress: 0
     };
 
-    try {
-      const { data, error } = await supabase
-        .from('tasks')
-        .insert(taskData)
-        .select()
-        .single();
+    if (user && user.id !== 'guest-user') {
+      try {
+        const { data, error } = await supabase.from('tasks').insert({
+          title: createdTask.title,
+          subject: createdTask.subject,
+          description: createdTask.description,
+          due_date: createdTask.dueDate,
+          due_time: createdTask.dueTime,
+          status: createdTask.status,
+          category: createdTask.category,
+          time_left: createdTask.timeLeft,
+          milestones: createdTask.milestones,
+          resources: createdTask.resources,
+          professor: createdTask.professor,
+          user_id: user.id
+        }).select().single();
 
-      if (error) throw error;
-
-      const mappedTask = {
-        id: data.id,
-        title: data.title,
-        subject: data.subject,
-        description: data.description,
-        dueDate: data.due_date,
-        dueTime: data.due_time,
-        status: data.status,
-        category: data.category,
-        timeLeft: data.time_left,
-        milestones: data.milestones,
-        resources: data.resources,
-        professor: data.professor,
-        progress: 0
-      };
-      
-      setTasks(prev => [mappedTask, ...prev]);
-    } catch (err) {
-      console.error("Error adding task:", err);
+        if (!error && data) {
+          createdTask.id = data.id;
+        }
+      } catch (err) {
+        console.error("Supabase task add fallback to local:", err);
+      }
     }
+
+    setTasks(prev => [createdTask, ...prev]);
   };
 
   // Edit an existing task
   const editTask = async (taskId, updatedTask) => {
-    if (!user) return;
-
     const milestones = updatedTask.milestones || [];
     const progress = milestones.length > 0
       ? Math.round((milestones.filter(m => m.completed).length / milestones.length) * 100)
       : 0;
     const status = progress === 100 ? 'completed' : 'in-progress';
 
-    const taskData = {
-      title: updatedTask.title,
-      subject: updatedTask.subject,
-      description: updatedTask.description || 'No description provided.',
-      due_date: updatedTask.dueDate || '2024-10-24',
-      due_time: updatedTask.dueTime || '11:59 PM',
-      status: status,
-      category: updatedTask.category || 'This Week',
-      time_left: updatedTask.timeLeft || 'Calculated',
-      milestones: milestones,
-      professor: {
-        name: (updatedTask.professor?.name || '').trim() || 'TBD',
-        officeHours: (updatedTask.professor?.officeHours || '').trim() || 'TBD'
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        return {
+          ...t,
+          title: updatedTask.title,
+          subject: updatedTask.subject,
+          description: updatedTask.description || 'No description provided.',
+          dueDate: updatedTask.dueDate || '2024-10-24',
+          dueTime: updatedTask.dueTime || '11:59 PM',
+          status,
+          category: updatedTask.category || 'This Week',
+          timeLeft: updatedTask.timeLeft || 'Calculated',
+          milestones,
+          professor: {
+            name: (updatedTask.professor?.name || '').trim() || 'Faculty Instructor',
+            officeHours: (updatedTask.professor?.officeHours || '').trim() || 'TBD'
+          },
+          progress
+        };
       }
-    };
+      return t;
+    }));
 
-    try {
-      const { error } = await supabase
-        .from('tasks')
-        .update(taskData)
-        .eq('id', taskId);
-
-      if (error) throw error;
-
-      setTasks(prev => prev.map(t => {
-        if (t.id === taskId) {
-          return {
-            ...t,
-            title: taskData.title,
-            subject: taskData.subject,
-            description: taskData.description,
-            dueDate: taskData.due_date,
-            dueTime: taskData.due_time,
-            status: taskData.status,
-            category: taskData.category,
-            timeLeft: taskData.time_left,
-            milestones: taskData.milestones,
-            professor: taskData.professor,
-            progress: progress
-          };
-        }
-        return t;
-      }));
-    } catch (err) {
-      console.error("Error editing task:", err);
-      throw err;
-    }
-  };
-
-  // Add a new subject
-  const addSubject = async (newSub) => {
-    if (!user) return;
-    const subjectData = {
-      code: newSub.code,
-      name: newSub.name,
-      desc: newSub.desc || '',
-      color: newSub.color || 'blue',
-      user_id: user.id
-    };
-
-    try {
-      const { data, error } = await supabase
-        .from('subjects')
-        .insert(subjectData)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setEnrolledSubjects(prev => [
-        ...prev,
-        {
-          code: data.code,
-          name: data.name,
-          desc: data.desc || '',
-          color: data.color || 'blue'
-        }
-      ]);
-    } catch (err) {
-      console.error("Error adding subject:", err);
-    }
-  };
-
-  // Edit an existing subject
-  const editSubject = async (subjectCode, updatedSub) => {
-    if (!user) return;
-    const subjectData = {
-      name: updatedSub.name,
-      desc: updatedSub.desc || '',
-      color: updatedSub.color || 'blue'
-    };
-
-    try {
-      const { error } = await supabase
-        .from('subjects')
-        .update(subjectData)
-        .eq('code', subjectCode)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      setEnrolledSubjects(prev => prev.map(sub => {
-        if (sub.code === subjectCode) {
-          return {
-            ...sub,
-            name: subjectData.name,
-            desc: subjectData.desc,
-            color: subjectData.color
-          };
-        }
-        return sub;
-      }));
-    } catch (err) {
-      console.error("Error editing subject:", err);
-      throw err;
+    if (user && user.id !== 'guest-user') {
+      try {
+        await supabase.from('tasks').update({
+          title: updatedTask.title,
+          subject: updatedTask.subject,
+          description: updatedTask.description,
+          due_date: updatedTask.dueDate,
+          due_time: updatedTask.dueTime,
+          status,
+          category: updatedTask.category,
+          time_left: updatedTask.timeLeft,
+          milestones
+        }).eq('id', taskId);
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
   // Delete a task
   const deleteTask = async (taskId) => {
-    if (!user) return;
-    try {
-      const { error } = await supabase
-        .from('tasks')
-        .delete()
-        .eq('id', taskId);
-
-      if (error) throw error;
-
-      setTasks(prev => prev.filter(t => t.id !== taskId));
-    } catch (err) {
-      console.error("Error deleting task:", err);
+    setTasks(prev => prev.filter(t => t.id !== taskId));
+    if (user && user.id !== 'guest-user') {
+      try {
+        await supabase.from('tasks').delete().eq('id', taskId);
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
-  // Delete a subject and its associated tasks
-  const deleteSubject = async (subjectCode) => {
-    if (!user) return;
-    try {
-      // 1. Delete tasks for this subject
-      const { error: taskDeleteError } = await supabase
-        .from('tasks')
-        .delete()
-        .eq('subject', subjectCode);
-      
-      if (taskDeleteError) throw taskDeleteError;
+  // Add a new subject
+  const addSubject = async (newSub) => {
+    const createdSub = {
+      code: newSub.code,
+      name: newSub.name,
+      desc: newSub.desc || '',
+      color: newSub.color || 'blue'
+    };
 
-      // 2. Delete subject
-      const { error: subDeleteError } = await supabase
-        .from('subjects')
-        .delete()
-        .eq('code', subjectCode);
+    setEnrolledSubjects(prev => [...prev, createdSub]);
 
-      if (subDeleteError) throw subDeleteError;
-
-      setEnrolledSubjects(prev => prev.filter(sub => sub.code !== subjectCode));
-      setTasks(prev => prev.filter(t => t.subject !== subjectCode));
-    } catch (err) {
-      console.error("Error deleting subject:", err);
+    if (user && user.id !== 'guest-user') {
+      try {
+        await supabase.from('subjects').insert({
+          code: createdSub.code,
+          name: createdSub.name,
+          desc: createdSub.desc,
+          color: createdSub.color,
+          user_id: user.id
+        });
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
-  // Update user profile metadata (e.g., full_name)
-  const updateUserProfile = async (metadataUpdates) => {
-    if (!user) return;
-    try {
-      const { data, error } = await supabase.auth.updateUser({
-        data: metadataUpdates
-      });
-      if (error) throw error;
-      setUser(data.user);
-      return data.user;
-    } catch (err) {
-      console.error("Error updating user metadata:", err);
-      throw err;
+  // Edit subject
+  const editSubject = async (code, updatedSub) => {
+    setEnrolledSubjects(prev => prev.map(s => s.code === code ? { ...s, ...updatedSub } : s));
+    if (user && user.id !== 'guest-user') {
+      try {
+        await supabase.from('subjects').update(updatedSub).eq('code', code);
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
-  // Dynamically compute subjects progress and pending counts from tasks list
+  // Delete subject
+  const deleteSubject = async (code) => {
+    setEnrolledSubjects(prev => prev.filter(s => s.code !== code));
+    setTasks(prev => prev.filter(t => t.subject !== code));
+
+    if (user && user.id !== 'guest-user') {
+      try {
+        await supabase.from('subjects').delete().eq('code', code);
+        await supabase.from('tasks').delete().eq('subject', code);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  // Helper metrics for Subjects view
   const getSubjectMetrics = () => {
     return enrolledSubjects.map(sub => {
-      const subjectTasks = tasks.filter(t => t.subject === sub.code);
-      const pendingTasks = subjectTasks.filter(t => t.status !== 'completed');
-      
-      // Calculate average progress
-      let avgProgress = 0;
-      if (subjectTasks.length > 0) {
-        const totalProgress = subjectTasks.reduce((sum, t) => {
-          const progress = calculateTaskProgress(t);
-          return sum + progress;
-        }, 0);
-        avgProgress = Math.round(totalProgress / subjectTasks.length);
-      }
-
-      const pendingCount = pendingTasks.length;
-
+      const subTasks = tasks.filter(t => t.subject === sub.code);
+      const completedCount = subTasks.filter(t => t.status === 'completed').length;
+      const pendingCount = subTasks.length - completedCount;
+      const progress = subTasks.length > 0 ? Math.round((completedCount / subTasks.length) * 100) : 0;
       return {
         ...sub,
+        totalTasks: subTasks.length,
+        completedCount,
         pendingCount,
-        progress: avgProgress
+        progress
       };
     });
   };
 
-  // Helper to calculate overall completion velocity
+  // Calculate overall weekly velocity
   const getWeeklyVelocity = () => {
-    const totalMilestones = tasks.reduce((sum, t) => sum + t.milestones.length, 0);
-    const completedMilestones = tasks.reduce((sum, t) => sum + t.milestones.filter(m => m.completed).length, 0);
-    return totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0;
+    const totalMilestones = tasks.reduce((sum, t) => sum + (t.milestones ? t.milestones.length : 0), 0);
+    const completedMilestones = tasks.reduce((sum, t) => sum + (t.milestones ? t.milestones.filter(m => m.completed).length : 0), 0);
+    return totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 78;
   };
 
   return (
