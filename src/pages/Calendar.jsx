@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 
 export default function Calendar() {
@@ -40,9 +40,6 @@ export default function Calendar() {
     setMilestonesList(prev => prev.filter(m => m.id !== id));
   };
 
-  // Hardcode October 2024 calendar details for high-fidelity replication of mockups
-  const year = 2024;
-  const month = 9; // October (0-indexed)
   const monthName = 'October 2024';
 
   // October 2024 starts on a Tuesday (day 2 in grid if Mon is 1). 
@@ -98,11 +95,13 @@ export default function Calendar() {
     const diffTime = dateObj - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    let timeLeft = `${diffDays} Days`;
-    if (diffDays === 0) timeLeft = 'Today';
-    else if (diffDays === 1) timeLeft = 'Tomorrow';
-    else if (diffDays < 0) timeLeft = 'Overdue';
-    else timeLeft = `${diffDays} Days Left`;
+    const calculateTimeLeft = (days) => {
+      if (days === 0) return 'Today';
+      if (days === 1) return 'Tomorrow';
+      if (days < 0) return 'Overdue';
+      return `${days} Days Left`;
+    };
+    const timeLeft = calculateTimeLeft(diffDays);
 
     // Determine category based on due date
     let category = 'Later';

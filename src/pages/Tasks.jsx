@@ -1,10 +1,14 @@
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 
 export default function Tasks() {
-  const { tasks, enrolledSubjects, addTask, setCurrentView, setSelectedTaskId } = useContext(AppContext);
+  const { tasks, enrolledSubjects, addTask, updateTaskMilestone, setCurrentView, setSelectedTaskId } = useContext(AppContext);
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // all, in-progress, completed, overdue
+  const [subjectFilter, setSubjectFilter] = useState('all');
+
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState(enrolledSubjects[0]?.code || '');
   const [description, setDescription] = useState('');
@@ -50,11 +54,13 @@ export default function Tasks() {
     const diffTime = dateObj - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    let timeLeft = `${diffDays} Days`;
-    if (diffDays === 0) timeLeft = 'Today';
-    else if (diffDays === 1) timeLeft = 'Tomorrow';
-    else if (diffDays < 0) timeLeft = 'Overdue';
-    else timeLeft = `${diffDays} Days Left`;
+    const calculateTimeLeft = (days) => {
+      if (days === 0) return 'Today';
+      if (days === 1) return 'Tomorrow';
+      if (days < 0) return 'Overdue';
+      return `${days} Days Left`;
+    };
+    const timeLeft = calculateTimeLeft(diffDays);
 
     addTask({
       title,
@@ -81,14 +87,49 @@ export default function Tasks() {
     setShowAddModal(false);
   };
 
-  // Grouping tasks
-  const thisWeekTasks = tasks.filter(t => t.category === 'This Week');
-  const nextWeekTasks = tasks.filter(t => t.category === 'Next Week');
-  const laterTasks = tasks.filter(t => t.category === 'Later');
+  // Filter tasks based on search, status filter, and subject filter
+  const filteredTasks = tasks.filter(task => {
+    // Search query
+    const matchesSearch = 
+      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.description.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+
+    // Subject filter
+    if (subjectFilter !== 'all' && task.subject !== subjectFilter) {
+      return false;
+    }
+
+    // Status filter
+    if (statusFilter === 'completed') return task.status === 'completed';
+    if (statusFilter === 'in-progress') return task.status !== 'completed' && task.timeLeft !== 'Overdue';
+    if (statusFilter === 'overdue') return task.timeLeft === 'Overdue' || (task.status !== 'completed' && new Date(task.dueDate) < new Date('2024-10-12'));
+
+    return true;
+  });
+
+  // Grouping filtered tasks
+  const thisWeekTasks = filteredTasks.filter(t => t.category === 'This Week');
+  const nextWeekTasks = filteredTasks.filter(t => t.category === 'Next Week');
+  const laterTasks = filteredTasks.filter(t => t.category === 'Later');
 
   const handleCardClick = (id) => {
     setSelectedTaskId(id);
     setCurrentView('assignment-details');
+  };
+
+  const handleToggleComplete = (e, task) => {
+    e.stopPropagation();
+    const nextCompleted = task.status !== 'completed';
+    if (task.milestones && task.milestones.length > 0) {
+      task.milestones.forEach(m => {
+        updateTaskMilestone(task.id, m.id, nextCompleted);
+      });
+    } else {
+      updateTaskMilestone(task.id, 'm1', nextCompleted);
+    }
   };
 
   const renderTaskCard = (task) => {
@@ -96,45 +137,50 @@ export default function Tasks() {
     const progress = task.progress !== undefined ? task.progress : 0;
     const isCompleted = task.status === 'completed';
 
-    // Get color theme based on subject color
-    const subjectColorMap = {
-      'ECON 302': 'bg-blue-50 border-blue-200/50 text-blue-700',
-      'CS 101': 'bg-indigo-50 border-indigo-200/50 text-indigo-700',
-      'HIST 210': 'bg-slate-50 border-slate-200/50 text-slate-700',
-      'PHYS 101': 'bg-amber-50 border-amber-200/50 text-amber-700',
-      'PSYC 210': 'bg-purple-50 border-purple-200/50 text-purple-700',
-      'CS 302': 'bg-emerald-50 border-emerald-200/50 text-emerald-700',
-    };
-
-    const subjectClass = subjectColorMap[task.subject] || 'bg-surface-container-high border-outline-variant text-on-surface-variant';
+    const subjectClass = 'bg-surface-container-high border-outline-variant text-on-surface-variant';
 
     return (
       <div 
         key={task.id}
         onClick={() => handleCardClick(task.id)}
-        className={`glass-card p-5 rounded-2xl flex flex-col transition-all cursor-pointer group hover:-translate-y-1 ${
-          isCompleted ? 'opacity-75' : ''
+        className={`glass-card p-5 rounded-2xl flex flex-col transition-all cursor-pointer group hover:-translate-y-1 relative ${
+          isCompleted ? 'opacity-75 bg-emerald-50/20 border-emerald-200' : ''
         }`}
       >
         <div className="flex justify-between items-start mb-4">
           <span className={`px-3 py-1 rounded-full font-mono text-label-md uppercase border ${subjectClass}`}>
             {task.subject}
           </span>
-          <span className={`font-mono text-label-md flex items-center gap-1 ${
-            isCompleted 
-              ? 'text-primary' 
-              : isUrgent 
-                ? 'text-error' 
-                : 'text-on-surface-variant'
-          }`}>
-            <span className="material-symbols-outlined text-[16px]">
-              {isCompleted ? 'check_circle' : 'alarm'}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => handleToggleComplete(e, task)}
+              title={isCompleted ? "Mark in progress" : "Mark completed"}
+              className={`p-1 rounded-full transition-colors ${
+                isCompleted 
+                  ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' 
+                  : 'bg-slate-100 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                {isCompleted ? 'check_circle' : 'circle'}
+              </span>
+            </button>
+            <span className={`font-mono text-label-md flex items-center gap-1 ${
+              isCompleted 
+                ? 'text-emerald-700 font-semibold' 
+                : isUrgent 
+                  ? 'text-error' 
+                  : 'text-on-surface-variant'
+            }`}>
+              <span className="material-symbols-outlined text-[16px]">
+                {isCompleted ? 'verified' : 'alarm'}
+              </span>
+              {isCompleted ? 'Completed' : task.timeLeft}
             </span>
-            {isCompleted ? 'Completed' : task.timeLeft}
-          </span>
+          </div>
         </div>
 
-        <h4 className="font-headline text-headline-sm font-semibold mb-2 group-hover:text-primary transition-colors text-left text-on-surface">
+        <h4 className={`font-headline text-headline-sm font-semibold mb-2 group-hover:text-primary transition-colors text-left ${isCompleted ? 'line-through text-slate-500' : 'text-on-surface'}`}>
           {task.title}
         </h4>
         <p className="font-body text-body-sm text-on-surface-variant mb-6 text-left line-clamp-2">
@@ -145,14 +191,17 @@ export default function Tasks() {
           <div className="flex items-center gap-2 text-on-surface-variant">
             <span className="material-symbols-outlined text-[18px]">event</span>
             <span className="font-mono text-label-md">
-              {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short' })}, {task.dueTime}
+              {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, {task.dueTime}
             </span>
           </div>
-          <div className="w-16 h-1 bg-surface-container-highest rounded-full overflow-hidden">
-            <div 
-              className={`h-full transition-all duration-500 ${isCompleted ? 'bg-primary' : 'bg-primary'}`} 
-              style={{ width: `${progress}%` }}
-            ></div>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[11px] text-slate-500">{progress}%</span>
+            <div className="w-16 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+              <div 
+                className={`h-full transition-all duration-500 ${isCompleted ? 'bg-emerald-500' : 'bg-primary'}`} 
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
           </div>
         </div>
       </div>
@@ -163,10 +212,85 @@ export default function Tasks() {
     <>
       <div className="animate-fade-in max-w-container-max-width mx-auto px-margin-mobile md:px-margin-desktop py-8 text-left pb-24">
         {/* Header */}
-        <section className="py-8">
-          <h2 className="font-headline text-headline-lg font-bold text-on-surface mb-2">Tasks</h2>
-          <p className="font-body text-body-md text-on-surface-variant">Manage your upcoming academic obligations.</p>
+        <section className="py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 className="font-headline text-headline-lg font-bold text-on-surface mb-1">Tasks & Deliverables</h2>
+            <p className="font-body text-body-md text-on-surface-variant">Track, organize, and complete your academic obligations.</p>
+          </div>
+
+          <button 
+            onClick={() => setShowAddModal(true)}
+            className="px-5 py-2.5 bg-[#231f5c] hover:bg-purple-900 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-2 self-start md:self-auto"
+          >
+            <span className="material-symbols-outlined text-lg">add</span>
+            <span>New Task</span>
+          </button>
         </section>
+
+        {/* Filter Controls Bar */}
+        <div className="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/60 shadow-sm mb-8 space-y-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            {/* Search Input */}
+            <div className="relative w-full md:w-72">
+              <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
+              <input 
+                type="text" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search tasks..."
+                className="w-full pl-9 pr-8 py-2 bg-surface border border-outline-variant rounded-xl text-xs text-on-surface focus:outline-none focus:border-primary"
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600">
+                  <span className="material-symbols-outlined text-sm">close</span>
+                </button>
+              )}
+            </div>
+
+            {/* Status Filter Tabs */}
+            <div className="flex items-center bg-surface-container-low p-1 rounded-xl border border-outline-variant/40 text-xs font-bold w-full md:w-auto overflow-x-auto no-scrollbar">
+              <button 
+                onClick={() => setStatusFilter('all')}
+                className={`px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${statusFilter === 'all' ? 'bg-[#231f5c] text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
+              >
+                All ({tasks.length})
+              </button>
+              <button 
+                onClick={() => setStatusFilter('in-progress')}
+                className={`px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${statusFilter === 'in-progress' ? 'bg-[#231f5c] text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
+              >
+                In Progress ({tasks.filter(t => t.status !== 'completed' && t.timeLeft !== 'Overdue').length})
+              </button>
+              <button 
+                onClick={() => setStatusFilter('completed')}
+                className={`px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${statusFilter === 'completed' ? 'bg-[#231f5c] text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
+              >
+                Completed ({tasks.filter(t => t.status === 'completed').length})
+              </button>
+              <button 
+                onClick={() => setStatusFilter('overdue')}
+                className={`px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${statusFilter === 'overdue' ? 'bg-[#231f5c] text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
+              >
+                Overdue ({tasks.filter(t => t.timeLeft === 'Overdue').length})
+              </button>
+            </div>
+
+            {/* Subject Dropdown Filter */}
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <span className="text-xs text-slate-500 font-mono font-semibold">Subject:</span>
+              <select 
+                value={subjectFilter}
+                onChange={(e) => setSubjectFilter(e.target.value)}
+                className="px-3 py-2 border border-outline-variant rounded-xl bg-surface text-xs font-semibold text-on-surface focus:outline-none focus:border-primary cursor-pointer"
+              >
+                <option value="all">All Subjects</option>
+                {enrolledSubjects.map(s => (
+                  <option key={s.code} value={s.code}>{s.code} ({s.name})</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
 
         {/* Category: This Week */}
         <section className="mb-10">

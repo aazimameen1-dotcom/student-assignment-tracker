@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 
 export default function AssignmentDetails() {
@@ -8,10 +8,18 @@ export default function AssignmentDetails() {
     updateTaskMilestone, 
     setCurrentView,
     enrolledSubjects,
-    editTask
+    editTask,
+    deleteTask
   } = useContext(AppContext);
 
   const [toastMessage, setToastMessage] = useState('');
+
+  const handleDeleteTask = async () => {
+    if (window.confirm("Are you sure you want to delete this assignment?")) {
+      await deleteTask(task.id);
+      setCurrentView('tasks');
+    }
+  };
 
   // Task Edit Modal states
   const [showEditModal, setShowEditModal] = useState(false);
@@ -66,11 +74,13 @@ export default function AssignmentDetails() {
     const diffTime = dateObj - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    let timeLeft = `${diffDays} Days`;
-    if (diffDays === 0) timeLeft = 'Today';
-    else if (diffDays === 1) timeLeft = 'Tomorrow';
-    else if (diffDays < 0) timeLeft = 'Overdue';
-    else timeLeft = `${diffDays} Days Left`;
+    const calculateTimeLeft = (days) => {
+      if (days === 0) return 'Today';
+      if (days === 1) return 'Tomorrow';
+      if (days < 0) return 'Overdue';
+      return `${days} Days Left`;
+    };
+    const timeLeft = calculateTimeLeft(diffDays);
 
     try {
       await editTask(task.id, {
@@ -166,13 +176,24 @@ export default function AssignmentDetails() {
           </div>
         </div>
 
-        <button 
-          onClick={openEditModal}
-          className="px-4 py-2 border border-outline text-primary rounded-xl font-mono text-label-md hover:bg-surface-container transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-        >
-          <span className="material-symbols-outlined text-[18px]">edit</span>
-          Edit Task
-        </button>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={openEditModal}
+            className="px-4 py-2 border border-outline text-primary rounded-xl font-mono text-label-md hover:bg-surface-container transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+          >
+            <span className="material-symbols-outlined text-[18px]">edit</span>
+            Edit Task
+          </button>
+
+          <button 
+            onClick={handleDeleteTask}
+            className="px-3 py-2 border border-red-200 text-red-600 hover:bg-red-50 rounded-xl font-mono text-label-md transition-all flex items-center gap-1 cursor-pointer shadow-sm"
+            title="Delete Assignment"
+          >
+            <span className="material-symbols-outlined text-[18px]">delete</span>
+            <span className="hidden md:inline">Delete</span>
+          </button>
+        </div>
       </header>
 
       {/* Header Info Grid */}

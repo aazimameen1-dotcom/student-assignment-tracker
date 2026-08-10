@@ -1,6 +1,7 @@
-import React, { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AppContext = createContext();
 
 const DEFAULT_SUBJECTS = [
@@ -193,7 +194,7 @@ export const AppContextProvider = ({ children }) => {
   };
 
   // Helper to fetch user data from Supabase
-  const fetchUserData = async (userId) => {
+  const fetchUserData = async () => {
     try {
       let { data: dbSubjects, error: subError } = await supabase
         .from('subjects')
@@ -246,7 +247,7 @@ export const AppContextProvider = ({ children }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUser(session.user);
-        fetchUserData(session.user.id);
+        fetchUserData();
       }
       setAuthLoading(false);
     });
@@ -254,7 +255,7 @@ export const AppContextProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         setUser(session.user);
-        fetchUserData(session.user.id);
+        fetchUserData();
       }
       setAuthLoading(false);
     });

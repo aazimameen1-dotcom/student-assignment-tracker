@@ -1,8 +1,217 @@
-import React, { useState, useContext } from 'react';
+import { useState, useContext } from 'react';
 import { AppContext } from '../context/AppContext';
 
+// Complete Wireframe Datasets matching PDF Pages 5, 7-12, 15-19
+const COURSE_DATA = {
+  'web-design': {
+    code: 'DIC107T',
+    title: 'Web Design',
+    instructor: 'Mr Salmaan Farooq',
+    credits: '3 Credits',
+    overallProgress: 72,
+    submissionRate: 95,
+    description: 'Master the visual language of the web. This course covers typography, color theory, and wireframing to design engaging, human-centered digital environments.',
+    modules: [
+      { name: 'Design Thinking', pct: 95 },
+      { name: 'User Persona', pct: 82 },
+      { name: 'Competition Audit', pct: 47 },
+      { name: 'Paper Wireframe', pct: 100 },
+      { name: 'UX Research', pct: 32 }
+    ],
+    hoursSpent: [2.5, 5.0, 4.2, 7.8, 8.5, 7.5, 7.0],
+    pendingTasks: [
+      { id: 'wd-p1', name: 'Hi-Fi Prototype', deadline: '14th August', priority: 'high' },
+      { id: 'wd-p2', name: 'Wireframe', deadline: '12th August', priority: 'high' },
+      { id: 'wd-p3', name: 'UX Research', deadline: '8th August', priority: 'high' },
+      { id: 'wd-p4', name: 'Competition Audit', deadline: '5th August', priority: 'high' },
+      { id: 'wd-p5', name: 'User Journey', deadline: '3rd August', priority: 'high' },
+      { id: 'wd-p6', name: 'User Flow', deadline: '1st August', priority: 'low' },
+      { id: 'wd-p7', name: 'Empathy Map', deadline: '6th August', priority: 'low' }
+    ],
+    completedTasks: [
+      { id: 'wd-c1', name: 'Course Orientation', date: '20th July', grade: 'Complete' },
+      { id: 'wd-c2', name: 'Design Principles Quiz', date: '24th July', grade: 'A-' },
+      { id: 'wd-c3', name: 'Mood Board Exercise', date: '28th July', grade: 'A' },
+      { id: 'wd-c4', name: 'Research Brief', date: '29th July', grade: 'B+' }
+    ]
+  },
+  'python': {
+    code: 'DIC102C',
+    title: 'Python',
+    instructor: 'Prof Asif Ali Banka',
+    credits: '3 Credits',
+    overallProgress: 62,
+    submissionRate: 54,
+    description: 'Build a practical foundation in programming. This course covers Python syntax, data structures, and functions, culminating in a mini project that applies your skills to a real problem.',
+    modules: [
+      { name: 'File Handling & Libraries', pct: 30 },
+      { name: 'Data Structures', pct: 78 },
+      { name: 'Functions & OOP', pct: 34 },
+      { name: 'Python Basics & Syntax', pct: 100 },
+      { name: 'Mini Project', pct: 8 }
+    ],
+    hoursSpent: [3.0, 4.5, 3.8, 8.0, 8.8, 7.2, 6.5],
+    pendingTasks: [
+      { id: 'py-p1', name: 'Syntax Practice Exercises', deadline: '14th August', priority: 'high' },
+      { id: 'py-p2', name: 'Data Structures Assignment', deadline: '12th August', priority: 'high' },
+      { id: 'py-p3', name: 'Functions & OOP Exercise', deadline: '8th August', priority: 'high' },
+      { id: 'py-p4', name: 'File Handling Task', deadline: '5th August', priority: 'high' },
+      { id: 'py-p5', name: 'Library Exploration Notebook', deadline: '3rd August', priority: 'high' },
+      { id: 'py-p6', name: 'Peer Review Feedback', deadline: '1st August', priority: 'low' },
+      { id: 'py-p7', name: 'Mini Project Submission', deadline: '6th August', priority: 'low' }
+    ],
+    completedTasks: [
+      { id: 'py-c1', name: 'Environment Setup', date: '20th July', grade: 'Complete' },
+      { id: 'py-c2', name: 'Intro to Python Quiz', date: '24th July', grade: 'A-' },
+      { id: 'py-c3', name: 'Basic Syntax Exercises', date: '28th July', grade: 'A' },
+      { id: 'py-c4', name: 'Variables & Loops Practice', date: '29th July', grade: 'B+' }
+    ]
+  },
+  'disaster-management': {
+    code: 'DIC105E',
+    title: 'Disaster Management',
+    instructor: 'Prof. Emergency Mgmt',
+    credits: '2 Credits',
+    overallProgress: 67,
+    submissionRate: 86,
+    description: 'Learn to prepare for and respond to crises. This course covers risk assessment, emergency planning, and community resilience, using real case studies to examine effective disaster response.',
+    modules: [
+      { name: 'Risk Assessment', pct: 95 },
+      { name: 'Emergency Response Planning', pct: 67 },
+      { name: 'Community Resilience', pct: 56 },
+      { name: 'Case Studies', pct: 100 },
+      { name: 'Policy & Governance', pct: 12 }
+    ],
+    hoursSpent: [2.0, 3.5, 4.0, 6.5, 7.2, 6.0, 5.5],
+    pendingTasks: [
+      { id: 'dm-p1', name: 'Risk Assessment Report', deadline: '14th August', priority: 'high' },
+      { id: 'dm-p2', name: 'Emergency Plan Draft', deadline: '12th August', priority: 'high' },
+      { id: 'dm-p3', name: 'Community Case Study', deadline: '8th August', priority: 'high' },
+      { id: 'dm-p4', name: 'Policy Brief', deadline: '5th August', priority: 'high' },
+      { id: 'dm-p5', name: 'Group Simulation Exercise', deadline: '3rd August', priority: 'high' },
+      { id: 'dm-p6', name: 'Final Response Plan', deadline: '1st August', priority: 'low' },
+      { id: 'dm-p7', name: 'Field Notes', deadline: '6th August', priority: 'low' }
+    ],
+    completedTasks: [
+      { id: 'dm-c1', name: 'Course Introduction', date: '21st July', grade: 'Complete' },
+      { id: 'dm-c2', name: 'Hazard Identification Exercise', date: '25th July', grade: 'A' },
+      { id: 'dm-c3', name: 'Vulnerability Assessment', date: '29th July', grade: 'B' },
+      { id: 'dm-c4', name: 'Syllabus Review', date: '30th July', grade: 'Complete' }
+    ]
+  },
+  'global-literature': {
+    code: 'DIC110H',
+    title: 'Global Literature',
+    instructor: 'Dr Afshana Sultan',
+    credits: '3 Credits',
+    overallProgress: 72,
+    submissionRate: 95,
+    description: 'Explore the world through its stories. This course examines how narrative, voice, and cultural context shape literature across borders, moving from close reading to comparative analysis of texts.',
+    modules: [
+      { name: 'Comparative Narratives', pct: 95 },
+      { name: 'Cultural Contexts', pct: 47 },
+      { name: 'Translation & Voice', pct: 9 },
+      { name: 'Postcolonial Literature', pct: 62 },
+      { name: 'Critical Analysis Essay', pct: 32 }
+    ],
+    hoursSpent: [2.2, 4.0, 3.5, 7.5, 8.0, 7.1, 6.8],
+    pendingTasks: [
+      { id: 'gl-p1', name: 'Comparative Essay Outline', deadline: '14th August', priority: 'high' },
+      { id: 'gl-p2', name: 'Cultural Reading Response', deadline: '12th August', priority: 'high' },
+      { id: 'gl-p3', name: 'Translation Analysis', deadline: '8th August', priority: 'high' },
+      { id: 'gl-p4', name: 'Postcolonial Text Summary', deadline: '5th August', priority: 'high' },
+      { id: 'gl-p5', name: 'Critical Analysis Essay', deadline: '3rd August', priority: 'high' },
+      { id: 'gl-p6', name: 'Peer Review Feedback', deadline: '1st August', priority: 'low' },
+      { id: 'gl-p7', name: 'Field Visit', deadline: '6th August', priority: 'low' }
+    ],
+    completedTasks: [
+      { id: 'gl-c1', name: 'Course Orientation Reading', date: '20th July', grade: 'B' },
+      { id: 'gl-c2', name: 'Literary Terms Quiz', date: '24th July', grade: 'A-' },
+      { id: 'gl-c3', name: 'Author Background Research', date: '28th July', grade: 'A' },
+      { id: 'gl-c4', name: 'Syllabus Reflection', date: '29th July', grade: 'B+' }
+    ]
+  },
+  'physics': {
+    code: 'DIC102S',
+    title: 'Physics',
+    instructor: 'Prof Farooq Hussain',
+    credits: '4 Credits',
+    overallProgress: 54,
+    submissionRate: 43,
+    description: 'Understand the physical world through experimentation and theory. This course covers mechanics, thermodynamics, and electromagnetism, with hands-on labs reinforcing core physical principles.',
+    modules: [
+      { name: 'Mechanics', pct: 95 },
+      { name: 'Thermodynamics', pct: 2 },
+      { name: 'Waves & Optics', pct: 47 },
+      { name: 'Modern Physics', pct: 67 },
+      { name: 'Electromagnetism', pct: 87 }
+    ],
+    hoursSpent: [2.8, 4.2, 5.1, 7.0, 8.2, 6.8, 6.0],
+    pendingTasks: [
+      { id: 'ph-p1', name: 'Mechanics Lab Report', deadline: '14th August', priority: 'high' },
+      { id: 'ph-p2', name: 'Thermodynamics Problem Set', deadline: '12th August', priority: 'high' },
+      { id: 'ph-p3', name: 'Waves & Optics Quiz', deadline: '8th August', priority: 'high' },
+      { id: 'ph-p4', name: 'Electromagnetism Assignment', deadline: '5th August', priority: 'high' },
+      { id: 'ph-p5', name: 'Modern Physics Response', deadline: '3rd August', priority: 'high' },
+      { id: 'ph-p6', name: 'Lab Practical', deadline: '1st August', priority: 'low' },
+      { id: 'ph-p7', name: 'Experiments', deadline: '6th August', priority: 'low' }
+    ],
+    completedTasks: [
+      { id: 'ph-c1', name: 'Course Orientation', date: '21st July', grade: 'Complete' },
+      { id: 'ph-c2', name: 'Units & Measurements Quiz', date: '25th July', grade: 'A' },
+      { id: 'ph-c3', name: 'Kinematics Problem Set', date: '29th July', grade: 'B' },
+      { id: 'ph-c4', name: 'Lab Safety Training', date: '30th July', grade: 'Complete' }
+    ]
+  },
+  'mathematics': {
+    code: 'DIC103M',
+    title: 'Mathematics',
+    instructor: 'Dr Zahoor Ahmad',
+    credits: '4 Credits',
+    overallProgress: 89,
+    submissionRate: 96,
+    description: 'Build a strong quantitative foundation. This course covers core algebra, calculus, and statistics, developing the problem-solving techniques needed for advanced coursework in computing and design.',
+    modules: [
+      { name: 'Algebra Foundations', pct: 100 },
+      { name: 'Calculus I', pct: 24 },
+      { name: 'Probability & Statistics', pct: 60 },
+      { name: 'Linear Algebra', pct: 100 },
+      { name: 'Problem Solving Techniques', pct: 15 }
+    ],
+    hoursSpent: [3.2, 6.5, 5.5, 8.5, 9.2, 8.4, 7.8],
+    pendingTasks: [
+      { id: 'ma-p1', name: 'Algebra Problem Set', deadline: '14th August', priority: 'high' },
+      { id: 'ma-p2', name: 'Calculus I Assignment', deadline: '12th August', priority: 'high' },
+      { id: 'ma-p3', name: 'Probability Worksheet', deadline: '8th August', priority: 'high' },
+      { id: 'ma-p4', name: 'Statistics Case Study', deadline: '5th August', priority: 'high' },
+      { id: 'ma-p5', name: 'Linear Algebra Exercises', deadline: '3rd August', priority: 'high' },
+      { id: 'ma-p6', name: 'Practice Exam', deadline: '1st August', priority: 'low' },
+      { id: 'ma-p7', name: 'Test', deadline: '6th August', priority: 'low' }
+    ],
+    completedTasks: [
+      { id: 'ma-c1', name: 'Course Orientation Reading', date: '20th July', grade: 'B' },
+      { id: 'ma-c2', name: 'Literary Terms Quiz', date: '24th July', grade: 'A-' },
+      { id: 'ma-c3', name: 'Author Background Research', date: '28th July', grade: 'A' },
+      { id: 'ma-c4', name: 'Syllabus Reflection', date: '29th July', grade: 'B+' }
+    ]
+  }
+};
+
+const COURSE_LIST = [
+  { key: 'web-design', title: 'Web Design' },
+  { key: 'python', title: 'Python' },
+  { key: 'disaster-management', title: 'Disaster Mgmt' },
+  { key: 'global-literature', title: 'Global Literature' },
+  { key: 'physics', title: 'Physics' },
+  { key: 'mathematics', title: 'Mathematics' }
+];
+
 export default function Subjects() {
-  const { selectedSubjectKey: ctxSubjectKey, setSelectedSubjectKey: setCtxSubjectKey } = useContext(AppContext);
+  const { 
+    selectedSubjectKey: ctxSubjectKey, 
+    setSelectedSubjectKey: setCtxSubjectKey,
+    addTask
+  } = useContext(AppContext);
   
   // Active selected course state (synchronized with AppContext)
   const selectedKey = ctxSubjectKey || 'web-design';
@@ -10,218 +219,14 @@ export default function Subjects() {
     if (setCtxSubjectKey) setCtxSubjectKey(key);
   };
 
+  const [courseState, setCourseState] = useState(COURSE_DATA);
   const [activeTab, setActiveTab] = useState('pending'); // pending, completed, upcoming
   const [assignmentReminder, setAssignmentReminder] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDeadline, setNewDeadline] = useState('14th August');
 
-  // Complete Wireframe Datasets matching PDF Pages 5, 7-12, 15-19
-  const courseData = {
-    'web-design': {
-      code: 'DIC107T',
-      title: 'Web Design',
-      instructor: 'Mr Salmaan Farooq',
-      credits: '3 Credits',
-      overallProgress: 72,
-      submissionRate: 95,
-      description: 'Master the visual language of the web. This course covers typography, color theory, and wireframing to design engaging, human-centered digital environments.',
-      modules: [
-        { name: 'Design Thinking', pct: 95 },
-        { name: 'User Persona', pct: 82 },
-        { name: 'Competition Audit', pct: 47 },
-        { name: 'Paper Wireframe', pct: 100 },
-        { name: 'UX Research', pct: 32 }
-      ],
-      hoursSpent: [2.5, 5.0, 4.2, 7.8, 8.5, 7.5, 7.0],
-      pendingTasks: [
-        { id: 'wd-p1', name: 'Hi-Fi Prototype', deadline: '14th August', priority: 'high' },
-        { id: 'wd-p2', name: 'Wireframe', deadline: '12th August', priority: 'high' },
-        { id: 'wd-p3', name: 'UX Research', deadline: '8th August', priority: 'high' },
-        { id: 'wd-p4', name: 'Competition Audit', deadline: '5th August', priority: 'high' },
-        { id: 'wd-p5', name: 'User Journey', deadline: '3rd August', priority: 'high' },
-        { id: 'wd-p6', name: 'User Flow', deadline: '1st August', priority: 'low' },
-        { id: 'wd-p7', name: 'Empathy Map', deadline: '6th August', priority: 'low' }
-      ],
-      completedTasks: [
-        { id: 'wd-c1', name: 'Course Orientation', date: '20th July', grade: 'Complete' },
-        { id: 'wd-c2', name: 'Design Principles Quiz', date: '24th July', grade: 'A-' },
-        { id: 'wd-c3', name: 'Mood Board Exercise', date: '28th July', grade: 'A' },
-        { id: 'wd-c4', name: 'Research Brief', date: '29th July', grade: 'B+' }
-      ]
-    },
-    'python': {
-      code: 'DIC102C',
-      title: 'Python',
-      instructor: 'Prof Asif Ali Banka',
-      credits: '3 Credits',
-      overallProgress: 62,
-      submissionRate: 54,
-      description: 'Build a practical foundation in programming. This course covers Python syntax, data structures, and functions, culminating in a mini project that applies your skills to a real problem.',
-      modules: [
-        { name: 'File Handling & Libraries', pct: 30 },
-        { name: 'Data Structures', pct: 78 },
-        { name: 'Functions & OOP', pct: 34 },
-        { name: 'Python Basics & Syntax', pct: 100 },
-        { name: 'Mini Project', pct: 8 }
-      ],
-      hoursSpent: [3.0, 4.5, 3.8, 8.0, 8.8, 7.2, 6.5],
-      pendingTasks: [
-        { id: 'py-p1', name: 'Syntax Practice Exercises', deadline: '14th August', priority: 'high' },
-        { id: 'py-p2', name: 'Data Structures Assignment', deadline: '12th August', priority: 'high' },
-        { id: 'py-p3', name: 'Functions & OOP Exercise', deadline: '8th August', priority: 'high' },
-        { id: 'py-p4', name: 'File Handling Task', deadline: '5th August', priority: 'high' },
-        { id: 'py-p5', name: 'Library Exploration Notebook', deadline: '3rd August', priority: 'high' },
-        { id: 'py-p6', name: 'Peer Review Feedback', deadline: '1st August', priority: 'low' },
-        { id: 'py-p7', name: 'Mini Project Submission', deadline: '6th August', priority: 'low' }
-      ],
-      completedTasks: [
-        { id: 'py-c1', name: 'Environment Setup', date: '20th July', grade: 'Complete' },
-        { id: 'py-c2', name: 'Intro to Python Quiz', date: '24th July', grade: 'A-' },
-        { id: 'py-c3', name: 'Basic Syntax Exercises', date: '28th July', grade: 'A' },
-        { id: 'py-c4', name: 'Variables & Loops Practice', date: '29th July', grade: 'B+' }
-      ]
-    },
-    'disaster-management': {
-      code: 'DIC105E',
-      title: 'Disaster Management',
-      instructor: 'Prof. Emergency Mgmt',
-      credits: '2 Credits',
-      overallProgress: 67,
-      submissionRate: 86,
-      description: 'Learn to prepare for and respond to crises. This course covers risk assessment, emergency planning, and community resilience, using real case studies to examine effective disaster response.',
-      modules: [
-        { name: 'Risk Assessment', pct: 95 },
-        { name: 'Emergency Response Planning', pct: 67 },
-        { name: 'Community Resilience', pct: 56 },
-        { name: 'Case Studies', pct: 100 },
-        { name: 'Policy & Governance', pct: 12 }
-      ],
-      hoursSpent: [2.0, 3.5, 4.0, 6.5, 7.2, 6.0, 5.5],
-      pendingTasks: [
-        { id: 'dm-p1', name: 'Risk Assessment Report', deadline: '14th August', priority: 'high' },
-        { id: 'dm-p2', name: 'Emergency Plan Draft', deadline: '12th August', priority: 'high' },
-        { id: 'dm-p3', name: 'Community Case Study', deadline: '8th August', priority: 'high' },
-        { id: 'dm-p4', name: 'Policy Brief', deadline: '5th August', priority: 'high' },
-        { id: 'dm-p5', name: 'Group Simulation Exercise', deadline: '3rd August', priority: 'high' },
-        { id: 'dm-p6', name: 'Final Response Plan', deadline: '1st August', priority: 'low' },
-        { id: 'dm-p7', name: 'Field Notes', deadline: '6th August', priority: 'low' }
-      ],
-      completedTasks: [
-        { id: 'dm-c1', name: 'Course Introduction', date: '21st July', grade: 'Complete' },
-        { id: 'dm-c2', name: 'Hazard Identification Exercise', date: '25th July', grade: 'A' },
-        { id: 'dm-c3', name: 'Vulnerability Assessment', date: '29th July', grade: 'B' },
-        { id: 'dm-c4', name: 'Syllabus Review', date: '30th July', grade: 'Complete' }
-      ]
-    },
-    'global-literature': {
-      code: 'DIC110H',
-      title: 'Global Literature',
-      instructor: 'Dr Afshana Sultan',
-      credits: '3 Credits',
-      overallProgress: 72,
-      submissionRate: 95,
-      description: 'Explore the world through its stories. This course examines how narrative, voice, and cultural context shape literature across borders, moving from close reading to comparative analysis of texts.',
-      modules: [
-        { name: 'Comparative Narratives', pct: 95 },
-        { name: 'Cultural Contexts', pct: 47 },
-        { name: 'Translation & Voice', pct: 9 },
-        { name: 'Postcolonial Literature', pct: 62 },
-        { name: 'Critical Analysis Essay', pct: 32 }
-      ],
-      hoursSpent: [2.2, 4.0, 3.5, 7.5, 8.0, 7.1, 6.8],
-      pendingTasks: [
-        { id: 'gl-p1', name: 'Comparative Essay Outline', deadline: '14th August', priority: 'high' },
-        { id: 'gl-p2', name: 'Cultural Reading Response', deadline: '12th August', priority: 'high' },
-        { id: 'gl-p3', name: 'Translation Analysis', deadline: '8th August', priority: 'high' },
-        { id: 'gl-p4', name: 'Postcolonial Text Summary', deadline: '5th August', priority: 'high' },
-        { id: 'gl-p5', name: 'Critical Analysis Essay', deadline: '3rd August', priority: 'high' },
-        { id: 'gl-p6', name: 'Peer Review Feedback', deadline: '1st August', priority: 'low' },
-        { id: 'gl-p7', name: 'Field Visit', deadline: '6th August', priority: 'low' }
-      ],
-      completedTasks: [
-        { id: 'gl-c1', name: 'Course Orientation Reading', date: '20th July', grade: 'B' },
-        { id: 'gl-c2', name: 'Literary Terms Quiz', date: '24th July', grade: 'A-' },
-        { id: 'gl-c3', name: 'Author Background Research', date: '28th July', grade: 'A' },
-        { id: 'gl-c4', name: 'Syllabus Reflection', date: '29th July', grade: 'B+' }
-      ]
-    },
-    'physics': {
-      code: 'DIC102S',
-      title: 'Physics',
-      instructor: 'Prof Farooq Hussain',
-      credits: '4 Credits',
-      overallProgress: 54,
-      submissionRate: 43,
-      description: 'Understand the physical world through experimentation and theory. This course covers mechanics, thermodynamics, and electromagnetism, with hands-on labs reinforcing core physical principles.',
-      modules: [
-        { name: 'Mechanics', pct: 95 },
-        { name: 'Thermodynamics', pct: 2 },
-        { name: 'Waves & Optics', pct: 47 },
-        { name: 'Modern Physics', pct: 67 },
-        { name: 'Electromagnetism', pct: 87 }
-      ],
-      hoursSpent: [2.8, 4.2, 5.1, 7.0, 8.2, 6.8, 6.0],
-      pendingTasks: [
-        { id: 'ph-p1', name: 'Mechanics Lab Report', deadline: '14th August', priority: 'high' },
-        { id: 'ph-p2', name: 'Thermodynamics Problem Set', deadline: '12th August', priority: 'high' },
-        { id: 'ph-p3', name: 'Waves & Optics Quiz', deadline: '8th August', priority: 'high' },
-        { id: 'ph-p4', name: 'Electromagnetism Assignment', deadline: '5th August', priority: 'high' },
-        { id: 'ph-p5', name: 'Modern Physics Response', deadline: '3rd August', priority: 'high' },
-        { id: 'ph-p6', name: 'Lab Practical', deadline: '1st August', priority: 'low' },
-        { id: 'ph-p7', name: 'Experiments', deadline: '6th August', priority: 'low' }
-      ],
-      completedTasks: [
-        { id: 'ph-c1', name: 'Course Orientation', date: '21st July', grade: 'Complete' },
-        { id: 'ph-c2', name: 'Units & Measurements Quiz', date: '25th July', grade: 'A' },
-        { id: 'ph-c3', name: 'Kinematics Problem Set', date: '29th July', grade: 'B' },
-        { id: 'ph-c4', name: 'Lab Safety Training', date: '30th July', grade: 'Complete' }
-      ]
-    },
-    'mathematics': {
-      code: 'DIC103M',
-      title: 'Mathematics',
-      instructor: 'Dr Zahoor Ahmad',
-      credits: '4 Credits',
-      overallProgress: 89,
-      submissionRate: 96,
-      description: 'Build a strong quantitative foundation. This course covers core algebra, calculus, and statistics, developing the problem-solving techniques needed for advanced coursework in computing and design.',
-      modules: [
-        { name: 'Algebra Foundations', pct: 100 },
-        { name: 'Calculus I', pct: 24 },
-        { name: 'Probability & Statistics', pct: 60 },
-        { name: 'Linear Algebra', pct: 100 },
-        { name: 'Problem Solving Techniques', pct: 15 }
-      ],
-      hoursSpent: [3.2, 6.5, 5.5, 8.5, 9.2, 8.4, 7.8],
-      pendingTasks: [
-        { id: 'ma-p1', name: 'Algebra Problem Set', deadline: '14th August', priority: 'high' },
-        { id: 'ma-p2', name: 'Calculus I Assignment', deadline: '12th August', priority: 'high' },
-        { id: 'ma-p3', name: 'Probability Worksheet', deadline: '8th August', priority: 'high' },
-        { id: 'ma-p4', name: 'Statistics Case Study', deadline: '5th August', priority: 'high' },
-        { id: 'ma-p5', name: 'Linear Algebra Exercises', deadline: '3rd August', priority: 'high' },
-        { id: 'ma-p6', name: 'Practice Exam', deadline: '1st August', priority: 'low' },
-        { id: 'ma-p7', name: 'Test', deadline: '6th August', priority: 'low' }
-      ],
-      completedTasks: [
-        { id: 'ma-c1', name: 'Course Orientation Reading', date: '20th July', grade: 'B' },
-        { id: 'ma-c2', name: 'Literary Terms Quiz', date: '24th July', grade: 'A-' },
-        { id: 'ma-c3', name: 'Author Background Research', date: '28th July', grade: 'A' },
-        { id: 'ma-c4', name: 'Syllabus Reflection', date: '29th July', grade: 'B+' }
-      ]
-    }
-  };
-
-  const courseList = [
-    { key: 'web-design', title: 'Web Design' },
-    { key: 'python', title: 'Python' },
-    { key: 'disaster-management', title: 'Disaster Mgmt' },
-    { key: 'global-literature', title: 'Global Literature' },
-    { key: 'physics', title: 'Physics' },
-    { key: 'mathematics', title: 'Mathematics' }
-  ];
-
-  const currentCourse = courseData[selectedKey] || courseData['web-design'];
+  const currentCourse = courseState[selectedKey] || courseState['web-design'];
 
   const handleAddAssignment = (e) => {
     e.preventDefault();
@@ -232,7 +237,33 @@ export default function Subjects() {
       deadline: newDeadline,
       priority: 'high'
     };
-    currentCourse.pendingTasks.unshift(newDeliverable);
+
+    setCourseState(prev => ({
+      ...prev,
+      [selectedKey]: {
+        ...prev[selectedKey],
+        pendingTasks: [newDeliverable, ...prev[selectedKey].pendingTasks]
+      }
+    }));
+
+    // Also add to global tasks so it syncs across app
+    if (addTask) {
+      addTask({
+        title: newTitle.trim(),
+        subject: currentCourse.code,
+        description: `Deliverable for ${currentCourse.title}`,
+        dueDate: '2024-10-24',
+        dueTime: '11:59 PM',
+        category: 'This Week',
+        timeLeft: '3 Days Left',
+        professor: { name: currentCourse.instructor, officeHours: 'Mon/Wed 2-4 PM' },
+        milestones: [
+          { id: 'm1', title: 'Initial Draft & Plan', completed: false },
+          { id: 'm2', title: 'Review & Final Submission', completed: false }
+        ]
+      });
+    }
+
     setNewTitle('');
     setShowAddModal(false);
   };
@@ -242,7 +273,7 @@ export default function Subjects() {
       
       {/* Top Subject Switcher Tabs Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-indigo-100 no-scrollbar">
-        {courseList.map((c) => {
+        {COURSE_LIST.map((c) => {
           const isSelected = selectedKey === c.key;
           return (
             <button

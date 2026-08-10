@@ -1,12 +1,11 @@
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 
 export default function Dashboard() {
   const { 
     user,
     setCurrentView, 
-    setSelectedSubjectKey,
-    setSelectedTaskId
+    setSelectedSubjectKey
   } = useContext(AppContext);
 
   const [seeAllSubjects, setSeeAllSubjects] = useState(false);

@@ -1,4 +1,4 @@
-import React, { useContext, useState, useRef, useEffect } from 'react';
+import { useContext, useState, useRef, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 
 export default function Navigation() {
@@ -7,7 +7,6 @@ export default function Navigation() {
     setCurrentView, 
     user, 
     logout,
-    notificationsEnabled,
     notifications,
     readNotificationIds,
     markNotificationAsRead,
