@@ -105,19 +105,19 @@ export default function Dashboard() {
           <div className="flex flex-col justify-between">
             <div className="flex justify-between items-center mb-6">
               <h3 className="font-headline text-slate-600 text-xs font-bold tracking-wider uppercase">Course Performance</h3>
-              <span className="font-mono text-indigo-600 font-bold text-sm bg-indigo-50 px-2.5 py-1 rounded-md">Top 15%</span>
+              <span className="font-mono text-blue-600 font-bold text-sm bg-blue-50 px-2.5 py-1 rounded-md">Top 15%</span>
             </div>
             <div className="h-28 rounded-xl flex items-end px-1 pb-1 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-t from-indigo-50/50 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-blue-50/50 to-transparent"></div>
               <svg className="w-full h-full drop-shadow-sm" preserveAspectRatio="none" viewBox="0 0 100 40">
                 <defs>
                   <linearGradient id="lineGrad3" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#818cf8" />
-                    <stop offset="100%" stopColor="#4f46e5" />
+                    <stop offset="0%" stopColor="#60a5fa" />
+                    <stop offset="100%" stopColor="#2563eb" />
                   </linearGradient>
                   <linearGradient id="fillGrad3" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#6366f1" stopOpacity="0.2" />
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
+                    <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
                   </linearGradient>
                 </defs>
                 <path d="M0,25 C20,15 40,30 60,15 C80,0 90,10 100,5 L100,40 L0,40 Z" fill="url(#fillGrad3)" />

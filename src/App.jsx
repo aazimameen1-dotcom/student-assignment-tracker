@@ -32,7 +32,7 @@ function App() {
 
   const PageFallback = () => (
     <div className="flex flex-col justify-center items-center h-64 gap-3 text-slate-500">
-      <div className="w-8 h-8 rounded-full border-3 border-purple-600 border-t-transparent animate-spin"></div>
+      <div className="w-8 h-8 rounded-full border-3 border-slate-800 border-t-transparent animate-spin"></div>
       <span className="text-xs font-mono animate-pulse">Loading view...</span>
     </div>
   );

@@ -65,7 +65,7 @@ export default function Analytics() {
           </div>
           <div>
             <div className="font-headline text-4xl font-extrabold text-[#0f172a]">28 <span className="text-xs font-normal text-slate-500">hrs/wk</span></div>
-            <div className="font-mono text-xs text-indigo-600 font-bold mt-1">Consistent pattern</div>
+            <div className="font-mono text-xs text-blue-600 font-bold mt-1">Consistent pattern</div>
           </div>
         </div>
 

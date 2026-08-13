@@ -5,12 +5,12 @@ import { supabase } from '../supabaseClient';
 export const AppContext = createContext();
 
 const DEFAULT_SUBJECTS = [
-  { code: 'DIC107T', name: 'Web Design', desc: 'Master layout, typography, and wireframing.', color: 'purple' },
+  { code: 'DIC107T', name: 'Web Design', desc: 'Master layout, typography, and wireframing.', color: 'blue' },
   { code: 'DIC102C', name: 'Python', desc: 'Build logic, syntax, and data structures.', color: 'blue' },
   { code: 'DIC105E', name: 'Disaster Management', desc: 'Risk assessment, emergency response planning.', color: 'amber' },
-  { code: 'DIC110H', name: 'Global Literature', desc: 'Comparative narratives and literary analysis.', color: 'indigo' },
+  { code: 'DIC110H', name: 'Global Literature', desc: 'Comparative narratives and literary analysis.', color: 'emerald' },
   { code: 'DIC102S', name: 'Physics', desc: 'Mechanics, thermodynamics, and electromagnetism.', color: 'slate' },
-  { code: 'DIC103M', name: 'Mathematics', desc: 'Algebra, calculus, and statistics.', color: 'purple' }
+  { code: 'DIC103M', name: 'Mathematics', desc: 'Algebra, calculus, and statistics.', color: 'blue' }
 ];
 
 const DEFAULT_TASKS = [

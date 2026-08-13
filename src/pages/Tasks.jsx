@@ -158,7 +158,7 @@ export default function Tasks() {
               className={`p-1.5 rounded-full transition-all cursor-pointer ${
                 isCompleted 
                   ? 'bg-emerald-500 text-white shadow-sm' 
-                  : 'bg-indigo-50 text-indigo-900 border border-indigo-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-600'
+                  : 'bg-slate-100 text-slate-800 border border-slate-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-600'
               }`}
             >
               <span className="material-symbols-outlined text-[18px]">
@@ -170,7 +170,7 @@ export default function Tasks() {
                 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' 
                 : isUrgent 
                   ? 'text-rose-700 bg-rose-50 border-rose-200' 
-                  : 'text-indigo-900 bg-indigo-50 border-indigo-200'
+                  : 'text-slate-800 bg-slate-100 border-slate-200'
             }`}>
               <span className="material-symbols-outlined text-[14px]">
                 {isCompleted ? 'verified' : 'alarm'}
@@ -180,7 +180,7 @@ export default function Tasks() {
           </div>
         </div>
 
-        <h4 className={`font-headline text-lg font-bold mb-2 group-hover:text-purple-700 transition-colors text-left ${isCompleted ? 'line-through text-slate-400' : 'text-slate-900'}`}>
+        <h4 className={`font-headline text-lg font-bold mb-2 group-hover:text-blue-600 transition-colors text-left ${isCompleted ? 'line-through text-slate-400' : 'text-slate-900'}`}>
           {task.title}
         </h4>
         <p className="font-body text-xs text-slate-600 mb-6 text-left line-clamp-2 leading-relaxed">
@@ -189,7 +189,7 @@ export default function Tasks() {
 
         <div className="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center text-xs">
           <div className="flex items-center gap-1.5 text-slate-500 font-mono">
-            <span className="material-symbols-outlined text-sm text-indigo-500">event</span>
+            <span className="material-symbols-outlined text-sm text-blue-500">event</span>
             <span>
               {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, {task.dueTime}
             </span>
@@ -198,7 +198,7 @@ export default function Tasks() {
             <span className="font-mono text-[10px] font-bold text-slate-600">{progress}%</span>
             <div className="w-16 h-2 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
               <div 
-                className={`h-full rounded-full transition-all duration-500 ${isCompleted ? 'bg-emerald-500' : 'bg-gradient-to-r from-indigo-600 to-purple-600'}`} 
+                className={`h-full rounded-full transition-all duration-500 ${isCompleted ? 'bg-emerald-500' : 'bg-gradient-to-r from-blue-600 to-indigo-600'}`} 
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
@@ -220,7 +220,7 @@ export default function Tasks() {
 
           <button 
             onClick={() => setShowAddModal(true)}
-            className="px-5 py-2.5 bg-gradient-to-r from-[#1e1b4b] to-[#231f5c] hover:from-indigo-900 hover:to-purple-900 text-white font-bold text-xs rounded-xl shadow-lg transition-all cursor-pointer flex items-center gap-2 self-start md:self-auto"
+            className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-lg transition-all cursor-pointer flex items-center gap-2 self-start md:self-auto"
           >
             <span className="material-symbols-outlined text-lg">add</span>
             <span>New Deliverable</span>
@@ -228,7 +228,7 @@ export default function Tasks() {
         </section>
 
         {/* Filter Controls Bar */}
-        <div className="glass-panel p-4 rounded-2xl border border-indigo-100/80 shadow-sm mb-8 space-y-4">
+        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm mb-8 space-y-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Search Input */}
             <div className="relative w-full md:w-72">
@@ -238,7 +238,7 @@ export default function Tasks() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search tasks..."
-                className="w-full pl-9 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 shadow-sm"
+                className="w-full pl-9 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-slate-500 shadow-sm"
               />
               {searchQuery && (
                 <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600">
@@ -248,28 +248,28 @@ export default function Tasks() {
             </div>
 
             {/* Status Filter Tabs */}
-            <div className="flex items-center bg-slate-100/80 p-1 rounded-xl border border-slate-200/80 text-xs font-bold w-full md:w-auto overflow-x-auto no-scrollbar">
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold w-full md:w-auto overflow-x-auto no-scrollbar">
               <button 
                 onClick={() => setStatusFilter('all')}
-                className={`px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${statusFilter === 'all' ? 'bg-[#231f5c] text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
+                className={`px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${statusFilter === 'all' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
               >
                 All ({tasks.length})
               </button>
               <button 
                 onClick={() => setStatusFilter('in-progress')}
-                className={`px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${statusFilter === 'in-progress' ? 'bg-[#231f5c] text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
+                className={`px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${statusFilter === 'in-progress' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
               >
                 In Progress ({tasks.filter(t => t.status !== 'completed' && t.timeLeft !== 'Overdue').length})
               </button>
               <button 
                 onClick={() => setStatusFilter('completed')}
-                className={`px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${statusFilter === 'completed' ? 'bg-[#231f5c] text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
+                className={`px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${statusFilter === 'completed' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
               >
                 Completed ({tasks.filter(t => t.status === 'completed').length})
               </button>
               <button 
                 onClick={() => setStatusFilter('overdue')}
-                className={`px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${statusFilter === 'overdue' ? 'bg-[#231f5c] text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
+                className={`px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${statusFilter === 'overdue' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:text-slate-900'}`}
               >
                 Overdue ({tasks.filter(t => t.timeLeft === 'Overdue').length})
               </button>

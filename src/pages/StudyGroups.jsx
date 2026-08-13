@@ -11,8 +11,8 @@ export default function StudyGroups() {
       members: 5,
       activeSession: 'Live Discussion on REST APIs',
       nextMeeting: 'Today at 4:00 PM',
-      color: 'bg-indigo-50 border-indigo-200 text-indigo-900',
-      tagColor: 'bg-indigo-600 text-white'
+      color: 'bg-blue-50 border-blue-200 text-blue-900',
+      tagColor: 'bg-blue-600 text-white'
     },
     {
       id: 2,

@@ -92,17 +92,13 @@ export default function Login() {
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row bg-slate-50 select-none animate-fade-in">
       
-      {/* Left Panel: Assignify Dark Indigo Hero (PDF Page 1 & 2) */}
-      <div className="w-full md:w-1/2 bg-[#1e1b4b] text-white p-8 md:p-16 flex flex-col justify-center items-center text-center md:items-start md:text-left relative overflow-hidden min-h-[240px] md:min-h-screen">
-        {/* Subtle Background Glow */}
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
-
+      {/* Left Panel: Slate Hero */}
+      <div className="w-full md:w-1/2 bg-slate-900 text-white p-8 md:p-16 flex flex-col justify-center items-center text-center md:items-start md:text-left relative overflow-hidden min-h-[240px] md:min-h-screen">
         <div className="relative z-10 max-w-md">
           <h1 className="font-headline text-4xl md:text-6xl font-extrabold tracking-tight mb-4 text-white">
-            Assignify
+            Scholar Track
           </h1>
-          <p className="font-body text-base md:text-xl text-purple-200 font-light leading-relaxed">
+          <p className="font-body text-base md:text-xl text-slate-300 font-light leading-relaxed">
             Stay on top of every deadline, in one place.
           </p>
         </div>
@@ -219,14 +215,14 @@ export default function Login() {
                     type="checkbox" 
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="rounded text-purple-600 focus:ring-purple-500 h-4 w-4"
+                    className="rounded text-slate-900 focus:ring-slate-500 h-4 w-4"
                   />
                   <span>Remember me</span>
                 </label>
                 <button
                   type="button"
                   onClick={handleForgotPassword}
-                  className="text-purple-600 hover:underline font-medium bg-transparent border-none cursor-pointer"
+                  className="text-slate-800 hover:underline font-bold bg-transparent border-none cursor-pointer"
                 >
                   Forgot Password
                 </button>
@@ -236,7 +232,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold rounded-xl text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer mt-2"
+              className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer mt-2"
             >
               {loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Login'}
             </button>
@@ -246,18 +242,33 @@ export default function Login() {
           <div className="text-center text-xs text-slate-600">
             {isSignUp ? (
               <span>Already have an account? {' '}
-                <button onClick={() => { setIsSignUp(false); setError(''); }} className="text-purple-600 font-bold hover:underline bg-transparent border-none cursor-pointer">
+                <button onClick={() => { setIsSignUp(false); setError(''); }} className="text-slate-900 font-bold hover:underline bg-transparent border-none cursor-pointer">
                   Sign in
                 </button>
               </span>
             ) : (
               <span>Not a member? {' '}
-                <button onClick={() => { setIsSignUp(true); setError(''); }} className="text-purple-600 font-bold hover:underline bg-transparent border-none cursor-pointer">
+                <button onClick={() => { setIsSignUp(true); setError(''); }} className="text-slate-900 font-bold hover:underline bg-transparent border-none cursor-pointer">
                   Create an account
                 </button>
               </span>
             )}
           </div>
+
+          {/* Guest Access Divider */}
+          <div className="relative flex py-2 items-center">
+            <div className="flex-grow border-t border-slate-200"></div>
+            <span className="flex-shrink mx-4 text-xs font-mono text-slate-400 uppercase">Or continue as guest</span>
+            <div className="flex-grow border-t border-slate-200"></div>
+          </div>
+
+          <button
+            onClick={loginAsGuest}
+            className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+          >
+            <span className="material-symbols-outlined text-base">rocket_launch</span>
+            <span>Explore as Demo Student (Guest)</span>
+          </button>
 
           {/* Divider */}
           <div className="relative flex py-2 items-center">
