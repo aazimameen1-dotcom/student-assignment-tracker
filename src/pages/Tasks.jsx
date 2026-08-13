@@ -158,7 +158,7 @@ export default function Tasks() {
               className={`p-1 rounded-full transition-colors ${
                 isCompleted 
                   ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' 
-                  : 'bg-slate-100 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'
+                  : 'bg-emerald-50/50 text-emerald-900 hover:text-white hover:bg-emerald-600'
               }`}
             >
               <span className="material-symbols-outlined text-[18px]">

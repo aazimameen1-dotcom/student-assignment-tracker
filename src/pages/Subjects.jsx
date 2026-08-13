@@ -282,7 +282,7 @@ export default function Subjects() {
               className={`px-5 py-2.5 rounded-xl font-headline text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 isSelected
                   ? 'bg-[#231f5c] text-white shadow-md'
-                  : 'bg-white text-slate-700 hover:bg-purple-50 border border-slate-200'
+                  : 'bg-white text-purple-950 hover:bg-purple-700 hover:text-white border border-slate-200'
               }`}
             >
               {c.title}

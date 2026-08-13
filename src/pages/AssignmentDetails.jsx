@@ -152,7 +152,7 @@ export default function AssignmentDetails() {
       
       {/* Toast Alert */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 bg-primary text-on-primary px-6 py-3 rounded-lg shadow-lg font-mono text-label-md flex items-center gap-2 animate-bounce">
+        <div className="fixed top-20 right-6 z-50 bg-primary text-on-primary px-6 py-3 rounded-lg shadow-lg font-mono text-label-md flex items-center gap-2 animate-fade-in transition-all">
           <span className="material-symbols-outlined">check_circle</span>
           {toastMessage}
         </div>
