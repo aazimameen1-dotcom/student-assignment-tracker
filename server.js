@@ -6,8 +6,21 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST || "127.0.0.1";
 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",")
+  : ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"];
+
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS policy restriction: Origin not allowed"));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 // Step 1: Health Check Route

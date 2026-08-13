@@ -111,6 +111,7 @@ export default function Navigation() {
             onClick={() => setShowDrawer(true)}
             className="p-1.5 hover:bg-white/10 rounded-lg transition-colors cursor-pointer text-white flex items-center justify-center"
             title="Open Menu"
+            aria-label="Open Navigation Menu"
           >
             <span className="material-symbols-outlined text-[26px]">menu</span>
           </button>
@@ -120,6 +121,7 @@ export default function Navigation() {
               onClick={handleBackNav}
               className="p-1.5 hover:bg-white/10 rounded-lg transition-colors cursor-pointer text-white flex items-center justify-center"
               title="Go Back"
+              aria-label="Go Back to Previous Page"
             >
               <span className="material-symbols-outlined text-[24px]">arrow_back</span>
             </button>
@@ -233,6 +235,7 @@ export default function Navigation() {
               onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
               className="p-1.5 hover:bg-white/10 rounded-full transition-colors relative cursor-pointer text-white flex items-center"
               title="Notifications"
+              aria-label="Toggle Notifications Menu"
             >
               <span className="material-symbols-outlined text-[22px]">notifications</span>
               {hasUnread && (
