@@ -272,20 +272,21 @@ export default function Subjects() {
     <div className="animate-fade-in max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-8 text-left pb-24 select-none">
       
       {/* Top Subject Switcher Tabs Bar */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-indigo-100 no-scrollbar">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-indigo-100/80 no-scrollbar">
         {COURSE_LIST.map((c) => {
           const isSelected = selectedKey === c.key;
           return (
             <button
               key={c.key}
               onClick={() => setSelectedKey(c.key)}
-              className={`px-5 py-2.5 rounded-xl font-headline text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              className={`px-5 py-2.5 rounded-xl font-headline text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-2 ${
                 isSelected
-                  ? 'bg-[#231f5c] text-white shadow-md'
-                  : 'bg-white text-purple-950 hover:bg-purple-700 hover:text-white border border-slate-200'
+                  ? 'bg-gradient-to-r from-[#1e1b4b] to-[#231f5c] text-white shadow-md ring-2 ring-indigo-300'
+                  : 'bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-900 border border-slate-200/80'
               }`}
             >
-              {c.title}
+              <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-purple-400' : 'bg-slate-300'}`}></span>
+              <span>{c.title}</span>
             </button>
           );
         })}
@@ -295,28 +296,36 @@ export default function Subjects() {
       <div className="space-y-6">
         
         {/* Banner Title Card */}
-        <div className="bg-[#231f5c] text-white p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
-          <div>
-            <span className="text-xs text-purple-200 uppercase font-mono font-bold tracking-wider">{currentCourse.code} • {currentCourse.credits}</span>
-            <h1 className="font-headline text-2xl md:text-3xl font-extrabold text-white mt-0.5">
+        <div className="relative overflow-hidden bg-gradient-to-r from-[#1e1b4b] via-[#231f5c] to-[#312e81] text-white p-6 md:p-8 rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xl">
+          <div className="space-y-1.5 z-10">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-purple-200 uppercase font-mono font-bold tracking-wider bg-white/10 px-2.5 py-0.5 rounded-md border border-white/10">{currentCourse.code}</span>
+              <span className="text-xs text-purple-200 font-mono">{currentCourse.credits}</span>
+            </div>
+            <h1 className="font-headline text-2xl md:text-3xl font-extrabold text-white">
               Your Progress in {currentCourse.title}
             </h1>
-            <p className="text-xs text-purple-100 opacity-90 mt-1">Instructor: {currentCourse.instructor}</p>
+            <p className="text-xs text-purple-200/90 font-medium flex items-center gap-2">
+              <span className="material-symbols-outlined text-sm text-purple-300">person</span>
+              <span>Instructor: <strong className="text-white">{currentCourse.instructor}</strong></span>
+            </p>
           </div>
           <button 
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold text-xs rounded-xl shadow transition-all cursor-pointer flex items-center gap-1.5"
+            className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow-lg transition-all cursor-pointer flex items-center gap-2 z-10"
           >
             <span className="material-symbols-outlined text-base">add</span>
-            <span>Add Assignment</span>
+            <span>Add Deliverable</span>
           </button>
+          
+          <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
         </div>
 
         {/* Bento Stat Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           
           {/* Card 1: Overall Completion Circular Gauge */}
-          <div className="col-span-1 md:col-span-4 assignify-card-lavender p-6 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
+          <div className="col-span-1 md:col-span-4 glass-panel p-6 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm border border-indigo-100">
             <div className="relative w-44 h-44 flex items-center justify-center my-2">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                 <path
