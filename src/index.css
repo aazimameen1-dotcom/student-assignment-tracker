@@ -1,113 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-@theme {
-  --color-primary: #000000;
-  --color-primary-container: #111111;
-  --color-on-primary: #ffffff;
-  
-  --color-accent: #000000;
-  --color-accent-hover: #27272a;
-
-  --color-background: #ffffff;
-  --color-surface: #ffffff;
-  --color-surface-dim: #f4f4f5;
-  --color-surface-container: #fafafa;
-  --color-on-surface: #000000;
-  --color-on-surface-variant: #52525b;
-  
-  --color-outline: #e4e4e7;
-  --color-outline-variant: #d4d4d8;
-  
-  --font-headline: "Inter", -apple-system, sans-serif;
-  --font-body: "Inter", -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-  
-  --radius-sm: 0px;
-  --radius-md: 2px;
-  --radius-lg: 4px;
-  --radius-xl: 6px;
-  --radius-full: 9999px;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-::-webkit-scrollbar-track {
-  background: #ffffff;
-}
-::-webkit-scrollbar-thumb {
-  background: #000000;
-}
-
 body {
-  background-color: #ffffff;
-  color: #000000;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4 {
-  font-family: 'Inter', sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.font-mono {
-  font-family: 'JetBrains Mono', monospace;
-}
-
-/* Material Symbols Integration */
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   display: inline-block;
   line-height: 1;
   vertical-align: middle;
-}
-
-/* Minimalist Black & White Cards */
-.bw-card {
-  background: #ffffff;
-  border: 1px solid #000000;
-  border-radius: 4px;
-  transition: all 0.15s ease;
-}
-.bw-card:hover {
-  box-shadow: 4px 4px 0px #000000;
-}
-
-.bw-button {
-  background: #000000;
-  color: #ffffff;
-  font-weight: 600;
-  border-radius: 4px;
-  transition: all 0.15s ease;
-}
-.bw-button:hover {
-  background: #27272a;
-}
-
-.bw-button-outline {
-  background: #ffffff;
-  color: #000000;
-  border: 1px solid #000000;
-  font-weight: 600;
-  border-radius: 4px;
-  transition: all 0.15s ease;
-}
-.bw-button-outline:hover {
-  background: #000000;
-  color: #ffffff;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.2s ease forwards;
 }

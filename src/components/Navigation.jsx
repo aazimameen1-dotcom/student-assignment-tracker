@@ -114,14 +114,14 @@ export default function Navigation() {
 
   return (
     <>
-      {/* Minimalist Black & White Header Bar */}
-      <header className="fixed top-0 left-0 w-full h-16 z-40 bg-black text-white border-b border-black flex items-center justify-between px-4 md:px-8">
+      {/* Simple Clean Header Bar */}
+      <header className="fixed top-0 left-0 w-full h-16 z-40 bg-white text-slate-900 border-b border-slate-200 shadow-sm flex items-center justify-between px-4 md:px-8">
         
         {/* Left Side: Hamburger Menu + Back Arrow + Title Badge */}
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setShowDrawer(true)}
-            className="p-1.5 hover:bg-zinc-800 rounded transition-colors cursor-pointer text-white flex items-center justify-center"
+            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer text-slate-700 flex items-center justify-center"
             title="Open Menu"
             aria-label="Open Navigation Menu"
           >
@@ -131,7 +131,7 @@ export default function Navigation() {
           {currentView !== 'dashboard' && (
             <button 
               onClick={handleBackNav}
-              className="p-1.5 hover:bg-zinc-800 rounded transition-colors cursor-pointer text-white flex items-center justify-center"
+              className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer text-slate-700 flex items-center justify-center"
               title="Go Back"
               aria-label="Go Back to Previous Page"
             >
@@ -139,10 +139,10 @@ export default function Navigation() {
             </button>
           )}
 
-          {/* White Pill Badge showing Page Title */}
+          {/* Title Badge */}
           <div 
             onClick={() => setCurrentView('dashboard')}
-            className="bg-white text-black px-4 py-1.5 rounded font-headline font-bold text-sm md:text-base cursor-pointer hover:bg-zinc-200 transition-colors uppercase tracking-tight"
+            className="bg-slate-100 text-slate-900 px-3.5 py-1.5 rounded-lg font-bold text-sm md:text-base cursor-pointer hover:bg-slate-200 transition-colors"
           >
             {getHeaderTitle()}
           </div>
