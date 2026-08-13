@@ -9,6 +9,9 @@ const Tasks = lazy(() => import('./pages/Tasks'));
 const AssignmentDetails = lazy(() => import('./pages/AssignmentDetails'));
 const Subjects = lazy(() => import('./pages/Subjects'));
 const Calendar = lazy(() => import('./pages/Calendar'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const StudyGroups = lazy(() => import('./pages/StudyGroups'));
+const ResearchDiscovery = lazy(() => import('./pages/ResearchDiscovery'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Profile = lazy(() => import('./pages/Profile'));
 
@@ -68,11 +71,19 @@ function App() {
       case 'tasks':
         return <Tasks />;
       case 'assignment-details':
+      case 'projects':
         return <AssignmentDetails />;
       case 'subjects':
+      case 'courses':
         return <Subjects />;
       case 'calendar':
         return <Calendar />;
+      case 'analytics':
+        return <Analytics />;
+      case 'study-groups':
+        return <StudyGroups />;
+      case 'research':
+        return <ResearchDiscovery />;
       case 'settings':
         return <Settings />;
       case 'profile':

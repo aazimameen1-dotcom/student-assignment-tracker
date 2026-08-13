@@ -46,25 +46,38 @@ export default function Navigation() {
       case 'profile':
         return 'Your Profile';
       case 'subjects':
-      case 'assignment-details':
-        return 'Course Progress';
+      case 'courses':
+        return 'Courses Overview';
       case 'tasks':
         return 'Tasks & Deliverables';
+      case 'assignment-details':
+      case 'projects':
+        return 'Projects Tracking';
+      case 'analytics':
+        return 'Performance Analytics';
       case 'calendar':
         return 'Academic Calendar';
+      case 'study-groups':
+        return 'Study Groups';
+      case 'research':
+        return 'Research Discovery';
       case 'settings':
         return 'Settings';
       default:
-        return 'Assignify';
+        return 'Scholar Tracker';
     }
   };
 
   const navItems = [
     { view: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { view: 'subjects', label: 'Course Progress', icon: 'auto_stories' },
-    { view: 'tasks', label: 'Tasks & Deliverables', icon: 'assignment' },
+    { view: 'subjects', label: 'Courses Overview', icon: 'school' },
+    { view: 'tasks', label: 'Tasks', icon: 'assignment' },
+    { view: 'assignment-details', label: 'Projects', icon: 'account_tree' },
+    { view: 'analytics', label: 'Analytics', icon: 'analytics' },
     { view: 'calendar', label: 'Calendar', icon: 'calendar_month' },
-    { view: 'profile', label: 'Your Profile', icon: 'person' },
+    { view: 'study-groups', label: 'Study Groups', icon: 'groups' },
+    { view: 'research', label: 'Research Discovery', icon: 'biotech' },
+    { view: 'profile', label: 'Profile', icon: 'person' },
     { view: 'settings', label: 'Settings', icon: 'settings' }
   ];
 

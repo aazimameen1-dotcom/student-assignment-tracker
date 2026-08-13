@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en" style="width: 1280px; height: 1024px; overflow: hidden; position: relative;"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic Dashboard - Scholarly Precision</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#f8f9ff",
+                    "secondary-container": "#2170e4",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-container": "#fefcff",
+                    "tertiary-container": "#002113",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-primary": "#bec6e0",
+                    "primary-container": "#131b2e",
+                    "primary-fixed-dim": "#bec6e0",
+                    "on-secondary-fixed-variant": "#004395",
+                    "surface-container-highest": "#d3e4fe",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed": "#002113",
+                    "secondary-fixed": "#d8e2ff",
+                    "primary-fixed": "#dae2fd",
+                    "on-surface": "#0b1c30",
+                    "on-error": "#ffffff",
+                    "surface-variant": "#d3e4fe",
+                    "background": "#f8f9ff",
+                    "surface-bright": "#f8f9ff",
+                    "on-surface-variant": "#45464d",
+                    "on-tertiary-container": "#009668",
+                    "surface-container-low": "#eff4ff",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "on-background": "#0b1c30",
+                    "tertiary": "#000000",
+                    "primary": "#000000",
+                    "on-primary-container": "#7c839b",
+                    "on-secondary-fixed": "#001a42",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "surface-dim": "#cbdbf5",
+                    "on-error-container": "#93000a",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "outline-variant": "#c6c6cd",
+                    "surface-tint": "#565e74",
+                    "tertiary-fixed": "#6ffbbe",
+                    "outline": "#76777d",
+                    "error": "#ba1a1a",
+                    "surface-container": "#e5eeff",
+                    "surface-container-high": "#dce9ff",
+                    "secondary": "#0058be",
+                    "inverse-surface": "#213145",
+                    "on-primary-fixed": "#131b2e",
+                    "inverse-on-surface": "#eaf1ff",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed-variant": "#3f465c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "container-padding-mobile": "16px",
+                    "stack-sm": "8px",
+                    "stack-lg": "24px",
+                    "base": "4px",
+                    "container-padding-desktop": "32px",
+                    "stack-md": "16px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "body-sm": [
+                            "Inter"
+                    ],
+                    "headline-lg-mobile": [
+                            "Hanken Grotesk"
+                    ],
+                    "data-mono": [
+                            "JetBrains Mono"
+                    ],
+                    "title-md": [
+                            "Hanken Grotesk"
+                    ],
+                    "label-caps": [
+                            "JetBrains Mono"
+                    ],
+                    "headline-lg": [
+                            "Hanken Grotesk"
+                    ],
+                    "display-lg": [
+                            "Hanken Grotesk"
+                    ]
+            },
+            "fontSize": {
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400",
+                                    "letterSpacing": "0.01em"
+                            }
+                    ],
+                    "body-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400",
+                                    "letterSpacing": "0.02em"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "data-mono": [
+                            "13px",
+                            {
+                                    "lineHeight": "18px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "title-md": [
+                            "18px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-caps": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            },
+            "boxShadow": {
+                "soft": "0 2px 10px -2px rgba(15, 23, 42, 0.05), 0 4px 6px -4px rgba(15, 23, 42, 0.02)",
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md antialiased h-screen overflow-hidden flex">
+<!-- SideNavBar -->
+<aside class="w-[280px] h-full fixed left-0 top-0 overflow-y-auto border-r border-outline-variant/30 bg-[#0f172a] text-slate-300 flex flex-col h-screen py-8 z-50 md:flex hidden shadow-lg">
+<div class="px-8 mb-10 flex items-center gap-4">
+<span class="material-symbols-outlined text-white text-3xl">school</span>
+<div>
+<h1 class="font-headline-lg text-lg font-bold tracking-tight text-white uppercase">Scholar Tracker</h1>
+<p class="text-slate-400 text-xs mt-0.5 tracking-wider">Academic Excellence</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1.5">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-white font-medium bg-white/10 shadow-sm transition-all duration-200 ease-in-out relative overflow-hidden" href="#">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r-full"></div>
+<span class="material-symbols-outlined fill-icon text-blue-400" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<div class="group">
+<button class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-400 hover:text-slate-200 transition-colors hover:bg-white/5">
+<div class="flex items-center gap-3 font-medium">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+                        Courses
+                    </div>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+</div>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-slate-200 font-medium transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+                Tasks
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-slate-200 font-medium transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined" data-icon="architecture">architecture</span>
+                Projects
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-slate-200 font-medium transition-colors hover:bg-white/5" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-slate-200 font-medium transition-colors hover:bg-white/5 mt-4" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 md:ml-[280px] h-full flex flex-col bg-slate-50/50 relative overflow-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-full md:w-[calc(100%-280px)] h-[72px] z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md flex items-center justify-between px-8">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-slate-600 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="font-headline-lg font-bold text-slate-800 text-xl hidden sm:block tracking-tight">Academic Dashboard</h2>
+</div>
+<div class="flex items-center gap-8">
+<div class="relative hidden lg:block w-72">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-100/50 border-none rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:bg-white text-sm transition-all text-slate-700 placeholder:text-slate-400" placeholder="Search resources, courses..." type="text"/>
+</div>
+<div class="flex items-center gap-5">
+<button class="text-slate-400 hover:text-slate-700 transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-0.5 right-0.5 w-2 h-2 bg-blue-500 rounded-full border border-white"></span>
+</button>
+<button class="text-slate-400 hover:text-slate-700 transition-colors">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="flex items-center gap-3 pl-5 border-l border-slate-200">
+<div class="text-right hidden sm:block">
+<p class="font-title-md text-sm text-slate-800 tracking-wide font-semibold">Scholar</p>
+<p class="text-[11px] text-slate-500 font-medium">Senior · 15 Day Streak</p>
+</div>
+<div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold shadow-sm">
+                            JD
+                        </div>
+</div>
+</div>
+</div>
+</header>
+<!-- Scrollable Content Canvas -->
+<div class="flex-1 mt-[72px] p-6 lg:p-10 overflow-y-auto">
+<div class="max-w-7xl mx-auto space-y-10">
+<!-- Progress Header -->
+<div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+<div class="bg-white rounded-2xl p-8 flex items-center justify-center xl:col-span-1 shadow-soft border border-slate-100">
+<div class="text-center w-full">
+<h3 class="font-title-md text-slate-700 mb-6 text-[15px] tracking-wide font-semibold">Overall Progress</h3>
+<div class="relative w-36 h-36 mx-auto">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 100 100">
+<!-- Define gradient for stroke -->
+<defs>
+<lineargradient id="progressGrad" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#3b82f6"></stop>
+<stop offset="100%" stop-color="#1d4ed8"></stop>
+</lineargradient>
+</defs>
+<circle cx="50" cy="50" fill="none" r="42" stroke="#f1f5f9" stroke-width="8"></circle>
+<circle class="transition-all duration-1000 ease-out" cx="50" cy="50" fill="none" r="42" stroke="url(#progressGrad)" stroke-dasharray="263.89" stroke-dashoffset="105.55" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center flex-col">
+<span class="font-display-lg text-3xl text-slate-800 font-bold tracking-tighter">60%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-2xl p-8 xl:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-8 shadow-soft border border-slate-100">
+<div class="flex flex-col justify-between">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-md text-slate-600 text-sm font-semibold tracking-wide uppercase">Current GPA</h3>
+<span class="font-data-mono text-blue-600 font-bold text-lg bg-blue-50 px-3 py-1 rounded-md">3.8</span>
+</div>
+<div class="h-28 rounded-xl flex items-end px-1 pb-1 relative overflow-hidden">
+<!-- Gradient background for line chart -->
+<div class="absolute inset-0 bg-gradient-to-t from-blue-50/50 to-transparent"></div>
+<svg class="w-full h-full drop-shadow-sm" preserveaspectratio="none" viewbox="0 0 100 40">
+<defs>
+<lineargradient id="lineGrad1" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#60a5fa"></stop>
+<stop offset="100%" stop-color="#2563eb"></stop>
+</lineargradient>
+<lineargradient id="fillGrad1" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#3b82f6" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#3b82f6" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,35 C15,35 20,15 35,25 C50,35 55,5 70,10 C85,15 90,30 100,20 L100,40 L0,40 Z" fill="url(#fillGrad1)"></path>
+<path d="M0,35 C15,35 20,15 35,25 C50,35 55,5 70,10 C85,15 90,30 100,20" fill="none" stroke="url(#lineGrad1)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+</div>
+</div>
+<div class="flex flex-col justify-between">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-md text-slate-600 text-sm font-semibold tracking-wide uppercase">Tasks Completed</h3>
+<span class="font-data-mono text-slate-800 font-bold text-base"><span class="text-slate-900">76</span> <span class="text-slate-400 font-normal">/ 100</span></span>
+</div>
+<div class="h-28 rounded-xl flex items-end px-1 pb-1 relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-t from-emerald-50/50 to-transparent"></div>
+<svg class="w-full h-full drop-shadow-sm" preserveaspectratio="none" viewbox="0 0 100 40">
+<defs>
+<lineargradient id="lineGrad2" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#34d399"></stop>
+<stop offset="100%" stop-color="#059669"></stop>
+</lineargradient>
+<lineargradient id="fillGrad2" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#10b981" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#10b981" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,30 C20,35 30,25 45,20 C60,15 75,5 100,10 L100,40 L0,40 Z" fill="url(#fillGrad2)"></path>
+<path d="M0,30 C20,35 30,25 45,20 C60,15 75,5 100,10" fill="none" stroke="url(#lineGrad2)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+</div>
+</div>
+<div class="flex flex-col justify-between">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-md text-slate-600 text-sm font-semibold tracking-wide uppercase">Course Performance</h3>
+<span class="font-data-mono text-indigo-600 font-bold text-base bg-indigo-50 px-2 py-1 rounded-md">Top 15%</span>
+</div>
+<div class="h-28 rounded-xl flex items-end px-1 pb-1 relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-t from-indigo-50/50 to-transparent"></div>
+<svg class="w-full h-full drop-shadow-sm" preserveaspectratio="none" viewbox="0 0 100 40">
+<defs>
+<lineargradient id="lineGrad3" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#818cf8"></stop>
+<stop offset="100%" stop-color="#4f46e5"></stop>
+</lineargradient>
+<lineargradient id="fillGrad3" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#6366f1" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#6366f1" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,25 C20,15 40,30 60,15 C80,0 90,10 100,5 L100,40 L0,40 Z" fill="url(#fillGrad3)"></path>
+<path d="M0,25 C20,15 40,30 60,15 C80,0 90,10 100,5" fill="none" stroke="url(#lineGrad3)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Grid Layout -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+<!-- Main Canvas Area -->
+<div class="xl:col-span-2 space-y-8">
+<!-- Pending Scholarly Works -->
+<div class="bg-white rounded-2xl overflow-hidden shadow-soft border border-slate-100">
+<div class="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center">
+<div>
+<h3 class="font-title-md text-slate-800 text-lg font-bold">Pending Scholarly Works</h3>
+<p class="text-sm text-slate-500 mt-1">Upcoming assignments and active projects</p>
+</div>
+<div class="flex gap-3">
+<button class="p-2.5 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors shadow-sm"><span class="material-symbols-outlined text-sm">filter_list</span></button>
+<button class="px-5 py-2.5 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-2"><span class="material-symbols-outlined text-sm font-bold">add</span> New Task</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50/50">
+<th class="p-5 pl-8 font-label-caps text-slate-500 font-semibold tracking-wider text-[11px] uppercase border-b border-slate-100">Assignment</th>
+<th class="p-5 font-label-caps text-slate-500 font-semibold tracking-wider text-[11px] uppercase border-b border-slate-100">Course</th>
+<th class="p-5 font-label-caps text-slate-500 font-semibold tracking-wider text-[11px] uppercase border-b border-slate-100">Due Date</th>
+<th class="p-5 font-label-caps text-slate-500 font-semibold tracking-wider text-[11px] uppercase border-b border-slate-100">Status</th>
+<th class="p-5 font-label-caps text-slate-500 font-semibold tracking-wider text-[11px] uppercase border-b border-slate-100">Priority</th>
+</tr>
+</thead>
+<tbody class="font-body-sm">
+<tr class="border-b border-slate-50 hover:bg-slate-50/80 transition-colors group">
+<td class="p-5 pl-8 font-semibold text-slate-800 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">description</span>
+</div>
+                                Biology 101 Essay
+                            </td>
+<td class="p-5 text-slate-500 font-medium">Biology 101</td>
+<td class="p-5 font-data-mono text-slate-600">Apr 10, 2023</td>
+<td class="p-5"><span class="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200/50 tracking-wide uppercase">In Progress</span></td>
+<td class="p-5">
+<div class="flex items-center gap-1.5 text-rose-600 font-semibold text-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> High
+                                </div>
+</td>
+</tr>
+<tr class="border-b border-slate-50 hover:bg-slate-50/80 transition-colors group">
+<td class="p-5 pl-8 font-semibold text-slate-800 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">auto_stories</span>
+</div>
+                                History Midterm Prep
+                            </td>
+<td class="p-5 text-slate-500 font-medium">History 101</td>
+<td class="p-5 font-data-mono text-slate-600">Apr 15, 2023</td>
+<td class="p-5"><span class="px-3 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-700 border border-amber-200/50 tracking-wide uppercase">Pending</span></td>
+<td class="p-5">
+<div class="flex items-center gap-1.5 text-slate-600 font-semibold text-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Medium
+                                </div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="p-5 pl-8 font-semibold text-slate-800 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">architecture</span>
+</div>
+                                Project Proposal
+                            </td>
+<td class="p-5 text-slate-500 font-medium">Project 102</td>
+<td class="p-5 font-data-mono text-slate-600">Apr 18, 2023</td>
+<td class="p-5"><span class="px-3 py-1 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-700 border border-blue-200/50 tracking-wide uppercase">Drafting</span></td>
+<td class="p-5">
+<div class="flex items-center gap-1.5 text-rose-600 font-semibold text-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> High
+                                </div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Right Sidebar Widgets -->
+<div class="space-y-8">
+<!-- Calendar Widget -->
+<div class="bg-white rounded-2xl p-8 shadow-soft border border-slate-100">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-md text-slate-800 text-base font-bold">May 2023</h3>
+<div class="flex gap-1 text-slate-400">
+<button class="p-1.5 hover:bg-slate-50 rounded-md transition-colors"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+<button class="p-1.5 hover:bg-slate-50 rounded-md transition-colors"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+</div>
+</div>
+<div class="grid grid-cols-7 gap-y-3 gap-x-1 text-center text-[13px]">
+<div class="text-slate-400 font-medium text-xs mb-2">Su</div><div class="text-slate-400 font-medium text-xs mb-2">Mo</div><div class="text-slate-400 font-medium text-xs mb-2">Tu</div><div class="text-slate-400 font-medium text-xs mb-2">We</div><div class="text-slate-400 font-medium text-xs mb-2">Th</div><div class="text-slate-400 font-medium text-xs mb-2">Fr</div><div class="text-slate-400 font-medium text-xs mb-2">Sa</div>
+<div class="text-slate-300 py-1">29</div><div class="text-slate-300 py-1">30</div><div class="text-slate-300 py-1">31</div><div class="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">1</div><div class="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">2</div><div class="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">3</div><div class="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">4</div>
+<div class="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">5</div><div class="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">6</div><div class="bg-blue-600 text-white rounded-lg py-1 font-semibold shadow-sm cursor-pointer">7</div><div class="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer relative">8<span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-rose-500 rounded-full"></span></div><div class="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">9</div><div class="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">10</div><div class="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">11</div>
+</div>
+</div>
+<!-- Quick Notes -->
+<div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 shadow-soft text-white flex items-center justify-between group cursor-pointer hover:shadow-md transition-shadow">
+<div>
+<h3 class="font-title-md text-sm font-semibold tracking-wide uppercase text-slate-200">Quill &amp; Scroll</h3>
+<p class="text-slate-400 text-xs mt-1">Quick Notes</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined text-white text-lg">edit_document</span>
+</div>
+</div>
+<!-- Task Prioritization -->
+<div class="bg-white rounded-2xl p-8 shadow-soft border border-slate-100">
+<h3 class="font-title-md text-slate-800 text-base font-bold mb-6">Task Prioritization</h3>
+<ul class="space-y-4">
+<li class="flex items-start gap-4 group cursor-pointer">
+<div class="w-2 h-2 rounded-full bg-rose-500 mt-1.5 ring-4 ring-rose-50"></div>
+<div>
+<p class="font-semibold text-slate-800 text-sm group-hover:text-blue-600 transition-colors">Essays &amp; Papers</p>
+<p class="text-xs text-slate-500 mt-0.5">Assignment 1 · High Priority</p>
+</div>
+</li>
+<li class="flex items-start gap-4 group cursor-pointer">
+<div class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 ring-4 ring-blue-50"></div>
+<div>
+<p class="font-semibold text-slate-800 text-sm group-hover:text-blue-600 transition-colors">Quizzes &amp; Midterms</p>
+<p class="text-xs text-slate-500 mt-0.5">Assignment 2 · Medium Priority</p>
+</div>
+</li>
+<li class="flex items-start gap-4 group cursor-pointer">
+<div class="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 ring-4 ring-emerald-50"></div>
+<div>
+<p class="font-semibold text-slate-800 text-sm group-hover:text-blue-600 transition-colors">Group Projects</p>
+<p class="text-xs text-slate-500 mt-0.5">Assignment 6 · Low Priority</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<div aria-hidden="true" data-snapdom-sandbox="true" id="snapdom-sandbox" style="position: absolute; left: -9999px; top: -9999px; width: 0px; height: 0px; overflow: hidden;"></div></body></html>

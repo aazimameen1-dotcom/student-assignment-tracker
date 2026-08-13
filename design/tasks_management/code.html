@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Scholar Tracker - Tasks</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#dae2fd",
+                    "on-surface-variant": "#45464d",
+                    "inverse-surface": "#213145",
+                    "surface-variant": "#d3e4fe",
+                    "background": "#f8f9ff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface": "#0b1c30",
+                    "inverse-on-surface": "#eaf1ff",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed-variant": "#3f465c",
+                    "inverse-primary": "#bec6e0",
+                    "secondary-fixed": "#d8e2ff",
+                    "outline-variant": "#c6c6cd",
+                    "surface-container-high": "#dce9ff",
+                    "on-primary-fixed": "#131b2e",
+                    "surface": "#f8f9ff",
+                    "secondary-container": "#2170e4",
+                    "error": "#ba1a1a",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-container": "#7c839b",
+                    "primary-fixed-dim": "#bec6e0",
+                    "tertiary": "#000000",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "secondary": "#0058be",
+                    "surface-bright": "#f8f9ff",
+                    "surface-container-low": "#eff4ff",
+                    "outline": "#76777d",
+                    "tertiary-fixed": "#6ffbbe",
+                    "on-secondary-fixed-variant": "#004395",
+                    "on-tertiary-container": "#009668",
+                    "on-tertiary-fixed": "#002113",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "on-secondary-fixed": "#001a42",
+                    "on-secondary-container": "#fefcff",
+                    "error-container": "#ffdad6",
+                    "surface-container-highest": "#d3e4fe",
+                    "surface-tint": "#565e74",
+                    "surface-container": "#e5eeff",
+                    "surface-dim": "#cbdbf5",
+                    "primary-container": "#131b2e",
+                    "on-error-container": "#93000a",
+                    "primary": "#000000",
+                    "on-background": "#0b1c30",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#002113"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "container-padding-mobile": "16px",
+                    "stack-md": "16px",
+                    "gutter": "24px",
+                    "stack-lg": "24px",
+                    "base": "4px",
+                    "stack-sm": "8px",
+                    "container-padding-desktop": "32px"
+            },
+            "fontFamily": {
+                    "body-sm": [
+                            "Inter"
+                    ],
+                    "headline-lg-mobile": [
+                            "Hanken Grotesk"
+                    ],
+                    "data-mono": [
+                            "JetBrains Mono"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "label-caps": [
+                            "JetBrains Mono"
+                    ],
+                    "title-md": [
+                            "Hanken Grotesk"
+                    ],
+                    "display-lg": [
+                            "Hanken Grotesk"
+                    ],
+                    "headline-lg": [
+                            "Hanken Grotesk"
+                    ]
+            },
+            "fontSize": {
+                    "body-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "data-mono": [
+                            "13px",
+                            {
+                                    "lineHeight": "18px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-caps": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "title-md": [
+                            "18px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .kanban-column {
+            min-height: 500px;
+        }
+        .task-card {
+            transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c6c6cd;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #76777d;
+        }
+    </style>
+</head>
+<body class="bg-surface min-h-screen text-on-surface font-body-md flex selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<!-- SideNavBar (Hidden on Mobile) -->
+<nav class="hidden md:flex flex-col h-full py-stack-lg px-stack-md bg-primary-container dark:bg-primary-container fixed left-0 top-0 h-full w-[280px] border-r border-outline-variant z-20">
+<!-- Header -->
+<div class="flex items-center gap-stack-sm mb-stack-lg px-stack-sm">
+<img alt="Scholar Tracker Logo" class="w-10 h-10 rounded-lg object-cover" data-alt="A minimalist, geometric logo design for a scholarly tracking application, featuring sharp angles and a clean, academic aesthetic rendered in deep indigo and subtle silver tones on a transparent background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe1J2x8JGdTgX5ooBJmCVYh7wYb33x4xjuV8SP2FGCO0H4G6I_EYFekc1htErZsm0ubKaAPBhJ-be_c_gehdVgIngElml71V8q39gaNxYqwABRz8Y587JaeLLcRFpGhdYvUzYWEioNxuoWBcAMxSD8a38iMY4hu4VcGxJdqDxrK4jTX2zdINRmhXGmkm8dHHfKE5EtcrJIiA3Tda_W4lFABydg8hMOXs1cTFVYPyeLSYypTZpCQW7j"/>
+<div>
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-primary-fixed leading-tight">Scholar Tracker</h1>
+<p class="font-body-sm text-body-sm text-on-primary-container">Academic Excellence</p>
+</div>
+</div>
+<!-- Main Navigation -->
+<ul class="flex flex-col gap-base flex-1">
+<li>
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm text-on-primary-fixed-variant hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors rounded-xl font-body-md text-body-md scale-95 duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+                    Dashboard
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm text-on-primary-fixed-variant hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors rounded-xl font-body-md text-body-md scale-95 duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">school</span>
+                    Courses
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm text-primary-fixed bg-on-primary-fixed-variant rounded-xl font-body-md text-body-md scale-95 duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">assignment</span>
+                    Tasks
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm text-on-primary-fixed-variant hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors rounded-xl font-body-md text-body-md scale-95 duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_tree</span>
+                    Projects
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm text-on-primary-fixed-variant hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors rounded-xl font-body-md text-body-md scale-95 duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">analytics</span>
+                    Analytics
+                </a>
+</li>
+</ul>
+<!-- CTA -->
+<div class="mt-auto mb-stack-lg px-stack-sm">
+<button class="w-full bg-[#0F172A] text-on-primary font-title-md text-title-md py-stack-sm px-stack-md rounded-xl hover:bg-on-surface transition-colors flex items-center justify-center gap-stack-sm shadow-sm">
+<span class="material-symbols-outlined">add</span>
+                New Research
+            </button>
+</div>
+<!-- Footer Navigation -->
+<ul class="flex flex-col gap-base border-t border-outline-variant pt-stack-md px-stack-sm">
+<li>
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm text-on-primary-fixed-variant hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors rounded-xl font-body-md text-body-md scale-95 duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+                    Settings
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-stack-sm px-stack-md py-stack-sm text-on-primary-fixed-variant hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors rounded-xl font-body-md text-body-md scale-95 duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">help</span>
+                    Support
+                </a>
+</li>
+</ul>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 md:ml-[280px] flex flex-col min-h-screen">
+<!-- TopAppBar (Desktop Only) -->
+<header class="hidden md:flex justify-between items-center h-16 px-gutter w-full bg-surface dark:bg-surface border-b border-outline-variant z-10 sticky top-0">
+<!-- Search -->
+<div class="flex-1 max-w-md">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-on-surface-variant pointer-events-none">search</span>
+<input class="w-full bg-transparent border-0 border-b border-outline-variant focus:border-secondary-container focus:ring-0 pl-10 py-2 text-on-surface placeholder:text-on-surface-variant font-body-md text-body-md transition-colors" placeholder="Search tasks, projects..." type="text"/>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-stack-md">
+<div class="flex items-center gap-stack-sm">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors opacity-80 duration-200 hover:opacity-100 rounded-full hover:bg-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors opacity-80 duration-200 hover:opacity-100 rounded-full hover:bg-surface-variant">
+<span class="material-symbols-outlined">history</span>
+</button>
+</div>
+<div class="h-8 w-px bg-outline-variant"></div>
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-outline-variant object-cover cursor-pointer" data-alt="A professional headshot of a young academic or researcher, wearing a tailored navy blazer over a crisp white shirt, smiling subtly against a soft, well-lit studio background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDI3VBLZzZKWhZcVtcpq8bJnmU_PYEQzODqYssPaDRi1T_IBvccE51-Xvn273hiH09I1M8ECJ9d1DjAUaLFH6J1RB8D5yGAsGs6aHXPIohj3IZmSApSQJ2zii46aE8BdBV2CkuEhe0zEmSfYL1ygTwhCPmxmRzZG3vrGJxoTO6LmgCs3QEIqrZEbFV2WYEFpV1ghykCtm1ZeQPc6yOdJLxnGXlf1F6jqLjHquoVz4kpDoZNC3xxG4l0"/>
+</div>
+</header>
+<!-- Mobile Header (Placeholder for mobile navigation toggle) -->
+<header class="md:hidden flex justify-between items-center h-16 px-container-padding-mobile bg-surface border-b border-outline-variant sticky top-0 z-10">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface">Tasks</h1>
+<button class="p-2 text-on-surface-variant">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<!-- Canvas -->
+<main class="flex-1 p-container-padding-mobile md:p-container-padding-desktop overflow-x-hidden">
+<!-- Header & Controls -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-stack-md mb-stack-lg">
+<div>
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">Scholarly Tasks</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Manage and track your academic assignments.</p>
+</div>
+<div class="flex flex-wrap items-center gap-stack-sm">
+<!-- Filters -->
+<div class="flex items-center bg-surface-container-lowest border border-outline-variant rounded-lg p-1">
+<button class="px-stack-sm py-1 font-label-caps text-label-caps text-primary bg-surface-variant rounded-md font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">filter_list</span> All
+                        </button>
+<button class="px-stack-sm py-1 font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors">CHEM 301</button>
+<button class="px-stack-sm py-1 font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors">HIST 410</button>
+</div>
+<div class="h-8 w-px bg-outline-variant hidden sm:block"></div>
+<!-- View Toggle -->
+<div class="flex items-center bg-surface-container-lowest border border-outline-variant rounded-lg p-1">
+<button aria-label="Kanban View" class="p-1 text-primary bg-surface-variant rounded-md flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">view_kanban</span>
+</button>
+<button aria-label="List View" class="p-1 text-on-surface-variant hover:text-primary transition-colors rounded-md flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">view_list</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Kanban Board -->
+<div class="flex gap-gutter overflow-x-auto pb-stack-lg snap-x snap-mandatory">
+<!-- Column: To Do -->
+<div class="w-[320px] shrink-0 snap-start bg-surface-container-low rounded-xl border border-outline-variant flex flex-col h-full kanban-column">
+<div class="p-stack-md border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-outline"></div>
+<h3 class="font-title-md text-title-md text-on-surface">To Do</h3>
+<span class="bg-surface-variant text-on-surface font-data-mono text-data-mono px-2 py-0.5 rounded-full text-[11px]">3</span>
+</div>
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<div class="p-stack-sm flex flex-col gap-stack-sm overflow-y-auto flex-1">
+<!-- Task Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md task-card cursor-grab">
+<div class="flex justify-between items-start mb-stack-sm">
+<span class="bg-error-container text-on-error-container font-label-caps text-label-caps px-2 py-0.5 rounded-sm">HIGH PRIORITY</span>
+<span class="font-data-mono text-data-mono text-on-surface-variant text-[11px]">Oct 24</span>
+</div>
+<h4 class="font-title-md text-title-md text-on-surface leading-snug mb-1">Literature Review: Post-Modernist Architecture</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-stack-md line-clamp-2">Compile primary sources and draft initial thematic structure for final paper.</p>
+<div class="flex items-center justify-between mt-auto">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary flex items-center justify-center font-label-caps text-[10px]">ARC</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">ARCH 405</span>
+</div>
+<div class="flex -space-x-2">
+<img alt="Assignee" class="w-6 h-6 rounded-full border-2 border-surface-container-lowest object-cover" data-alt="Small circular avatar profile picture of a male student with glasses." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtA1B-xLYdzXrX_2HN2L3ywmIzS4juilddUAnTpcXqgRaOnnFx6HDcWisNOyoFt-f7FiSdaICnuD5jW3R69woQ0GenPfa5GJY2z8IpH7TLIQuEXIBVOKt7TGQ6E9ZOUUd89Ld4jDHc_dgoxkrFGRbfg6yXXuTHugTU7HW0mQD9V3nmIpoLwXcK6IfGLQJ5YCXMN-bp_ULHO7-aIIq-7yPxHS3_yGiTmAYttQrwpOIE83yjxhw2ZkX3"/>
+</div>
+</div>
+</div>
+<!-- Task Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md task-card cursor-grab">
+<div class="flex justify-between items-start mb-stack-sm">
+<span class="bg-surface-variant text-on-surface-variant font-label-caps text-label-caps px-2 py-0.5 rounded-sm">LOW PRIORITY</span>
+<span class="font-data-mono text-data-mono text-on-surface-variant text-[11px]">Oct 28</span>
+</div>
+<h4 class="font-title-md text-title-md text-on-surface leading-snug mb-1">Data Entry: Lab Results Batch B</h4>
+<div class="flex items-center justify-between mt-stack-md">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-label-caps text-[10px]">CHM</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">CHEM 301</span>
+</div>
+</div>
+</div>
+<!-- Task Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md task-card cursor-grab">
+<div class="flex justify-between items-start mb-stack-sm">
+<span class="bg-secondary-fixed text-on-secondary-fixed-variant font-label-caps text-label-caps px-2 py-0.5 rounded-sm">MED PRIORITY</span>
+<span class="font-data-mono text-data-mono text-error text-[11px] font-medium">Tomorrow</span>
+</div>
+<h4 class="font-title-md text-title-md text-on-surface leading-snug mb-1">Prepare Slides for Seminar Presentation</h4>
+<div class="mt-stack-sm flex items-center gap-2 text-on-surface-variant font-body-sm text-[12px]">
+<span class="material-symbols-outlined text-[16px]">attachment</span> 2 Files
+                                <span class="material-symbols-outlined text-[16px] ml-2">chat_bubble_outline</span> 1 Note
+                            </div>
+<div class="flex items-center justify-between mt-stack-md">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-surface-tint text-on-primary flex items-center justify-center font-label-caps text-[10px]">HIS</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">HIST 410</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: In Progress -->
+<div class="w-[320px] shrink-0 snap-start bg-surface-container-low rounded-xl border border-outline-variant flex flex-col h-full kanban-column">
+<div class="p-stack-md border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary-container"></div>
+<h3 class="font-title-md text-title-md text-on-surface">In Progress</h3>
+<span class="bg-surface-variant text-on-surface font-data-mono text-data-mono px-2 py-0.5 rounded-full text-[11px]">2</span>
+</div>
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<div class="p-stack-sm flex flex-col gap-stack-sm overflow-y-auto flex-1">
+<!-- Task Card 4 -->
+<div class="bg-surface-container-lowest border-l-2 border-l-secondary-container border-y border-r border-outline-variant rounded-lg p-stack-md task-card cursor-grab">
+<div class="flex justify-between items-start mb-stack-sm">
+<span class="bg-error-container text-on-error-container font-label-caps text-label-caps px-2 py-0.5 rounded-sm">HIGH PRIORITY</span>
+<span class="font-data-mono text-data-mono text-on-surface-variant text-[11px]">Oct 22</span>
+</div>
+<h4 class="font-title-md text-title-md text-on-surface leading-snug mb-1">Draft Chapter 3: Methodology</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-stack-md line-clamp-2">Detailing the statistical models used for analyzing the primary dataset.</p>
+<!-- Progress Bar -->
+<div class="mb-stack-md">
+<div class="flex justify-between text-[11px] font-data-mono text-on-surface-variant mb-1">
+<span>Progress</span>
+<span>65%</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-1">
+<div class="bg-secondary-container h-1 rounded-full" style="width: 65%"></div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-auto">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-label-caps text-[10px]">THS</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">THESIS</span>
+</div>
+<div class="flex -space-x-2">
+<img alt="Assignee" class="w-6 h-6 rounded-full border-2 border-surface-container-lowest object-cover" data-alt="Small circular avatar profile picture of a female researcher." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6TQPF_xydrapoBqtShIIUSk9JNyCKMubtqInIxxXfLB-MpK5P2Q1bgytDt034HqMiaQx5Yfwa0EtXfrWPtTPSbtOHZorKs4kNytVh_bpE69oJBmO4RWmeD-K2FUW-ygrIDLwDPDgo2rb-C2dOmIq-Z9Dj4Lpricff182dLOedfqHGFcOQS-gba61doZ_mJE2HiUNcKfVeNeVxqiTYEm7tb14AuY3wKKbgHyDScQRoD6aGB4gwilBD"/>
+</div>
+</div>
+</div>
+<!-- Task Card 5 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md task-card cursor-grab">
+<div class="flex justify-between items-start mb-stack-sm">
+<span class="bg-secondary-fixed text-on-secondary-fixed-variant font-label-caps text-label-caps px-2 py-0.5 rounded-sm">MED PRIORITY</span>
+<span class="font-data-mono text-data-mono text-on-surface-variant text-[11px]">Oct 25</span>
+</div>
+<h4 class="font-title-md text-title-md text-on-surface leading-snug mb-1">Peer Review: Smith et al. Submission</h4>
+<div class="flex items-center justify-between mt-stack-md">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-label-caps text-[10px]">CHM</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">CHEM 301</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Completed -->
+<div class="w-[320px] shrink-0 snap-start bg-surface-container-low rounded-xl border border-outline-variant flex flex-col h-full kanban-column opacity-75">
+<div class="p-stack-md border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></div>
+<h3 class="font-title-md text-title-md text-on-surface">Completed</h3>
+<span class="bg-surface-variant text-on-surface font-data-mono text-data-mono px-2 py-0.5 rounded-full text-[11px]">1</span>
+</div>
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<div class="p-stack-sm flex flex-col gap-stack-sm overflow-y-auto flex-1">
+<!-- Task Card 6 -->
+<div class="bg-surface border border-outline-variant rounded-lg p-stack-md task-card cursor-grab">
+<div class="flex justify-between items-start mb-stack-sm">
+<span class="text-on-tertiary-container font-label-caps text-label-caps flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check_circle</span> DONE</span>
+<span class="font-data-mono text-data-mono text-outline text-[11px] line-through">Oct 18</span>
+</div>
+<h4 class="font-title-md text-title-md text-on-surface-variant leading-snug mb-1 line-through decoration-outline">Finalize Grant Proposal Budget</h4>
+<div class="flex items-center justify-between mt-stack-md">
+<div class="flex items-center gap-2 opacity-60">
+<span class="w-6 h-6 rounded-full bg-surface-tint text-on-primary flex items-center justify-center font-label-caps text-[10px]">ADM</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">ADMIN</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Add Column Placeholder -->
+<div class="w-[320px] shrink-0 snap-start rounded-xl border border-dashed border-outline-variant flex flex-col items-center justify-center h-[120px] text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer mt-0">
+<span class="material-symbols-outlined mb-1">add</span>
+<span class="font-body-sm text-body-sm font-medium">Add Section</span>
+</div>
+</div>
+</main>
+</div>
+</body></html>

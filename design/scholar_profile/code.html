@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Scholar Tracker - Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Hanken+Grotesk:wght@600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#76777d",
+                      "error": "#ba1a1a",
+                      "inverse-on-surface": "#eaf1ff",
+                      "on-surface-variant": "#45464d",
+                      "surface-variant": "#d3e4fe",
+                      "surface-container-highest": "#d3e4fe",
+                      "on-error": "#ffffff",
+                      "tertiary": "#000000",
+                      "secondary-fixed-dim": "#adc6ff",
+                      "surface-bright": "#f8f9ff",
+                      "on-error-container": "#93000a",
+                      "inverse-primary": "#bec6e0",
+                      "error-container": "#ffdad6",
+                      "on-primary-fixed-variant": "#3f465c",
+                      "primary": "#000000",
+                      "on-tertiary-fixed": "#002113",
+                      "secondary": "#0058be",
+                      "surface-dim": "#cbdbf5",
+                      "surface-container": "#e5eeff",
+                      "on-secondary": "#ffffff",
+                      "on-surface": "#0b1c30",
+                      "surface-container-high": "#dce9ff",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-container": "#002113",
+                      "surface-container-low": "#eff4ff",
+                      "inverse-surface": "#213145",
+                      "primary-fixed": "#dae2fd",
+                      "primary-fixed-dim": "#bec6e0",
+                      "on-background": "#0b1c30",
+                      "outline-variant": "#c6c6cd",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "surface": "#f8f9ff",
+                      "secondary-fixed": "#d8e2ff",
+                      "on-secondary-container": "#fefcff",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#004395",
+                      "on-primary": "#ffffff",
+                      "surface-tint": "#565e74",
+                      "secondary-container": "#2170e4",
+                      "primary-container": "#131b2e",
+                      "on-tertiary-container": "#009668",
+                      "on-primary-fixed": "#131b2e",
+                      "on-primary-container": "#7c839b",
+                      "background": "#f8f9ff",
+                      "tertiary-fixed": "#6ffbbe",
+                      "on-secondary-fixed": "#001a42"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "container-padding-desktop": "32px",
+                      "base": "4px",
+                      "stack-md": "16px",
+                      "gutter": "24px",
+                      "container-padding-mobile": "16px",
+                      "stack-lg": "24px",
+                      "stack-sm": "8px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "data-mono": [
+                              "JetBrains Mono"
+                      ],
+                      "title-md": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-lg-mobile": [
+                              "Hanken Grotesk"
+                      ],
+                      "label-caps": [
+                              "JetBrains Mono"
+                      ],
+                      "display-lg": [
+                              "Hanken Grotesk"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "data-mono": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "title-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-full py-stack-lg px-stack-md bg-primary-container dark:bg-primary-container text-on-primary dark:text-inverse-primary fixed left-0 top-0 h-full w-[280px] border-r border-outline-variant flat no shadows">
+<div class="mb-stack-lg px-stack-md">
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-primary-fixed">Scholar Tracker</h1>
+<p class="font-body-sm text-body-sm text-on-primary-container">Academic Excellence</p>
+</div>
+<button class="bg-secondary text-on-secondary font-title-md text-title-md py-3 px-4 rounded-xl mb-stack-lg flex items-center justify-center gap-2 hover:bg-secondary-container transition-colors">
+<span class="material-symbols-outlined">add</span>
+            New Research
+        </button>
+<ul class="flex flex-col gap-2 flex-grow">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors scale-95 duration-150 ease-in-out font-title-md text-title-md for headers, font-body-md text-body-md for labels rounded-xl" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors scale-95 duration-150 ease-in-out font-title-md text-title-md for headers, font-body-md text-body-md for labels rounded-xl" href="#">
+<span class="material-symbols-outlined">school</span>
+                    Courses
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors scale-95 duration-150 ease-in-out font-title-md text-title-md for headers, font-body-md text-body-md for labels rounded-xl" href="#">
+<span class="material-symbols-outlined">assignment</span>
+                    Tasks
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors scale-95 duration-150 ease-in-out font-title-md text-title-md for headers, font-body-md text-body-md for labels rounded-xl" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+                    Projects
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors scale-95 duration-150 ease-in-out font-title-md text-title-md for headers, font-body-md text-body-md for labels rounded-xl" href="#">
+<span class="material-symbols-outlined">analytics</span>
+                    Analytics
+                </a>
+</li>
+</ul>
+<ul class="flex flex-col gap-2 mt-auto border-t border-outline-variant pt-stack-md">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-primary-fixed bg-on-primary-fixed-variant rounded-xl hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors scale-95 duration-150 ease-in-out font-title-md text-title-md for headers, font-body-md text-body-md for labels" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    Settings
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:bg-primary-fixed-dim hover:text-on-primary-fixed transition-colors scale-95 duration-150 ease-in-out font-title-md text-title-md for headers, font-body-md text-body-md for labels rounded-xl" href="#">
+<span class="material-symbols-outlined">help</span>
+                    Support
+                </a>
+</li>
+</ul>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col min-h-screen md:ml-[280px]">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface text-on-surface dark:text-on-surface border-b border-outline-variant flat no shadows flex justify-between items-center h-16 px-gutter docked full-width top-0 w-full z-10 sticky">
+<div class="flex items-center gap-4">
+<div class="md:hidden">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-semibold text-primary">Scholar Tracker</h1>
+</div>
+<div class="hidden md:flex relative text-on-surface-variant focus-within:text-primary">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-b border-outline-variant focus:border-secondary focus:ring-0 outline-none w-64 transition-colors font-body-md text-body-md text-on-surface" placeholder="Search..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-on-surface-variant hover:text-primary transition-colors opacity-80 duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors opacity-80 duration-200">
+<span class="material-symbols-outlined">history</span>
+</button>
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-outline-variant object-cover" data-alt="A small circular profile picture of a young professional student with a serious expression, shot in high key soft studio lighting, wearing a navy blazer over a crisp white shirt, against a slate grey background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9pAz16Nn_qzG-ik6rp0--RfmVahJ4IbUoGemsUe-hCuiZUAmmm_u9-RQC38VK2VNbjK16NB-D26avWP7WRCL8aNJOg81DGPewIzK-bwOlbL_xAY7B3znyyedPTPCIX3UE8DAEvkO-BhP_60eG2FKjZqjUTx-x00nzIYV8JmmrGcioYkpxX-z0uqcjSVzxIA1xnWy0kr3Ja019DlkXIVNKe1cM66HUUi69_dph-xebu_BE1LQbjZQq"/>
+</div>
+</header>
+<!-- Profile Content -->
+<main class="flex-1 p-container-padding-mobile md:p-container-padding-desktop overflow-y-auto">
+<div class="max-w-5xl mx-auto space-y-stack-lg">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row gap-6 items-start md:items-center bg-surface-container-lowest border border-outline-variant p-stack-lg rounded-xl">
+<img alt="Profile Picture" class="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-surface" data-alt="A high resolution portrait of a young female researcher looking directly at the camera with quiet confidence. She is in a bright, modern library setting with soft natural light streaming in. The color palette is composed of slate greys, crisp whites, and deep navy blues. Professional, editorial style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBS9w35pv3r4V1oKacBnb3unXnFVvslLtQcAkzaY2sp5ExLt_whWKQaWRgd1qy6EjfetDKz6S_VcCz5PBZfP2gegGl-f1vDqQ8bUJRzKDrHHu2y6UwJD9tYpIHlLLGCe3EAy20euQ8CeFX3fqUz1REFpP_MiMnhfFpELc8XGl8H7fPb3jFMcTJxmvOGjhE-a4c1JzgulWFPb9xJLEovFQKuFzRDH0uJLk0DdPDwyPt-vaVxx4__k9Zx"/>
+<div class="flex-1">
+<h2 class="font-headline-lg text-headline-lg md:font-display-lg md:text-display-lg text-primary mb-1">Eleanor Vance</h2>
+<p class="font-title-md text-title-md text-on-surface-variant mb-4">Senior • Theoretical Physics</p>
+<div class="flex flex-wrap gap-4">
+<div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="font-label-caps text-label-caps text-on-surface">14 Day Study Streak</span>
+</div>
+<div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">emoji_events</span>
+<span class="font-label-caps text-label-caps text-on-surface">Dean's List 2023</span>
+</div>
+</div>
+</div>
+<div class="w-full md:w-auto">
+<button class="w-full md:w-auto bg-primary text-on-primary font-title-md text-title-md py-2 px-6 rounded-lg hover:bg-primary-container transition-colors">
+                            Edit Profile
+                        </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-stack-lg">
+<!-- Left Column: Personal Info & Accounts -->
+<div class="lg:col-span-1 space-y-stack-lg">
+<!-- Personal Information -->
+<section class="bg-surface-container-lowest border border-outline-variant p-stack-lg rounded-xl">
+<h3 class="font-title-md text-title-md text-primary mb-stack-md flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant">person</span>
+                                Personal Information
+                            </h3>
+<div class="space-y-4">
+<div>
+<label class="font-label-caps text-label-caps text-on-surface-variant block mb-1">Email Address</label>
+<p class="font-body-md text-body-md text-on-surface">e.vance@university.edu</p>
+</div>
+<div>
+<label class="font-label-caps text-label-caps text-on-surface-variant block mb-1">Student ID</label>
+<p class="font-data-mono text-data-mono text-on-surface">984-23-1105</p>
+</div>
+<div>
+<label class="font-label-caps text-label-caps text-on-surface-variant block mb-1">Academic Advisor</label>
+<p class="font-body-md text-body-md text-on-surface">Dr. Harrison Wells</p>
+</div>
+</div>
+</section>
+<!-- Connected Accounts -->
+<section class="bg-surface-container-lowest border border-outline-variant p-stack-lg rounded-xl">
+<h3 class="font-title-md text-title-md text-primary mb-stack-md flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant">link</span>
+                                Connected Accounts
+                            </h3>
+<div class="space-y-3">
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg border border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-surface rounded flex items-center justify-center border border-outline-variant">
+<span class="font-title-md text-title-md font-bold">G</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface">Google Scholar</span>
+</div>
+<button class="text-secondary font-label-caps text-label-caps hover:underline">Unlink</button>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg border border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-surface rounded flex items-center justify-center border border-outline-variant">
+<span class="font-title-md text-title-md font-bold text-on-surface-variant">O</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface">ORCID</span>
+</div>
+<button class="text-secondary font-label-caps text-label-caps hover:underline">Unlink</button>
+</div>
+<button class="w-full py-2 mt-2 border border-dashed border-outline-variant rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container-low hover:text-on-surface transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span> Add Account
+                                </button>
+</div>
+</section>
+</div>
+<!-- Right Column: Interests & Public Preview -->
+<div class="lg:col-span-2 space-y-stack-lg">
+<!-- Academic Interests -->
+<section class="bg-surface-container-lowest border border-outline-variant p-stack-lg rounded-xl">
+<h3 class="font-title-md text-title-md text-primary mb-stack-md flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant">lightbulb</span>
+                                Academic Interests &amp; Specializations
+                            </h3>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1.5 bg-surface-container text-on-surface font-body-sm text-body-sm rounded-full border border-outline-variant">Quantum Mechanics</span>
+<span class="px-3 py-1.5 bg-surface-container text-on-surface font-body-sm text-body-sm rounded-full border border-outline-variant">Astrophysics</span>
+<span class="px-3 py-1.5 bg-surface-container text-on-surface font-body-sm text-body-sm rounded-full border border-outline-variant">Data Modeling</span>
+<span class="px-3 py-1.5 bg-surface-container text-on-surface font-body-sm text-body-sm rounded-full border border-outline-variant">Particle Physics</span>
+<span class="px-3 py-1.5 bg-surface-container text-on-surface font-body-sm text-body-sm rounded-full border border-outline-variant">Statistical Analysis</span>
+<button class="px-3 py-1.5 border border-dashed border-outline-variant text-on-surface-variant font-body-sm text-body-sm rounded-full hover:bg-surface-container-low transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">add</span> Add Tag
+                                </button>
+</div>
+</section>
+<!-- Public Profile Preview -->
+<section class="bg-surface-container-lowest border border-outline-variant p-stack-lg rounded-xl flex flex-col h-full min-h-[300px]">
+<div class="flex items-center justify-between mb-stack-md">
+<h3 class="font-title-md text-title-md text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant">visibility</span>
+                                    Public Profile Preview
+                                </h3>
+<div class="flex items-center gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Visibility:</span>
+<span class="px-2 py-1 bg-tertiary-fixed-dim text-on-tertiary-fixed font-label-caps text-label-caps rounded">Public</span>
+</div>
+</div>
+<div class="flex-1 bg-surface-bright border border-outline-variant rounded-lg p-6 flex flex-col items-center justify-center text-center relative overflow-hidden group cursor-pointer">
+<!-- Subtle grid background pattern -->
+<div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNjNmM2Y2QiLz48L3N2Zz4=')] opacity-20"></div>
+<div class="relative z-10 space-y-4">
+<span class="material-symbols-outlined text-4xl text-outline-variant group-hover:text-secondary transition-colors">preview</span>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium">View how others see your profile</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">This is your public portfolio shared with peers and recruiters.</p>
+</div>
+<button class="mt-4 bg-surface text-on-surface border border-outline-variant font-title-md text-title-md py-2 px-4 rounded-lg hover:border-secondary hover:text-secondary transition-colors inline-flex items-center gap-2">
+                                        Open Preview <span class="material-symbols-outlined text-sm">open_in_new</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
