@@ -306,6 +306,12 @@ export const AppContextProvider = ({ children }) => {
     return supabase.auth.signUp({ email, password, options: { data: metadata } });
   };
 
+  const resetPasswordForEmail = (email) => {
+    return supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`
+    });
+  };
+
   const loginAsGuest = () => {
     setUser({ id: 'guest-user', email: 'guest@assignify.app', user_metadata: { full_name: 'Guest Student' } });
   };
@@ -567,6 +573,7 @@ export const AppContextProvider = ({ children }) => {
       loginWithGoogle,
       loginWithEmail,
       signUpWithEmail,
+      resetPasswordForEmail,
       loginAsGuest,
       logout,
       theme,
