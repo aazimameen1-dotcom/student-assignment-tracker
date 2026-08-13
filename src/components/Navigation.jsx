@@ -65,7 +65,6 @@ export default function Navigation() {
     { view: 'tasks', label: 'Tasks & Deliverables', icon: 'assignment' },
     { view: 'calendar', label: 'Calendar', icon: 'calendar_month' },
     { view: 'profile', label: 'Your Profile', icon: 'person' },
-    { view: 'landing', label: 'Landing Page', icon: 'home' },
     { view: 'settings', label: 'Settings', icon: 'settings' }
   ];
 
