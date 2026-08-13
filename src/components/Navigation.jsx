@@ -114,14 +114,14 @@ export default function Navigation() {
 
   return (
     <>
-      {/* Assignify Header Bar (Exact PDF design: #231f5c indigo bar) */}
-      <header className="fixed top-0 left-0 w-full h-16 z-40 bg-[#231f5c] text-white shadow-md flex items-center justify-between px-4 md:px-8">
+      {/* Minimalist Black & White Header Bar */}
+      <header className="fixed top-0 left-0 w-full h-16 z-40 bg-black text-white border-b border-black flex items-center justify-between px-4 md:px-8">
         
         {/* Left Side: Hamburger Menu + Back Arrow + Title Badge */}
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setShowDrawer(true)}
-            className="p-1.5 hover:bg-white/10 rounded-lg transition-colors cursor-pointer text-white flex items-center justify-center"
+            className="p-1.5 hover:bg-zinc-800 rounded transition-colors cursor-pointer text-white flex items-center justify-center"
             title="Open Menu"
             aria-label="Open Navigation Menu"
           >
@@ -131,7 +131,7 @@ export default function Navigation() {
           {currentView !== 'dashboard' && (
             <button 
               onClick={handleBackNav}
-              className="p-1.5 hover:bg-white/10 rounded-lg transition-colors cursor-pointer text-white flex items-center justify-center"
+              className="p-1.5 hover:bg-zinc-800 rounded transition-colors cursor-pointer text-white flex items-center justify-center"
               title="Go Back"
               aria-label="Go Back to Previous Page"
             >
@@ -142,7 +142,7 @@ export default function Navigation() {
           {/* White Pill Badge showing Page Title */}
           <div 
             onClick={() => setCurrentView('dashboard')}
-            className="bg-white text-[#231f5c] px-4 py-1.5 rounded-xl font-headline font-bold text-sm md:text-base shadow-sm cursor-pointer hover:bg-slate-100 transition-colors"
+            className="bg-white text-black px-4 py-1.5 rounded font-headline font-bold text-sm md:text-base cursor-pointer hover:bg-zinc-200 transition-colors uppercase tracking-tight"
           >
             {getHeaderTitle()}
           </div>
