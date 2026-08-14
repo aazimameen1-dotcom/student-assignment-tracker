@@ -226,7 +226,7 @@ export default function Landing() {
 
       </main>
 
-      {/* Modern Clean Footer with Statutory DPDP Disclosures */}
+      {/* Modern Clean Footer */}
       <footer className="border-t border-slate-200 bg-white">
         <div className="max-w-7xl mx-auto px-6 md:px-12 py-10 text-xs text-slate-500 space-y-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -244,7 +244,7 @@ export default function Landing() {
                 onClick={() => setCurrentView('privacy-policy')}
                 className="hover:text-slate-900 cursor-pointer"
               >
-                Privacy Notice
+                Privacy Policy
               </button>
               <button 
                 type="button"
@@ -258,15 +258,15 @@ export default function Landing() {
                 onClick={() => setCurrentView('data-rights')}
                 className="hover:text-slate-900 cursor-pointer"
               >
-                Data Principal Rights
+                Privacy & Data Rights
               </button>
             </div>
           </div>
 
           <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
-            <p>© 2026 Scholar Academic Technologies Pvt. Ltd. All rights reserved.</p>
+            <p>© 2026 Scholar. All rights reserved.</p>
             <p>
-              Grievance Redressal Officer (DPDP Act, India): <a href="mailto:grievance-officer@scholar.app" className="text-slate-600 font-semibold underline">grievance-officer@scholar.app</a>
+              Privacy & Support: <a href="mailto:privacy@scholar.app" className="text-slate-600 font-semibold underline">privacy@scholar.app</a>
             </p>
           </div>
         </div>

@@ -7,7 +7,7 @@ export default function PrivacyPolicy() {
   return (
     <div className="max-w-4xl mx-auto px-4 md:px-8 py-8 space-y-8 animate-fade-in text-left pb-32">
       
-      {/* Back Button */}
+      {/* Top Breadcrumb */}
       <div className="flex items-center justify-between border-b border-slate-200/80 pb-4">
         <button
           type="button"
@@ -19,126 +19,109 @@ export default function PrivacyPolicy() {
         </button>
 
         <span className="app-badge app-badge-blue">
-          DPDP Act (India) 2023 Compliant
+          Privacy & Security
         </span>
-      </div>
-
-      {/* Legal Review Alert Banner */}
-      <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-900 text-xs space-y-1">
-        <div className="flex items-center gap-1.5 font-bold uppercase font-mono tracking-wider">
-          <span className="material-symbols-outlined text-sm">gavel</span>
-          <span>Notice: Draft for Compliance & Legal Counsel Review</span>
-        </div>
-        <p className="text-amber-800 text-[11px] leading-relaxed">
-          This Privacy Notice has been drafted in compliance with Section 5 of the Digital Personal Data Protection Act, 2023 (DPDP Act, India). Final corporate registration details and entity identifiers are subject to review by registered legal counsel.
-        </p>
       </div>
 
       {/* Header */}
       <div className="space-y-2">
         <h1 className="font-heading text-3xl font-extrabold text-slate-900 tracking-tight">
-          Privacy Notice & Statutory Disclosure
+          Privacy Policy
         </h1>
         <p className="text-xs font-mono text-slate-500">
-          Last Updated: August 14, 2026 • Version: 2.1-DPDP
+          Last Updated: August 2026 • Version 2.1
         </p>
       </div>
 
-      {/* Content Sections */}
+      {/* Content */}
       <div className="space-y-6 text-xs text-slate-700 leading-relaxed">
         
-        {/* Section 1: Introduction */}
+        {/* Section 1: Overview */}
         <section className="app-card p-6 space-y-3">
           <h2 className="font-heading text-sm font-bold text-slate-900">
-            1. Identity of the Data Fiduciary
+            1. Overview
           </h2>
           <p>
-            This Privacy Notice is issued by <strong>Scholar Academic Technologies Pvt. Ltd.</strong> ("Scholar", "we", "us", or "our"), operating as a <strong>Data Fiduciary</strong> under the provisions of the Digital Personal Data Protection Act, 2023 (Act No. 22 of 2023, Republic of India).
-          </p>
-          <p>
-            Scholar is committed to processing your digital personal data lawfully, transparently, and strictly for specified academic workflow and curriculum tracking purposes.
+            Scholar ("we", "us", or "our") is dedicated to protecting the privacy and security of your academic information. This policy describes what data we collect, why we collect it, how it is secured, and your rights over your data.
           </p>
         </section>
 
-        {/* Section 2: Categories of Personal Data Collected */}
+        {/* Section 2: Data Collected */}
         <section className="app-card p-6 space-y-4">
           <h2 className="font-heading text-sm font-bold text-slate-900">
-            2. Personal Data We Collect and Why (Purpose Specification)
+            2. Information We Collect and How It Is Used
           </h2>
-          <p>
-            In accordance with <strong>Section 5(1) of the DPDP Act</strong>, the table below provides an itemized itemization of the personal data collected, along with the specific, lawful purpose for which each item is processed:
-          </p>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
               <thead className="bg-slate-50 border-b border-slate-200 font-mono text-[10px] text-slate-500 uppercase">
                 <tr>
-                  <th className="p-3">Data Category</th>
-                  <th className="p-3">Specific Data Elements</th>
-                  <th className="p-3">Purpose of Processing</th>
+                  <th className="p-3">Category</th>
+                  <th className="p-3">Examples</th>
+                  <th className="p-3">Purpose</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-normal">
                 <tr>
-                  <td className="p-3 font-semibold text-slate-900">Account & Identity</td>
-                  <td className="p-3">Full Name, Email Address, Password Hash, Profile Avatar</td>
-                  <td className="p-3">Authentication, account recovery, profile customization, multi-tenant session security.</td>
+                  <td className="p-3 font-semibold text-slate-900">Account Credentials</td>
+                  <td className="p-3">Full name, university email, password hash, avatar photo</td>
+                  <td className="p-3">To authenticate your account, protect your session, and personalize your workspace.</td>
                 </tr>
                 <tr>
-                  <td className="p-3 font-semibold text-slate-900">Academic Standing</td>
-                  <td className="p-3">Student ID, Degree/Major, Institution/Faculty, Semester, Target GPA</td>
-                  <td className="p-3">Personalized syllabus organization, graduation milestone planning, and progress tracking.</td>
+                  <td className="p-3 font-semibold text-slate-900">Academic Records</td>
+                  <td className="p-3">Student ID, degree, semester, courses, target GPA</td>
+                  <td className="p-3">To organize your curriculum and display milestone velocity analytics.</td>
                 </tr>
                 <tr>
-                  <td className="p-3 font-semibold text-slate-900">Curriculum & Deliverables</td>
-                  <td className="p-3">Enrolled Courses, Assignment Titles, Due Dates, Checklist Milestones, Professor Contact Info</td>
-                  <td className="p-3">Core service delivery, deadline calculations, and project tracking.</td>
+                  <td className="p-3 font-semibold text-slate-900">Deliverables & Tasks</td>
+                  <td className="p-3">Assignments, deadlines, checklists, professor contact info</td>
+                  <td className="p-3">Core service functionality, deadline alerts, and task prioritization.</td>
                 </tr>
                 <tr>
-                  <td className="p-3 font-semibold text-slate-900">Diagnostic & Telemetry (Optional)</td>
-                  <td className="p-3">UI view transitions, error traces, client performance metrics</td>
-                  <td className="p-3">System reliability, crash debugging, and performance optimization (gated behind explicit consent).</td>
+                  <td className="p-3 font-semibold text-slate-900">Performance Diagnostics (Optional)</td>
+                  <td className="p-3">Page load timings, error logs</td>
+                  <td className="p-3">To diagnose bugs and maintain high platform speed and stability.</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </section>
 
-        {/* Section 3: Data Principal Statutory Rights */}
+        {/* Section 3: Data Rights */}
         <section className="app-card p-6 space-y-4">
           <h2 className="font-heading text-sm font-bold text-slate-900">
-            3. Your Statutory Rights as a Data Principal (DPDP Sections 11–14)
+            3. Your Privacy Rights
           </h2>
           <p>
-            Under Chapter III of the DPDP Act 2023, you have the following legally enforceable statutory rights:
+            You have full control over your personal information:
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-              <span className="font-heading font-bold text-slate-900 block text-xs">Right to Access (Section 11)</span>
+              <span className="font-heading font-bold text-slate-900 block text-xs">Access & Export</span>
               <p className="text-[11px] text-slate-600">
-                Obtain a summary of personal data being processed, processing activities, and identities of all third parties with whom data is shared.
+                You can download a complete JSON export of your coursework and profile data at any time.
               </p>
             </div>
 
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-              <span className="font-heading font-bold text-slate-900 block text-xs">Right to Correction & Erasure (Section 12)</span>
+              <span className="font-heading font-bold text-slate-900 block text-xs">Update & Correction</span>
               <p className="text-[11px] text-slate-600">
-                Request correction of inaccurate or misleading data, complete un-updated data, or permanent erasure of personal data no longer necessary.
+                Easily modify your academic details, contact credentials, or courses in Profile and Settings.
               </p>
             </div>
 
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-              <span className="font-heading font-bold text-slate-900 block text-xs">Right to Withdraw Consent (Section 6(4))</span>
+              <span className="font-heading font-bold text-slate-900 block text-xs">Erasure & Account Deletion</span>
               <p className="text-[11px] text-slate-600">
-                Withdraw previously granted consent at any time as easily as giving consent. Processing ceases upon valid withdrawal receipt.
+                You can permanently delete your account and associated task data from our servers.
               </p>
             </div>
 
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-              <span className="font-heading font-bold text-slate-900 block text-xs">Right to Nominate (Section 14)</span>
+              <span className="font-heading font-bold text-slate-900 block text-xs">Consent Management</span>
               <p className="text-[11px] text-slate-600">
-                Nominate any individual who shall, in the event of death or incapacity of the Data Principal, exercise statutory rights on their behalf.
+                Adjust your diagnostic telemetry and notification preferences whenever you wish.
               </p>
             </div>
           </div>
@@ -150,45 +133,36 @@ export default function PrivacyPolicy() {
               className="app-btn-primary text-xs"
             >
               <span className="material-symbols-outlined text-sm">assignment_turned_in</span>
-              <span>Submit a Data Rights Request</span>
+              <span>Manage Your Data Rights</span>
             </button>
           </div>
         </section>
 
-        {/* Section 4: Data Retention & Sub-Processors */}
+        {/* Section 4: Data Security & Retention */}
         <section className="app-card p-6 space-y-3">
           <h2 className="font-heading text-sm font-bold text-slate-900">
-            4. Data Retention and Sub-Processors
+            4. Data Security and Retention
           </h2>
           <p>
-            <strong>Retention Period:</strong> We retain personal data for the duration of your active registration. Upon account closure, user records are permanently purged within thirty (30) business days, except where retention is required by applicable law.
-          </p>
-          <p>
-            <strong>Authorized Sub-Processors:</strong> Data storage and authentication are managed through <strong>Supabase Inc.</strong> under strict technical data protection covenants and row-level access controls.
+            We use industry-standard encryption in transit (HTTPS/TLS) and at rest (AES-256) to ensure that your academic records remain secure. Your data is retained while your account is active, and can be permanently deleted upon request.
           </p>
         </section>
 
-        {/* Section 5: Grievance Redressal & DPO Contact */}
+        {/* Section 5: Contact */}
         <section className="app-card p-6 space-y-3 border-l-4 border-l-blue-600">
           <h2 className="font-heading text-sm font-bold text-slate-900 flex items-center gap-2">
             <span className="material-symbols-outlined text-blue-600">support_agent</span>
-            <span>5. Grievance Redressal Officer (Section 13)</span>
+            <span>5. Privacy & Support Contact</span>
           </h2>
           <p>
-            In compliance with Section 13 of the DPDP Act, Scholar has appointed a dedicated <strong>Grievance Redressal Officer / Data Protection Officer (DPO)</strong> to address all privacy questions, data requests, or complaints:
+            For any privacy inquiries, data requests, or feedback, please contact our Privacy Team:
           </p>
 
           <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1 font-mono">
-            <p className="font-bold text-slate-900">Officer Designation: Grievance Redressal & Data Protection Officer</p>
-            <p className="text-slate-600">Entity: Scholar Academic Technologies Pvt. Ltd.</p>
-            <p className="text-slate-600">Official Email: <a href="mailto:grievance-officer@scholar.app" className="text-blue-600 font-bold underline">grievance-officer@scholar.app</a></p>
-            <p className="text-slate-600">Physical Address: 100 Feet Road, Indiranagar, Bengaluru, Karnataka 560038, India</p>
-            <p className="text-slate-500 text-[10px]">Response Time SLA: Initial acknowledgment within 48 hours; substantive resolution within thirty (30) days.</p>
+            <p className="font-bold text-slate-900">Privacy & Data Protection Team</p>
+            <p className="text-slate-600">Email: <a href="mailto:privacy@scholar.app" className="text-blue-600 font-bold underline">privacy@scholar.app</a></p>
+            <p className="text-slate-500 text-[10px]">Response Time: Inquiries are acknowledged within 48 hours.</p>
           </div>
-
-          <p className="text-[11px] text-slate-500">
-            If your grievance is not resolved to your satisfaction within thirty (30) days, you have the statutory right under <strong>Section 13(3)</strong> to file an appeal with the <strong>Data Protection Board of India (DPBI)</strong>.
-          </p>
         </section>
 
       </div>

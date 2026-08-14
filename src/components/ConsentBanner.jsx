@@ -29,7 +29,7 @@ export default function ConsentBanner({ onConsentUpdated }) {
       analytics: Boolean(analytics),
       marketing: Boolean(marketing),
       timestamp: new Date().toISOString(),
-      version: 'v1.0-dpdp-2023'
+      version: 'v2.1'
     };
 
     localStorage.setItem('scholar_consent_preferences', JSON.stringify(consentRecord));
@@ -69,14 +69,14 @@ export default function ConsentBanner({ onConsentUpdated }) {
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-blue-600 text-lg">shield</span>
                 <h3 className="font-heading text-xs font-bold text-slate-900">
-                  Data Privacy & Consent Notice (DPDP Act)
+                  Cookie & Privacy Preferences
                 </h3>
               </div>
-              <span className="app-badge app-badge-slate text-[9px]">India DPDP 2023</span>
+              <span className="app-badge app-badge-slate text-[9px]">Privacy</span>
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              We process your personal data strictly for curriculum tracking. We do not use third-party advertising trackers. You have the right to grant or deny optional telemetry and performance diagnostics.
+              We use essential data processing to deliver a secure, reliable workspace. You can choose whether to enable optional performance telemetry and reminders.
             </p>
 
             <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
@@ -118,9 +118,9 @@ export default function ConsentBanner({ onConsentUpdated }) {
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-heading text-base font-bold text-slate-900">
-                  Granular Privacy & Tracker Preferences
+                  Privacy & Cookie Settings
                 </h3>
-                <p className="text-xs text-slate-500">Opt-in per statutory processing purpose (DPDP Section 6)</p>
+                <p className="text-xs text-slate-500">Manage your data and telemetry preferences</p>
               </div>
               <button
                 type="button"
@@ -136,13 +136,13 @@ export default function ConsentBanner({ onConsentUpdated }) {
               <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-start justify-between gap-3">
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <span className="font-heading text-xs font-bold text-slate-900">1. Essential Core Processing</span>
+                    <span className="font-heading text-xs font-bold text-slate-900">1. Essential Operations</span>
                     <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-200/80 px-1.5 py-0.5 rounded">
-                      MANDATORY
+                      REQUIRED
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Necessary for user authentication, multi-tenant session security, and assignment workspace state.
+                    Required for authentication, session security, assignment data synchronization, and basic functionality.
                   </p>
                 </div>
                 <input
@@ -158,7 +158,7 @@ export default function ConsentBanner({ onConsentUpdated }) {
                 <div className="space-y-0.5">
                   <span className="font-heading text-xs font-bold text-slate-900 block">2. Performance & Error Diagnostics</span>
                   <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Captures client-side load performance, UI transitions, and uncaught crash traces to improve system reliability.
+                    Helps us identify bugs and optimize load times by collecting anonymous client performance diagnostics.
                   </p>
                 </div>
                 <input
@@ -172,9 +172,9 @@ export default function ConsentBanner({ onConsentUpdated }) {
               {/* Category 3: Academic Updates & Notifications (Opt-in) */}
               <label className="p-3.5 bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors flex items-start justify-between gap-3 cursor-pointer">
                 <div className="space-y-0.5">
-                  <span className="font-heading text-xs font-bold text-slate-900 block">3. Deadline Notifications & Feature Alerts</span>
+                  <span className="font-heading text-xs font-bold text-slate-900 block">3. Deadline Reminders & Alerts</span>
                   <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Allows email notifications for upcoming assignment deadlines, syllabus revisions, and product feature notices.
+                    Enables email reminders for upcoming assignment due dates and syllabus changes.
                   </p>
                 </div>
                 <input
@@ -200,7 +200,7 @@ export default function ConsentBanner({ onConsentUpdated }) {
                 onClick={handleSavePreferences}
                 className="app-btn-primary text-xs"
               >
-                Save My Preferences
+                Save Preferences
               </button>
             </div>
 

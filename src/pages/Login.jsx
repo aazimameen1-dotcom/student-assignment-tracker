@@ -28,7 +28,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // DPDP Act Granular Opt-in Consents (Unticked by default)
+  // Opt-in Consents
   const [coreConsent, setCoreConsent] = useState(false);
   const [telemetryConsent, setTelemetryConsent] = useState(false);
   const [notificationsConsent, setNotificationsConsent] = useState(false);
@@ -124,7 +124,7 @@ export default function Login() {
         return;
       }
       if (!coreConsent) {
-        setError('You must consent to the core data processing terms to register an account.');
+        setError('Please agree to the Terms of Service and Privacy Policy to continue.');
         return;
       }
     }
@@ -138,11 +138,10 @@ export default function Login() {
         const consentMetadata = {
           full_name: fullName.trim(),
           consent_records: {
-            core_processing: true,
+            terms_agreed: true,
             telemetry: telemetryConsent,
             notifications: notificationsConsent,
-            consent_timestamp: new Date().toISOString(),
-            consent_version: 'v1.0-dpdp-2023'
+            timestamp: new Date().toISOString()
           }
         };
 
@@ -218,7 +217,7 @@ export default function Login() {
         {/* Bottom Footer Note */}
         <div className="relative z-10 text-[11px] text-slate-400 font-mono space-y-1">
           <p>Protected by Enterprise Encryption & Multi-Tenant Access Control</p>
-          <p className="text-[10px] text-slate-500">DPDP Act (India) 2023 Compliant Processing</p>
+          <p className="text-[10px] text-slate-500">Secure & Confidential Academic Storage</p>
         </div>
       </div>
 
@@ -470,13 +469,8 @@ export default function Login() {
                       </div>
                     </div>
 
-                    {/* DPDP Act Granular Opt-in Consent Box (Unticked by default) */}
+                    {/* Opt-in Preferences */}
                     <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5 text-[11px] text-slate-700">
-                      <div className="font-heading font-bold text-slate-900 text-xs flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-sm text-blue-600">verified_user</span>
-                        <span>Privacy & Statutory Consent (DPDP Act, 2023)</span>
-                      </div>
-
                       <label className="flex items-start gap-2 cursor-pointer">
                         <input
                           type="checkbox"
@@ -486,21 +480,21 @@ export default function Login() {
                           className="mt-0.5 rounded text-blue-600 focus:ring-blue-500 h-3.5 w-3.5"
                         />
                         <span>
-                          <strong>* Required:</strong> I consent to processing of my academic and profile data pursuant to the{' '}
-                          <button 
-                            type="button" 
-                            onClick={() => setCurrentView('privacy-policy')}
-                            className="text-blue-600 underline font-semibold"
-                          >
-                            Privacy Notice
-                          </button>{' '}
-                          and{' '}
+                          <strong>* Required:</strong> I agree to the{' '}
                           <button 
                             type="button" 
                             onClick={() => setCurrentView('terms-of-service')}
                             className="text-blue-600 underline font-semibold"
                           >
                             Terms of Service
+                          </button>{' '}
+                          and{' '}
+                          <button 
+                            type="button" 
+                            onClick={() => setCurrentView('privacy-policy')}
+                            className="text-blue-600 underline font-semibold"
+                          >
+                            Privacy Policy
                           </button>.
                         </span>
                       </label>
@@ -513,7 +507,7 @@ export default function Login() {
                           className="mt-0.5 rounded text-blue-600 focus:ring-blue-500 h-3.5 w-3.5"
                         />
                         <span>
-                          <strong>Optional:</strong> I consent to anonymous performance telemetry to improve workspace velocity.
+                          <strong>Optional:</strong> Allow anonymous performance diagnostics to help improve Scholar.
                         </span>
                       </label>
 
@@ -525,7 +519,7 @@ export default function Login() {
                           className="mt-0.5 rounded text-blue-600 focus:ring-blue-500 h-3.5 w-3.5"
                         />
                         <span>
-                          <strong>Optional:</strong> I consent to receiving deadline reminders via email.
+                          <strong>Optional:</strong> Send me email reminders for upcoming assignment due dates.
                         </span>
                       </label>
                     </div>
@@ -583,15 +577,15 @@ export default function Login() {
 
         </div>
 
-        {/* DPDP Statutory Footer in Login Panel */}
-        <div className="pt-8 border-t border-slate-100 text-center text-[10px] text-slate-400 space-y-1.5">
+        {/* Clean Footer in Login Panel */}
+        <div className="pt-8 border-t border-slate-100 text-center text-[11px] text-slate-400 space-y-1.5">
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <button 
               type="button" 
               onClick={() => setCurrentView('privacy-policy')}
               className="hover:text-slate-700 underline cursor-pointer"
             >
-              Privacy Notice
+              Privacy Policy
             </button>
             <span>•</span>
             <button 
@@ -607,11 +601,11 @@ export default function Login() {
               onClick={() => setCurrentView('data-rights')}
               className="hover:text-slate-700 underline cursor-pointer"
             >
-              Data Rights Portal
+              Data Privacy Portal
             </button>
           </div>
           <p>
-            Grievance Redressal: <a href="mailto:grievance-officer@scholar.app" className="text-slate-500 hover:underline">grievance-officer@scholar.app</a>
+            Contact: <a href="mailto:privacy@scholar.app" className="text-slate-500 hover:underline">privacy@scholar.app</a>
           </p>
         </div>
 

@@ -31,7 +31,7 @@ export default function Settings() {
   const [soundEffects, setSoundEffects] = useState(true);
 
   // Expandable legal readers inside settings
-  const [expandedSection, setExpandedSection] = useState(null); // 'privacy' | 'terms' | 'security' | null
+  const [expandedSection, setExpandedSection] = useState(null); // 'privacy' | 'terms' | null
 
   const handleSavePreferences = async () => {
     try {
@@ -100,7 +100,7 @@ export default function Settings() {
     { id: 'academic', label: 'Academic Preferences', icon: 'school' },
     { id: 'notifications', label: 'Notifications & Alerts', icon: 'notifications_active' },
     { id: 'data', label: 'Data & Backup', icon: 'database' },
-    { id: 'privacy-terms', label: 'Privacy, Security & Terms', icon: 'gavel' }
+    { id: 'privacy-terms', label: 'Privacy & Legal Terms', icon: 'gavel' }
   ];
 
   return (
@@ -109,7 +109,7 @@ export default function Settings() {
       {/* Page Header */}
       <div>
         <h2 className="font-heading text-2xl font-bold text-slate-900">Workspace Settings</h2>
-        <p className="text-xs text-slate-500 mt-0.5">Manage your scholar credentials, notification preferences, data storage, and statutory legal disclosures.</p>
+        <p className="text-xs text-slate-500 mt-0.5">Manage your credentials, notification preferences, data storage, and privacy agreements.</p>
       </div>
 
       {/* Status banner */}
@@ -417,15 +417,15 @@ export default function Settings() {
             </div>
           )}
 
-          {/* TAB 5: Privacy, Security & Legal Terms */}
+          {/* TAB 5: Privacy & Legal Terms */}
           {activeTab === 'privacy-terms' && (
             <div className="space-y-6 animate-fade-in">
               <div>
                 <h3 className="font-heading text-base font-bold text-slate-900">
-                  Privacy, Security & Legal Terms
+                  Privacy Policy & Terms of Service
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Read statutory disclosures under the Digital Personal Data Protection Act (DPDP Act, 2023), terms of service, and security standards.
+                  Review our privacy practices, data handling policies, and service agreements.
                 </p>
               </div>
 
@@ -437,8 +437,8 @@ export default function Settings() {
                       <span className="material-symbols-outlined text-base">privacy_tip</span>
                     </span>
                     <div>
-                      <h4 className="text-xs font-bold text-slate-900">Privacy Notice & Data Processing</h4>
-                      <p className="text-[11px] text-slate-500">Detailed disclosure of data collected, lawful purpose, retention, and third parties.</p>
+                      <h4 className="text-xs font-bold text-slate-900">Privacy Policy</h4>
+                      <p className="text-[11px] text-slate-500">Learn how your data is collected, protected, and used.</p>
                     </div>
                   </div>
 
@@ -455,7 +455,7 @@ export default function Settings() {
                       onClick={() => setCurrentView('privacy-policy')}
                       className="app-btn-primary text-xs"
                     >
-                      <span>Full Page</span>
+                      <span>Full Policy</span>
                       <span className="material-symbols-outlined text-xs">open_in_new</span>
                     </button>
                   </div>
@@ -463,10 +463,9 @@ export default function Settings() {
 
                 {expandedSection === 'privacy' && (
                   <div className="pt-3 border-t border-slate-200/80 text-xs text-slate-700 space-y-2 animate-fade-in">
-                    <p><strong>• Data Fiduciary:</strong> Scholar Academic Technologies Pvt. Ltd. (DPDP Act, 2023 registered).</p>
-                    <p><strong>• What We Process:</strong> Account credentials, student enrollment ID, course tasks, deadline milestones, and optional diagnostics.</p>
-                    <p><strong>• Purpose Limitation:</strong> Data is strictly processed for coursework scheduling and academic analytics. We never sell data to advertisers.</p>
-                    <p><strong>• Data Retention:</strong> Maintained during active registration; purged within 30 days of account deletion.</p>
+                    <p><strong>• Data Collection:</strong> Only essential academic and account data needed for curriculum tracking.</p>
+                    <p><strong>• No Data Selling:</strong> We never sell your personal information or study data to advertisers.</p>
+                    <p><strong>• Full Portability:</strong> You can export, update, or permanently delete your student records at any time.</p>
                   </div>
                 )}
               </div>
@@ -479,8 +478,8 @@ export default function Settings() {
                       <span className="material-symbols-outlined text-base">description</span>
                     </span>
                     <div>
-                      <h4 className="text-xs font-bold text-slate-900">Terms of Service & Agreement</h4>
-                      <p className="text-[11px] text-slate-500">Acceptable use rules, Data Fiduciary obligations, and dispute escalation.</p>
+                      <h4 className="text-xs font-bold text-slate-900">Terms of Service</h4>
+                      <p className="text-[11px] text-slate-500">Review acceptable use policies and service terms.</p>
                     </div>
                   </div>
 
@@ -497,7 +496,7 @@ export default function Settings() {
                       onClick={() => setCurrentView('terms-of-service')}
                       className="app-btn-primary text-xs"
                     >
-                      <span>Full Page</span>
+                      <span>Full Terms</span>
                       <span className="material-symbols-outlined text-xs">open_in_new</span>
                     </button>
                   </div>
@@ -505,14 +504,14 @@ export default function Settings() {
 
                 {expandedSection === 'terms' && (
                   <div className="pt-3 border-t border-slate-200/80 text-xs text-slate-700 space-y-2 animate-fade-in">
-                    <p><strong>• User Eligibility:</strong> Authorized for students 18+ pursuing higher education degrees.</p>
-                    <p><strong>• Intellectual Property:</strong> You own all uploaded assignments, research notes, and personal project files.</p>
-                    <p><strong>• Statutory Dispute Resolution:</strong> Unresolved privacy grievances escalate to the Data Protection Board of India (DPBI) under Section 13(3).</p>
+                    <p><strong>• Student Ownership:</strong> You retain 100% ownership over all uploaded coursework, notes, and tasks.</p>
+                    <p><strong>• Reliable Uptime:</strong> We strive to maintain uninterrupted service and reliable cloud synchronization.</p>
+                    <p><strong>• Support & Contact:</strong> Reach out to our team at any time for account support.</p>
                   </div>
                 )}
               </div>
 
-              {/* Item 3: Data Principal Statutory Rights Portal */}
+              {/* Item 3: Data Rights Portal */}
               <div className="p-5 bg-blue-50/70 rounded-2xl border border-blue-200 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-start gap-3">
@@ -520,8 +519,8 @@ export default function Settings() {
                       <span className="material-symbols-outlined text-base">assignment_turned_in</span>
                     </span>
                     <div>
-                      <h4 className="text-xs font-bold text-slate-900">Exercise Data Principal Rights (DPDP Portal)</h4>
-                      <p className="text-[11px] text-slate-600">Submit statutory requests for Access/Export, Correction, Erasure, Consent Withdrawal, or Nomination.</p>
+                      <h4 className="text-xs font-bold text-slate-900">Manage Your Data & Privacy Rights</h4>
+                      <p className="text-[11px] text-slate-600">Submit requests to download your data archive, update records, or delete your account.</p>
                     </div>
                   </div>
 
@@ -530,18 +529,17 @@ export default function Settings() {
                     onClick={() => setCurrentView('data-rights')}
                     className="app-btn-primary text-xs"
                   >
-                    <span>Launch Rights Portal</span>
+                    <span>Open Portal</span>
                     <span className="material-symbols-outlined text-xs">arrow_forward</span>
                   </button>
                 </div>
               </div>
 
-              {/* Item 4: Grievance Redressal Officer Contact Box */}
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs font-mono space-y-1">
-                <p className="font-bold text-slate-900">Grievance Redressal Officer (DPDP Act, India):</p>
-                <p className="text-slate-600">Officer Designation: Data Protection & Grievance Officer</p>
-                <p className="text-slate-600">Official Email: <a href="mailto:grievance-officer@scholar.app" className="text-blue-600 underline font-bold">grievance-officer@scholar.app</a></p>
-                <p className="text-[10px] text-slate-400 pt-1">Statutory Response SLA: Acknowledgment in 48 hours; full resolution within thirty (30) calendar days.</p>
+              {/* Item 4: Privacy Contact Box */}
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-1">
+                <p className="font-bold text-slate-900">Privacy & Support Contact:</p>
+                <p className="text-slate-600">Email: <a href="mailto:privacy@scholar.app" className="text-blue-600 underline font-bold">privacy@scholar.app</a></p>
+                <p className="text-[10px] text-slate-400 pt-1">Response Time: All requests are processed promptly within 48-72 hours.</p>
               </div>
 
             </div>

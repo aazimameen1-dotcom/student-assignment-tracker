@@ -18,7 +18,7 @@ export default function DataRightsRequest() {
     e.preventDefault();
     if (!applicantEmail.trim()) return;
 
-    const generatedTicket = `DPDP-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+    const generatedTicket = `REQ-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
     setTicketId(generatedTicket);
     setSubmissionStatus('success');
 
@@ -27,7 +27,7 @@ export default function DataRightsRequest() {
       const exportData = {
         requestTicket: generatedTicket,
         generatedAt: new Date().toISOString(),
-        dataPrincipal: {
+        userProfile: {
           name: applicantName,
           email: applicantEmail,
           studentId: studentId,
@@ -40,7 +40,7 @@ export default function DataRightsRequest() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `scholar-personal-data-export-${generatedTicket}.json`;
+      a.download = `scholar-data-export-${generatedTicket}.json`;
       a.click();
     }
   };
@@ -60,17 +60,17 @@ export default function DataRightsRequest() {
         </button>
 
         <span className="app-badge app-badge-blue">
-          DPDP Statutory Rights Portal
+          Privacy Request Portal
         </span>
       </div>
 
       {/* Header */}
       <div>
         <h1 className="font-heading text-2xl font-bold text-slate-900">
-          Data Principal Statutory Rights Request Portal
+          Data Privacy & Account Rights Portal
         </h1>
         <p className="text-xs text-slate-500 mt-1">
-          Exercise your statutory rights under Chapter III of the Digital Personal Data Protection Act, 2023.
+          Submit a request to access, export, update, delete, or manage your personal data.
         </p>
       </div>
 
@@ -81,21 +81,21 @@ export default function DataRightsRequest() {
           </div>
 
           <div>
-            <h2 className="font-heading text-lg font-bold text-slate-900">Request Formally Logged</h2>
+            <h2 className="font-heading text-lg font-bold text-slate-900">Request Registered Successfully</h2>
             <p className="text-xs text-slate-500 mt-1">
-              Your request has been registered with our Grievance Redressal & Data Protection Officer.
+              Your request has been logged and our support team is processing it.
             </p>
           </div>
 
           <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs font-mono max-w-sm mx-auto space-y-1 text-left">
             <p className="text-slate-500">Tracking Reference ID:</p>
             <p className="font-bold text-blue-600 text-sm">{ticketId}</p>
-            <p className="text-[10px] text-slate-400 pt-1">Statutory Response SLA: Within 30 calendar days (Acknowledgment in 48h).</p>
+            <p className="text-[10px] text-slate-400 pt-1">Confirmation sent to your registered email.</p>
           </div>
 
           {requestType === 'access' && (
             <p className="text-xs text-emerald-700 font-semibold">
-              ✓ Automated JSON data export initiated and downloaded to your browser.
+              ✓ Automated JSON data export has been downloaded to your browser.
             </p>
           )}
 
@@ -122,16 +122,16 @@ export default function DataRightsRequest() {
           {/* Select Right */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-2">
-              Select Statutory Right to Exercise *
+              Select Request Type *
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
-                { id: 'access', label: 'Right to Access & Summary (Section 11)', icon: 'download' },
-                { id: 'correction', label: 'Right to Correction / Updating (Section 12)', icon: 'edit' },
-                { id: 'erasure', label: 'Right to Erasure / Deletion (Section 12)', icon: 'delete_forever' },
-                { id: 'withdraw', label: 'Right to Withdraw Consent (Section 6(4))', icon: 'cancel' },
-                { id: 'nominate', label: 'Right to Nominate Representative (Section 14)', icon: 'person_add' },
-                { id: 'grievance', label: 'General Grievance Redressal (Section 13)', icon: 'support_agent' }
+                { id: 'access', label: 'Download / Export Data Snapshot', icon: 'download' },
+                { id: 'correction', label: 'Correct or Update Information', icon: 'edit' },
+                { id: 'erasure', label: 'Account & Data Deletion', icon: 'delete_forever' },
+                { id: 'withdraw', label: 'Manage / Withdraw Consent', icon: 'cancel' },
+                { id: 'nominate', label: 'Designate Account Representative', icon: 'person_add' },
+                { id: 'grievance', label: 'General Privacy Inquiry', icon: 'support_agent' }
               ].map(opt => (
                 <label
                   key={opt.id}
@@ -159,7 +159,7 @@ export default function DataRightsRequest() {
           {/* Applicant Info */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Applicant Name *</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
               <input
                 type="text"
                 value={applicantName}
@@ -198,10 +198,10 @@ export default function DataRightsRequest() {
           {requestType === 'nominate' && (
             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3 animate-fade-in">
               <h3 className="font-heading text-xs font-bold text-slate-900">
-                Nominee Details (Pursuant to DPDP Section 14)
+                Representative Details
               </h3>
               <p className="text-[11px] text-slate-500">
-                Designate an authorized representative to exercise data principal rights in the event of incapacity or death.
+                Designate an authorized contact to manage account affairs in the event of emergency or incapacity.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -222,7 +222,7 @@ export default function DataRightsRequest() {
                     value={nomineeContact}
                     onChange={(e) => setNomineeContact(e.target.value)}
                     required={requestType === 'nominate'}
-                    placeholder="nominee@email.com or +91..."
+                    placeholder="nominee@email.com or +1..."
                     className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-slate-400"
                   />
                 </div>
@@ -233,27 +233,27 @@ export default function DataRightsRequest() {
           {/* Details / Justification */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Request Details & Specific Instructions
+              Request Details & Specific Notes
             </label>
             <textarea
               rows={3}
               value={details}
               onChange={(e) => setDetails(e.target.value)}
-              placeholder="Describe any specific records, corrections, or reasons for your request..."
+              placeholder="Provide any additional details or specific questions..."
               className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 resize-none"
             />
           </div>
 
           <div className="flex items-center justify-between pt-2 border-t border-slate-100">
             <span className="text-[10px] font-mono text-slate-400">
-              SLA: Formal response within 30 days
+              Typical response time: within 48-72 hours
             </span>
             <button
               type="submit"
               className="app-btn-primary text-xs"
             >
               <span className="material-symbols-outlined text-sm">send</span>
-              <span>Submit Formal Statutory Request</span>
+              <span>Submit Request</span>
             </button>
           </div>
 
