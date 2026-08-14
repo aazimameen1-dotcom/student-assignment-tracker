@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 
 export default function Login() {
@@ -17,8 +17,16 @@ export default function Login() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
-  // Auth view mode: 'signin' | 'signup' | 'forgot'
-  const [authMode, setAuthMode] = useState(isPasswordRecovery ? 'recovery' : 'signin');
+  // Auth view mode: 'signin' | 'signup' | 'forgot' | 'recovery'
+  const [authMode, setAuthMode] = useState(() => {
+    return (isPasswordRecovery || window.location.hash.includes('type=recovery') || window.location.search.includes('type=recovery')) ? 'recovery' : 'signin';
+  });
+
+  useEffect(() => {
+    if (isPasswordRecovery || window.location.hash.includes('type=recovery') || window.location.search.includes('type=recovery')) {
+      setAuthMode('recovery');
+    }
+  }, [isPasswordRecovery]);
   
   // Form fields
   const [fullName, setFullName] = useState('');

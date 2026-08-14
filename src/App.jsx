@@ -16,15 +16,15 @@ const Settings = lazy(() => import('./pages/Settings'));
 const Profile = lazy(() => import('./pages/Profile'));
 
 function App() {
-  const { user, authLoading, currentView } = useContext(AppContext);
+  const { user, authLoading, currentView, isPasswordRecovery } = useContext(AppContext);
 
   // loading state fallback
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col justify-center items-center gap-4 select-none">
-        <div className="w-10 h-10 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
-        <span className="font-mono text-label-md text-on-surface-variant animate-pulse">
-          Loading StudyTrack...
+      <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center gap-4 select-none px-4">
+        <div className="w-10 h-10 rounded-full border-4 border-slate-900 border-t-transparent animate-spin"></div>
+        <span className="font-mono text-xs text-slate-500 animate-pulse">
+          Loading Scholar...
         </span>
       </div>
     );
@@ -37,7 +37,16 @@ function App() {
     </div>
   );
 
-  // Render Landing Page if explicitly requested or unauthenticated on landing view
+  // If password recovery link was clicked, ALWAYS render Login / Set New Password screen
+  if (isPasswordRecovery || currentView === 'login') {
+    return (
+      <Suspense fallback={<PageFallback />}>
+        <Login />
+      </Suspense>
+    );
+  }
+
+  // Render Landing Page if explicitly on landing view
   if (currentView === 'landing') {
     return (
       <Suspense fallback={<PageFallback />}>
@@ -46,15 +55,8 @@ function App() {
     );
   }
 
-  // Route guarding: force guest users to authenticate or see landing
+  // Route guarding: force unauthenticated users to see landing or login
   if (!user) {
-    if (currentView === 'login') {
-      return (
-        <Suspense fallback={<PageFallback />}>
-          <Login />
-        </Suspense>
-      );
-    }
     return (
       <Suspense fallback={<PageFallback />}>
         <Landing />
@@ -94,16 +96,16 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-on-surface">
+    <div className="min-h-screen bg-slate-50 text-slate-900 w-full max-w-full overflow-x-hidden">
       {/* Universal Navigation bar & side rail */}
       <Navigation />
 
       {/* Main content viewport */}
-      <div className="pt-16 pb-16 md:pb-8 md:pl-64 min-h-screen w-full transition-all duration-300">
+      <main className="pt-16 pb-20 md:pb-8 md:pl-64 min-h-screen w-full max-w-full overflow-x-hidden transition-all duration-300">
         <Suspense fallback={<PageFallback />}>
           {renderActiveView()}
         </Suspense>
-      </div>
+      </main>
     </div>
   );
 }
