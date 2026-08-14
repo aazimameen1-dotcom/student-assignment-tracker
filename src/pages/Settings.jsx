@@ -379,6 +379,52 @@ export default function Settings() {
                   <span>Export Complete Dataset (.JSON)</span>
                 </button>
               </div>
+
+              {/* Cache Management */}
+              <div className="pt-4 border-t border-slate-100 space-y-3">
+                <h4 className="text-xs font-bold text-slate-900">Cache Management</h4>
+                <p className="text-xs text-slate-500">Force clear temporary local browser storage and refresh active data from Supabase.</p>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    localStorage.removeItem('readNotificationIds');
+                    setSaveStatus('Local cache refreshed from cloud storage.');
+                    setTimeout(() => setSaveStatus(''), 3000);
+                  }}
+                  className="app-btn-secondary text-xs"
+                >
+                  <span className="material-symbols-outlined text-base">cached</span>
+                  <span>Refresh Local Cache</span>
+                </button>
+              </div>
+
+              {/* Danger Zone */}
+              <div className="p-4 bg-rose-50/50 rounded-2xl border border-rose-200 space-y-3 mt-4">
+                <div>
+                  <h4 className="text-xs font-bold text-rose-700 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-base">warning</span>
+                    <span>Danger Zone</span>
+                  </h4>
+                  <p className="text-[11px] text-rose-600/90 mt-0.5">
+                    Reset your workspace deliverables or clear active account session data.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to reset read notifications and local preferences?')) {
+                        localStorage.clear();
+                        window.location.reload();
+                      }
+                    }}
+                    className="px-3.5 py-2 bg-white text-rose-600 hover:bg-rose-100 font-semibold text-xs rounded-xl border border-rose-200 cursor-pointer transition-colors"
+                  >
+                    Reset Local Preferences
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

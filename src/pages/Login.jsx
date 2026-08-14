@@ -243,6 +243,35 @@ export default function Login() {
                     </span>
                   </button>
                 </div>
+
+                {/* Password Strength Indicator */}
+                {newPassword.length > 0 && (
+                  <div className="mt-2 space-y-1 animate-fade-in">
+                    <div className="flex justify-between items-center text-[10px] font-mono">
+                      <span className="text-slate-400">Password Strength</span>
+                      <span className={`font-bold ${
+                        newPassword.length < 6 ? 'text-rose-500' :
+                        newPassword.length < 8 ? 'text-amber-500' :
+                        /[0-9]/.test(newPassword) ? 'text-emerald-600' : 'text-blue-500'
+                      }`}>
+                        {newPassword.length < 6 ? 'Too short (min 6)' :
+                         newPassword.length < 8 ? 'Fair' :
+                         /[0-9]/.test(newPassword) ? 'Strong' : 'Good'}
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden flex gap-1">
+                      <div className={`h-full flex-1 rounded-full transition-all duration-300 ${
+                        newPassword.length >= 6 ? (newPassword.length < 8 ? 'bg-amber-400' : 'bg-emerald-500') : 'bg-rose-400'
+                      }`}></div>
+                      <div className={`h-full flex-1 rounded-full transition-all duration-300 ${
+                        newPassword.length >= 8 ? 'bg-emerald-500' : 'bg-slate-200'
+                      }`}></div>
+                      <div className={`h-full flex-1 rounded-full transition-all duration-300 ${
+                        newPassword.length >= 8 && /[0-9]/.test(newPassword) ? 'bg-emerald-500' : 'bg-slate-200'
+                      }`}></div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
