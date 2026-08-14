@@ -49,7 +49,7 @@ export default function Navigation() {
     { view: 'dashboard', label: 'Dashboard', icon: 'grid_view' },
     { view: 'subjects', label: 'Courses', icon: 'auto_stories' },
     { view: 'tasks', label: 'Tasks & Deadlines', icon: 'checklist' },
-    { view: 'assignment-details', label: 'Projects', icon: 'folder_open' },
+    { view: 'projects', label: 'Projects', icon: 'folder_open' },
     { view: 'calendar', label: 'Calendar', icon: 'calendar_today' },
     { view: 'analytics', label: 'Analytics', icon: 'insights' },
     { view: 'study-groups', label: 'Study Groups', icon: 'groups' },
@@ -61,6 +61,7 @@ export default function Navigation() {
       case 'dashboard': return 'Dashboard Overview';
       case 'subjects': return 'Enrolled Courses';
       case 'tasks': return 'Tasks & Deadlines';
+      case 'projects': return 'Academic Projects';
       case 'assignment-details': return 'Project Workspace';
       case 'calendar': return 'Academic Calendar';
       case 'analytics': return 'Performance Analytics';

@@ -7,6 +7,7 @@ const Login = lazy(() => import('./pages/Login'));
 const Landing = lazy(() => import('./pages/Landing'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Tasks = lazy(() => import('./pages/Tasks'));
+const Projects = lazy(() => import('./pages/Projects'));
 const AssignmentDetails = lazy(() => import('./pages/AssignmentDetails'));
 const Subjects = lazy(() => import('./pages/Subjects'));
 const Calendar = lazy(() => import('./pages/Calendar'));
@@ -73,8 +74,9 @@ function AppContent() {
         return <Dashboard />;
       case 'tasks':
         return <Tasks />;
-      case 'assignment-details':
       case 'projects':
+        return <Projects />;
+      case 'assignment-details':
         return <AssignmentDetails />;
       case 'subjects':
       case 'courses':

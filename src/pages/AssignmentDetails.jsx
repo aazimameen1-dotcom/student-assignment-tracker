@@ -105,20 +105,24 @@ export default function AssignmentDetails() {
     }
   };
 
-  // Find the selected task
-  const task = tasks.find(t => t.id === selectedTaskId);
+  // Find the selected task, or default to the first available task
+  const task = tasks.find(t => t.id === selectedTaskId) || tasks[0];
 
-  // If no task selected, show empty state or navigate back
+  // If no tasks exist in workspace, show empty state
   if (!task) {
     return (
-      <div className="p-8 text-center">
-        <p className="font-body text-body-md text-on-surface-variant">No assignment selected.</p>
-        <button 
-          onClick={() => setCurrentView('tasks')}
-          className="mt-4 px-4 py-2 bg-primary text-on-primary rounded"
-        >
-          Go to Tasks
-        </button>
+      <div className="max-w-xl mx-auto p-12 app-card text-center space-y-4 my-12 animate-fade-in">
+        <span className="material-symbols-outlined text-4xl text-slate-300">folder_open</span>
+        <h3 className="font-heading text-base font-bold text-slate-900">No Assignment Selected</h3>
+        <p className="text-xs text-slate-500">Pick an assignment from your tasks board or project hub to view its deliverables.</p>
+        <div className="flex justify-center gap-3 pt-2">
+          <button onClick={() => setCurrentView('tasks')} className="app-btn-primary text-xs">
+            Browse Tasks
+          </button>
+          <button onClick={() => setCurrentView('projects')} className="app-btn-secondary text-xs">
+            Browse Projects
+          </button>
+        </div>
       </div>
     );
   }
