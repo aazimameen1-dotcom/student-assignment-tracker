@@ -1,0 +1,39 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  strix-scan:
+    name: Strix AI Penetration & Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Strix Security Agent
+        run: curl -sSL https://strix.ai/install | bash
+
+      - name: Run Strix Security Scan
+        env:
+          STRIX_LLM: ${{ secrets.STRIX_LLM || 'openai/gpt-4o' }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          STRIX_API_TOKEN: ${{ secrets.STRIX_API_TOKEN }}
+        run: |
+          if [ -n "$LLM_API_KEY" ]; then
+            strix -n -t ./ --scan-mode quick --max-budget 10
+          else
+            echo "::notice ::No LLM_API_KEY configured. Please add LLM_API_KEY and STRIX_LLM or STRIX_API_TOKEN to repository secrets to enable autonomous pentesting."
+          fi
+
+      - name: Upload Security SARIF Report
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        continue-on-error: true
+        with:
+          sarif_file: strix_runs
