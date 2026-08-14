@@ -2,6 +2,7 @@ import { useContext, lazy, Suspense } from 'react';
 import { AppContext } from './context/AppContext';
 import Navigation from './components/Navigation';
 import ErrorBoundary from './components/ErrorBoundary';
+import ConsentBanner from './components/ConsentBanner';
 
 const Login = lazy(() => import('./pages/Login'));
 const Landing = lazy(() => import('./pages/Landing'));
@@ -16,6 +17,9 @@ const StudyGroups = lazy(() => import('./pages/StudyGroups'));
 const ResearchDiscovery = lazy(() => import('./pages/ResearchDiscovery'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Profile = lazy(() => import('./pages/Profile'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
+const DataRightsRequest = lazy(() => import('./pages/DataRightsRequest'));
 
 function AppContent() {
   const { user, authLoading, currentView, isPasswordRecovery } = useContext(AppContext);
@@ -39,11 +43,40 @@ function AppContent() {
     </div>
   );
 
+  // Statutory pages viewable without authentication
+  if (currentView === 'privacy-policy') {
+    return (
+      <Suspense fallback={<PageFallback />}>
+        <PrivacyPolicy />
+        <ConsentBanner />
+      </Suspense>
+    );
+  }
+
+  if (currentView === 'terms-of-service') {
+    return (
+      <Suspense fallback={<PageFallback />}>
+        <TermsOfService />
+        <ConsentBanner />
+      </Suspense>
+    );
+  }
+
+  if (currentView === 'data-rights') {
+    return (
+      <Suspense fallback={<PageFallback />}>
+        <DataRightsRequest />
+        <ConsentBanner />
+      </Suspense>
+    );
+  }
+
   // If password recovery link was clicked, ALWAYS render Login / Set New Password screen
   if (isPasswordRecovery || currentView === 'login') {
     return (
       <Suspense fallback={<PageFallback />}>
         <Login />
+        <ConsentBanner />
       </Suspense>
     );
   }
@@ -53,6 +86,7 @@ function AppContent() {
     return (
       <Suspense fallback={<PageFallback />}>
         <Landing />
+        <ConsentBanner />
       </Suspense>
     );
   }
@@ -62,6 +96,7 @@ function AppContent() {
     return (
       <Suspense fallback={<PageFallback />}>
         <Landing />
+        <ConsentBanner />
       </Suspense>
     );
   }
@@ -93,22 +128,29 @@ function AppContent() {
         return <Settings />;
       case 'profile':
         return <Profile />;
+      case 'privacy-policy':
+        return <PrivacyPolicy />;
+      case 'terms-of-service':
+        return <TermsOfService />;
+      case 'data-rights':
+        return <DataRightsRequest />;
       default:
         return <Dashboard />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 w-full max-w-full overflow-x-hidden">
-      {/* Universal Navigation bar & side rail */}
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans w-full max-w-full overflow-x-hidden">
       <Navigation />
-
-      {/* Main content viewport */}
-      <main className="pt-16 pb-20 md:pb-8 md:pl-64 min-h-screen w-full max-w-full overflow-x-hidden transition-all duration-300">
+      
+      {/* Dynamic Content Container */}
+      <main className="flex-1 w-full pt-16 md:pl-64 transition-all overflow-x-hidden">
         <Suspense fallback={<PageFallback />}>
           {renderActiveView()}
         </Suspense>
       </main>
+
+      <ConsentBanner />
     </div>
   );
 }

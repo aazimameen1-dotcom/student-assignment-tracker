@@ -1,7 +1,18 @@
 /**
  * Lightweight Observability & Instrumentation Logger
- * Logs view transitions, user actions, and error events for debugging and auditability.
+ * Strictly gated behind DPDP Act 2023 consent preferences.
  */
+
+function hasAnalyticsConsent() {
+  try {
+    const raw = localStorage.getItem('scholar_consent_preferences');
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    return Boolean(parsed.analytics);
+  } catch (e) {
+    return false;
+  }
+}
 
 class TelemetryService {
   constructor() {
@@ -10,6 +21,11 @@ class TelemetryService {
   }
 
   logEvent(category, action, metadata = {}) {
+    // DPDP Act Compliance: Non-error diagnostic telemetry is gated behind user consent
+    if (category !== 'ERROR' && !hasAnalyticsConsent()) {
+      return;
+    }
+
     const entry = {
       timestamp: new Date().toISOString(),
       category,

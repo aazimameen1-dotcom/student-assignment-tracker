@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 
 export default function Login() {
@@ -8,34 +8,37 @@ export default function Login() {
     signUpWithEmail, 
     resetPasswordForEmail, 
     updateUserPassword,
-    isPasswordRecovery,
+    isPasswordRecovery, 
     setIsPasswordRecovery,
     setCurrentView 
   } = useContext(AppContext);
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  
-  // Auth view mode: 'signin' | 'signup' | 'forgot' | 'recovery'
-  const [authMode, setAuthMode] = useState(() => {
-    return (isPasswordRecovery || window.location.hash.includes('type=recovery') || window.location.search.includes('type=recovery')) ? 'recovery' : 'signin';
-  });
-
-  useEffect(() => {
-    if (isPasswordRecovery || window.location.hash.includes('type=recovery') || window.location.search.includes('type=recovery')) {
-      setAuthMode('recovery');
-    }
-  }, [isPasswordRecovery]);
-  
-  // Form fields
-  const [fullName, setFullName] = useState('');
+  const [authMode, setAuthMode] = useState(isPasswordRecovery ? 'recovery' : 'signin'); // 'signin' | 'signup' | 'forgot' | 'recovery'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  
+  // Password Recovery States
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(true);
+  
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  // DPDP Act Granular Opt-in Consents (Unticked by default)
+  const [coreConsent, setCoreConsent] = useState(false);
+  const [telemetryConsent, setTelemetryConsent] = useState(false);
+  const [notificationsConsent, setNotificationsConsent] = useState(false);
+
+  // Sync mode if context changes
+  useEffect(() => {
+    if (isPasswordRecovery) {
+      setAuthMode('recovery');
+    }
+  }, [isPasswordRecovery]);
 
   // Visibility Toggles
   const [showPassword, setShowPassword] = useState(false);
@@ -115,9 +118,15 @@ export default function Login() {
       setError('Please fill in all required fields.');
       return;
     }
-    if (authMode === 'signup' && password !== confirmPassword) {
-      setError('Passwords do not match.');
-      return;
+    if (authMode === 'signup') {
+      if (password !== confirmPassword) {
+        setError('Passwords do not match.');
+        return;
+      }
+      if (!coreConsent) {
+        setError('You must consent to the core data processing terms to register an account.');
+        return;
+      }
     }
     
     setLoading(true);
@@ -126,7 +135,18 @@ export default function Login() {
 
     try {
       if (authMode === 'signup') {
-        const { error: signUpErr } = await signUpWithEmail(email, password, { full_name: fullName });
+        const consentMetadata = {
+          full_name: fullName.trim(),
+          consent_records: {
+            core_processing: true,
+            telemetry: telemetryConsent,
+            notifications: notificationsConsent,
+            consent_timestamp: new Date().toISOString(),
+            consent_version: 'v1.0-dpdp-2023'
+          }
+        };
+
+        const { error: signUpErr } = await signUpWithEmail(email, password, consentMetadata);
         if (signUpErr) throw signUpErr;
         setSuccess('Account created! Check your email to verify or sign in directly.');
         setAuthMode('signin');
@@ -142,26 +162,50 @@ export default function Login() {
     }
   };
 
+  // Password Strength helper
+  const getPasswordStrength = (pass) => {
+    if (!pass) return { score: 0, label: '', color: 'bg-slate-200' };
+    let score = 0;
+    if (pass.length >= 8) score++;
+    if (/[A-Z]/.test(pass)) score++;
+    if (/[0-9]/.test(pass)) score++;
+    if (/[^A-Za-z0-9]/.test(pass)) score++;
+
+    if (score <= 1) return { score: 25, label: 'Weak', color: 'bg-rose-500' };
+    if (score === 2) return { score: 50, label: 'Fair', color: 'bg-amber-500' };
+    if (score === 3) return { score: 75, label: 'Good', color: 'bg-blue-500' };
+    return { score: 100, label: 'Strong', color: 'bg-emerald-500' };
+  };
+
+  const strength = getPasswordStrength(authMode === 'recovery' ? newPassword : password);
+
   return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row bg-slate-50 select-none animate-fade-in">
+    <div className="min-h-screen flex flex-col md:flex-row bg-slate-900 animate-fade-in font-sans">
       
-      {/* Left Showcase Hero Panel */}
-      <div className="w-full md:w-5/12 bg-slate-900 text-white p-8 md:p-14 flex flex-col justify-between relative overflow-hidden min-h-[300px] md:min-h-screen text-left">
-        {/* Top Logo */}
+      {/* Left Branding Showcase Panel */}
+      <div className="hidden md:flex md:w-5/12 bg-slate-950 p-8 lg:p-12 flex-col justify-between relative overflow-hidden border-r border-slate-800 text-left">
+        {/* Subtle Ambient Radial Glow */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        {/* Brand Header */}
         <div 
-          onClick={() => setCurrentView('landing')}
-          className="flex items-center gap-3 cursor-pointer relative z-10"
+          onClick={() => setCurrentView('landing')} 
+          className="flex items-center gap-3 cursor-pointer group relative z-10"
         >
-          <div className="w-9 h-9 rounded-xl bg-white text-slate-900 flex items-center justify-center font-bold text-sm shadow-md">
-            <span className="material-symbols-outlined text-lg">school</span>
+          <div className="w-10 h-10 rounded-xl bg-white text-slate-950 flex items-center justify-center font-black text-xl shadow-md group-hover:scale-105 transition-transform">
+            S
           </div>
-          <span className="font-heading font-extrabold text-xl text-white tracking-tight">Scholar</span>
+          <div>
+            <span className="font-heading font-extrabold text-lg text-white tracking-tight">SCHOLAR</span>
+            <span className="block text-[10px] font-mono text-slate-400">ACADEMIC WORKSPACE</span>
+          </div>
         </div>
 
-        {/* Center Quote / Pitch */}
-        <div className="relative z-10 max-w-md my-auto space-y-4 py-8">
-          <span className="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-white/10 text-blue-300 border border-white/10">
-            Student Operating System
+        {/* Value Proposition */}
+        <div className="relative z-10 space-y-4 max-w-sm my-auto">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-950/80 border border-blue-800/60 text-blue-300 font-mono text-[11px] font-semibold">
+            <span className="material-symbols-outlined text-xs">auto_awesome</span>
+            <span>Intelligent Study OS</span>
           </span>
           <h1 className="font-heading text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
             Structure your coursework. Elevate your GPA.
@@ -172,133 +216,52 @@ export default function Login() {
         </div>
 
         {/* Bottom Footer Note */}
-        <div className="relative z-10 text-[11px] text-slate-400 font-mono">
-          <span>Protected by Enterprise Encryption & Multi-Tenant Access Control</span>
+        <div className="relative z-10 text-[11px] text-slate-400 font-mono space-y-1">
+          <p>Protected by Enterprise Encryption & Multi-Tenant Access Control</p>
+          <p className="text-[10px] text-slate-500">DPDP Act (India) 2023 Compliant Processing</p>
         </div>
       </div>
 
       {/* Right Form Panel */}
-      <div className="w-full md:w-7/12 p-6 sm:p-12 md:p-16 flex items-center justify-center bg-white">
-        <div className="w-full max-w-md space-y-6 text-left">
+      <div className="w-full md:w-7/12 p-6 sm:p-12 md:p-16 flex flex-col justify-between bg-white overflow-y-auto">
+        <div className="w-full max-w-md mx-auto space-y-6 text-left my-auto">
           
           {/* Header depending on mode */}
           <div>
-            <h2 className="font-heading text-2xl font-bold text-slate-900">
-              {isPasswordRecovery || authMode === 'recovery'
-                ? 'Set New Password'
-                : authMode === 'forgot'
-                ? 'Reset your password'
-                : authMode === 'signup'
-                ? 'Create your Scholar account'
-                : 'Welcome back'}
+            <h2 className="font-heading text-2xl font-bold text-slate-900 tracking-tight">
+              {authMode === 'recovery' && 'Set New Account Password'}
+              {authMode === 'forgot' && 'Reset Your Password'}
+              {authMode === 'signup' && 'Create Your Scholar Account'}
+              {authMode === 'signin' && 'Welcome Back to Scholar'}
             </h2>
             <p className="text-xs text-slate-500 mt-1">
-              {isPasswordRecovery || authMode === 'recovery'
-                ? 'Enter your new secure password below.'
-                : authMode === 'forgot'
-                ? 'Enter your email address and we will send you instructions to reset your password.'
-                : authMode === 'signup'
-                ? 'Enter your student details below to create an account.'
-                : 'Sign in to access your course dashboard and deliverables.'}
+              {authMode === 'recovery' && 'Create a strong, new password for your account.'}
+              {authMode === 'forgot' && 'Enter your registered email and we will send you a recovery link.'}
+              {authMode === 'signup' && 'Join thousands of scholars managing courses and deadlines effortlessly.'}
+              {authMode === 'signin' && 'Enter your credentials to access your academic workspace.'}
             </p>
           </div>
 
-          {/* Alert messages */}
+          {/* Feedback Messages */}
           {error && (
-            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2 animate-fade-in">
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs flex items-center gap-2 animate-fade-in">
               <span className="material-symbols-outlined text-sm">error</span>
               <span>{error}</span>
             </div>
           )}
 
           {success && (
-            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium flex items-center gap-2 animate-fade-in">
+            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2 animate-fade-in">
               <span className="material-symbols-outlined text-sm">check_circle</span>
               <span>{success}</span>
             </div>
           )}
 
-          {/* VIEW 1: RECOVERY / SET NEW PASSWORD */}
-          {(isPasswordRecovery || authMode === 'recovery') ? (
-            <form onSubmit={handleUpdateNewPassword} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">New Password</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    minLength={6}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Enter new password (min. 6 chars)"
-                    className="w-full px-3.5 py-2.5 pr-10 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-slate-400 text-slate-900 text-xs"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                  >
-                    <span className="material-symbols-outlined text-base">
-                      {showPassword ? 'visibility_off' : 'visibility'}
-                    </span>
-                  </button>
-                </div>
-
-                {/* Password Strength Indicator */}
-                {newPassword.length > 0 && (
-                  <div className="mt-2 space-y-1 animate-fade-in">
-                    <div className="flex justify-between items-center text-[10px] font-mono">
-                      <span className="text-slate-400">Password Strength</span>
-                      <span className={`font-bold ${
-                        newPassword.length < 6 ? 'text-rose-500' :
-                        newPassword.length < 8 ? 'text-amber-500' :
-                        /[0-9]/.test(newPassword) ? 'text-emerald-600' : 'text-blue-500'
-                      }`}>
-                        {newPassword.length < 6 ? 'Too short (min 6)' :
-                         newPassword.length < 8 ? 'Fair' :
-                         /[0-9]/.test(newPassword) ? 'Strong' : 'Good'}
-                      </span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden flex gap-1">
-                      <div className={`h-full flex-1 rounded-full transition-all duration-300 ${
-                        newPassword.length >= 6 ? (newPassword.length < 8 ? 'bg-amber-400' : 'bg-emerald-500') : 'bg-rose-400'
-                      }`}></div>
-                      <div className={`h-full flex-1 rounded-full transition-all duration-300 ${
-                        newPassword.length >= 8 ? 'bg-emerald-500' : 'bg-slate-200'
-                      }`}></div>
-                      <div className={`h-full flex-1 rounded-full transition-all duration-300 ${
-                        newPassword.length >= 8 && /[0-9]/.test(newPassword) ? 'bg-emerald-500' : 'bg-slate-200'
-                      }`}></div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Confirm New Password</label>
-                <input
-                  type="password"
-                  required
-                  value={confirmNewPassword}
-                  onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  placeholder="Re-enter new password"
-                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-slate-400 text-slate-900 text-xs"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition-all shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
-              >
-                {loading ? 'Updating...' : 'Update & Save Password'}
-              </button>
-            </form>
-          ) : authMode === 'forgot' ? (
-            /* VIEW 2: FORGOT PASSWORD REQUEST FORM */
+          {/* VIEW: FORGOT PASSWORD FORM */}
+          {authMode === 'forgot' && (
             <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Your Registered Email</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">University / Registered Email</label>
                 <input
                   type="email"
                   required
@@ -314,29 +277,105 @@ export default function Login() {
                 disabled={loading}
                 className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition-all shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
               >
-                {loading ? 'Sending...' : 'Send Password Reset Email'}
+                {loading ? 'Sending...' : 'Send Password Reset Link'}
               </button>
 
               <div className="text-center pt-2">
                 <button
                   type="button"
                   onClick={() => { setAuthMode('signin'); setError(''); setSuccess(''); }}
-                  className="text-xs text-blue-600 font-semibold hover:underline bg-transparent border-none cursor-pointer inline-flex items-center gap-1"
+                  className="text-xs text-blue-600 font-semibold hover:underline cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-sm">arrow_back</span>
-                  <span>Back to Sign In</span>
+                  ← Back to Sign In
                 </button>
               </div>
             </form>
-          ) : (
-            /* VIEW 3: STANDARD SIGN IN & SIGN UP */
+          )}
+
+          {/* VIEW: SET NEW PASSWORD FORM (RECOVERY) */}
+          {authMode === 'recovery' && (
+            <form onSubmit={handleUpdateNewPassword} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">New Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter at least 6 characters"
+                    className="w-full px-3.5 py-2.5 pr-10 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-slate-400 text-slate-900 text-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-base">
+                      {showPassword ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Password Strength Meter */}
+              {newPassword && (
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-[10px] font-mono">
+                    <span className="text-slate-400">Password Strength:</span>
+                    <span className="font-bold text-slate-700">{strength.label}</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full ${strength.color} transition-all duration-300`} 
+                      style={{ width: `${strength.score}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Confirm New Password</label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    required
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    placeholder="Re-enter your new password"
+                    className="w-full px-3.5 py-2.5 pr-10 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-slate-400 text-slate-900 text-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-base">
+                      {showConfirmPassword ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition-all shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
+              >
+                {loading ? 'Saving...' : 'Save New Password & Log In'}
+              </button>
+            </form>
+          )}
+
+          {/* VIEW: SIGN IN / SIGN UP FORMS */}
+          {(authMode === 'signin' || authMode === 'signup') && (
             <>
-              {/* Social Google Login Button */}
+              {/* Google OAuth Button */}
               <button
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={loading}
-                className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-sm border border-slate-200"
+                className="w-full py-2.5 px-4 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-2.5 transition-all shadow-sm active:scale-95 cursor-pointer"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -359,7 +398,7 @@ export default function Login() {
                 
                 {authMode === 'signup' && (
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
                     <input
                       type="text"
                       required
@@ -372,7 +411,7 @@ export default function Login() {
                 )}
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">University / Personal Email</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">University / Personal Email *</label>
                   <input
                     type="email"
                     required
@@ -384,7 +423,7 @@ export default function Login() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Password *</label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
@@ -407,28 +446,90 @@ export default function Login() {
                 </div>
 
                 {authMode === 'signup' && (
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Confirm Password</label>
-                    <div className="relative">
-                      <input
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        required
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full px-3.5 py-2.5 pr-10 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-slate-400 text-slate-900 text-xs"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                      >
-                        <span className="material-symbols-outlined text-base">
-                          {showConfirmPassword ? 'visibility_off' : 'visibility'}
-                        </span>
-                      </button>
+                  <>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Confirm Password *</label>
+                      <div className="relative">
+                        <input
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          required
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full px-3.5 py-2.5 pr-10 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:border-slate-400 text-slate-900 text-xs"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-base">
+                            {showConfirmPassword ? 'visibility_off' : 'visibility'}
+                          </span>
+                        </button>
+                      </div>
                     </div>
-                  </div>
+
+                    {/* DPDP Act Granular Opt-in Consent Box (Unticked by default) */}
+                    <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5 text-[11px] text-slate-700">
+                      <div className="font-heading font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-sm text-blue-600">verified_user</span>
+                        <span>Privacy & Statutory Consent (DPDP Act, 2023)</span>
+                      </div>
+
+                      <label className="flex items-start gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={coreConsent}
+                          onChange={(e) => setCoreConsent(e.target.checked)}
+                          required
+                          className="mt-0.5 rounded text-blue-600 focus:ring-blue-500 h-3.5 w-3.5"
+                        />
+                        <span>
+                          <strong>* Required:</strong> I consent to processing of my academic and profile data pursuant to the{' '}
+                          <button 
+                            type="button" 
+                            onClick={() => setCurrentView('privacy-policy')}
+                            className="text-blue-600 underline font-semibold"
+                          >
+                            Privacy Notice
+                          </button>{' '}
+                          and{' '}
+                          <button 
+                            type="button" 
+                            onClick={() => setCurrentView('terms-of-service')}
+                            className="text-blue-600 underline font-semibold"
+                          >
+                            Terms of Service
+                          </button>.
+                        </span>
+                      </label>
+
+                      <label className="flex items-start gap-2 cursor-pointer text-slate-600">
+                        <input
+                          type="checkbox"
+                          checked={telemetryConsent}
+                          onChange={(e) => setTelemetryConsent(e.target.checked)}
+                          className="mt-0.5 rounded text-blue-600 focus:ring-blue-500 h-3.5 w-3.5"
+                        />
+                        <span>
+                          <strong>Optional:</strong> I consent to anonymous performance telemetry to improve workspace velocity.
+                        </span>
+                      </label>
+
+                      <label className="flex items-start gap-2 cursor-pointer text-slate-600">
+                        <input
+                          type="checkbox"
+                          checked={notificationsConsent}
+                          onChange={(e) => setNotificationsConsent(e.target.checked)}
+                          className="mt-0.5 rounded text-blue-600 focus:ring-blue-500 h-3.5 w-3.5"
+                        />
+                        <span>
+                          <strong>Optional:</strong> I consent to receiving deadline reminders via email.
+                        </span>
+                      </label>
+                    </div>
+                  </>
                 )}
 
                 {authMode === 'signin' && (
@@ -481,6 +582,39 @@ export default function Login() {
           )}
 
         </div>
+
+        {/* DPDP Statutory Footer in Login Panel */}
+        <div className="pt-8 border-t border-slate-100 text-center text-[10px] text-slate-400 space-y-1.5">
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <button 
+              type="button" 
+              onClick={() => setCurrentView('privacy-policy')}
+              className="hover:text-slate-700 underline cursor-pointer"
+            >
+              Privacy Notice
+            </button>
+            <span>•</span>
+            <button 
+              type="button" 
+              onClick={() => setCurrentView('terms-of-service')}
+              className="hover:text-slate-700 underline cursor-pointer"
+            >
+              Terms of Service
+            </button>
+            <span>•</span>
+            <button 
+              type="button" 
+              onClick={() => setCurrentView('data-rights')}
+              className="hover:text-slate-700 underline cursor-pointer"
+            >
+              Data Rights Portal
+            </button>
+          </div>
+          <p>
+            Grievance Redressal: <a href="mailto:grievance-officer@scholar.app" className="text-slate-500 hover:underline">grievance-officer@scholar.app</a>
+          </p>
+        </div>
+
       </div>
 
     </div>

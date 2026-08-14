@@ -398,6 +398,50 @@ export default function Settings() {
                 </button>
               </div>
 
+              {/* Statutory Privacy & Data Rights (DPDP Act, 2023) */}
+              <div className="p-4 bg-blue-50/60 rounded-2xl border border-blue-200 space-y-3 mt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-base text-blue-600">verified_user</span>
+                      <span>Statutory Data Rights & Grievance (DPDP Act)</span>
+                    </h4>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Exercise your statutory rights (Access, Rectify, Erase, Withdraw, Nominate) or view statutory disclosures.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentView('data-rights')}
+                    className="app-btn-primary text-xs"
+                  >
+                    <span className="material-symbols-outlined text-sm">assignment_turned_in</span>
+                    <span>Submit Data Rights Request</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentView('privacy-policy')}
+                    className="app-btn-secondary text-xs"
+                  >
+                    <span>Privacy Notice</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentView('terms-of-service')}
+                    className="app-btn-secondary text-xs"
+                  >
+                    <span>Terms of Service</span>
+                  </button>
+                </div>
+
+                <p className="text-[10px] text-slate-400 font-mono pt-1">
+                  Grievance Officer: grievance-officer@scholar.app • SLA: 30 days
+                </p>
+              </div>
+
               {/* Danger Zone */}
               <div className="p-4 bg-rose-50/50 rounded-2xl border border-rose-200 space-y-3 mt-4">
                 <div>

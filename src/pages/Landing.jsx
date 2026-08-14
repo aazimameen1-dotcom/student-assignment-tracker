@@ -226,18 +226,51 @@ export default function Landing() {
 
       </main>
 
-      {/* Modern Clean Footer */}
+      {/* Modern Clean Footer with Statutory DPDP Disclosures */}
       <footer className="border-t border-slate-200 bg-white">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 py-8 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© 2026 Scholar Academic Tracker. All rights reserved.</p>
-          <div className="flex gap-6 font-medium">
-            <span className="hover:text-slate-900 cursor-pointer">Privacy</span>
-            <span className="hover:text-slate-900 cursor-pointer">Terms</span>
-            <span className="hover:text-slate-900 cursor-pointer">Security</span>
+        <div className="max-w-7xl mx-auto px-6 md:px-12 py-10 text-xs text-slate-500 space-y-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 font-heading font-extrabold text-slate-900 text-sm">
+                <span className="w-6 h-6 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs">S</span>
+                <span>SCHOLAR</span>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1">Empowering university scholars through intelligent curriculum tracking.</p>
+            </div>
+
+            <div className="flex flex-wrap gap-6 font-medium text-xs">
+              <button 
+                type="button"
+                onClick={() => setCurrentView('privacy-policy')}
+                className="hover:text-slate-900 cursor-pointer"
+              >
+                Privacy Notice
+              </button>
+              <button 
+                type="button"
+                onClick={() => setCurrentView('terms-of-service')}
+                className="hover:text-slate-900 cursor-pointer"
+              >
+                Terms of Service
+              </button>
+              <button 
+                type="button"
+                onClick={() => setCurrentView('data-rights')}
+                className="hover:text-slate-900 cursor-pointer"
+              >
+                Data Principal Rights
+              </button>
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
+            <p>© 2026 Scholar Academic Technologies Pvt. Ltd. All rights reserved.</p>
+            <p>
+              Grievance Redressal Officer (DPDP Act, India): <a href="mailto:grievance-officer@scholar.app" className="text-slate-600 font-semibold underline">grievance-officer@scholar.app</a>
+            </p>
           </div>
         </div>
       </footer>
-
     </div>
   );
 }
