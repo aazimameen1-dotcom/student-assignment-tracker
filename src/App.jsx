@@ -144,7 +144,7 @@ function AppContent() {
       <Navigation />
       
       {/* Dynamic Content Container */}
-      <main className="flex-1 w-full pt-16 md:pl-64 transition-all overflow-x-hidden">
+      <main className="flex-1 w-full pt-16 md:pl-64 pb-20 md:pb-8 transition-all overflow-x-hidden">
         <Suspense fallback={<PageFallback />}>
           {renderActiveView()}
         </Suspense>

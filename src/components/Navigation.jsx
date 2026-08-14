@@ -19,6 +19,7 @@ export default function Navigation() {
 
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showMobileDrawer, setShowMobileDrawer] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   
@@ -69,6 +70,9 @@ export default function Navigation() {
       case 'research': return 'Research Discovery';
       case 'profile': return 'Scholar Profile';
       case 'settings': return 'Account Settings';
+      case 'privacy-policy': return 'Privacy Policy';
+      case 'terms-of-service': return 'Terms of Service';
+      case 'data-rights': return 'Data Privacy Portal';
       default: return 'Scholar Workspace';
     }
   };
@@ -81,17 +85,31 @@ export default function Navigation() {
   const userInitial = userName[0]?.toUpperCase() || 'A';
   const avatarUrl = getAvatarUrl();
 
+  const handleNavClick = (view) => {
+    setCurrentView(view);
+    setShowMobileDrawer(false);
+  };
+
   return (
     <>
       {/* Modern Fixed Top Utility Header */}
-      <header className="fixed top-0 left-0 right-0 h-16 glass-nav z-30 flex items-center justify-between px-4 md:px-8 md:pl-72 transition-all">
-        {/* Left Side: Dynamic Page Title / Breadcrumb */}
-        <div className="flex items-center gap-3">
-          <div className="md:hidden flex items-center gap-2" onClick={() => setCurrentView('dashboard')}>
-            <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
+      <header className="fixed top-0 left-0 right-0 h-16 glass-nav z-30 flex items-center justify-between px-3 sm:px-6 md:px-8 md:pl-72 transition-all">
+        {/* Left Side: Mobile Hamburger + Brand / Page Title */}
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setShowMobileDrawer(true)}
+            className="md:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Open Navigation Menu"
+          >
+            <span className="material-symbols-outlined text-xl">menu</span>
+          </button>
+
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleNavClick('dashboard')}>
+            <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-sm md:hidden">
               S
             </div>
-            <span className="font-heading font-bold text-sm text-slate-900">Scholar</span>
+            <span className="font-heading font-bold text-sm text-slate-900 md:hidden">Scholar</span>
           </div>
 
           <div className="hidden md:block">
@@ -99,7 +117,7 @@ export default function Navigation() {
           </div>
         </div>
 
-        {/* Center: Search Bar */}
+        {/* Center: Search Bar (Desktop) */}
         <div className="relative max-w-md w-full mx-4 hidden sm:block" ref={searchRef}>
           <div className="relative">
             <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
@@ -122,7 +140,7 @@ export default function Navigation() {
           {showSearchDropdown && searchQuery.trim().length > 0 && (
             <div className="absolute top-11 left-0 w-full bg-white rounded-2xl shadow-xl border border-slate-200 p-2 z-50 animate-fade-in max-h-80 overflow-y-auto">
               <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase font-mono">Tasks</div>
-              {tasks.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.subject.toLowerCase().includes(searchQuery.toLowerCase())).map(t => (
+              {tasks.filter(t => t.title?.toLowerCase().includes(searchQuery.toLowerCase()) || t.subject?.toLowerCase().includes(searchQuery.toLowerCase())).map(t => (
                 <div 
                   key={t.id}
                   onClick={() => {
@@ -145,7 +163,7 @@ export default function Navigation() {
         </div>
 
         {/* Right Side: Notifications & User Avatar Profile Button */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           {/* Notifications Dropdown */}
           <div className="relative" ref={notifRef}>
             <button 
@@ -160,7 +178,7 @@ export default function Navigation() {
             </button>
 
             {showNotificationsDropdown && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-fade-in text-left">
+              <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-fade-in text-left">
                 <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
                   <span className="font-heading font-bold text-xs text-slate-900">Notifications ({unreadNotifications.length})</span>
                   {hasUnread && (
@@ -206,7 +224,7 @@ export default function Navigation() {
           <div className="relative" ref={userMenuRef}>
             <button 
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2.5 p-1 pl-2 rounded-xl hover:bg-slate-100 transition-all cursor-pointer border border-transparent hover:border-slate-200"
+              className="flex items-center gap-2 p-1 sm:pl-2 rounded-xl hover:bg-slate-100 transition-all cursor-pointer border border-transparent hover:border-slate-200"
             >
               <div className="text-right hidden md:block">
                 <p className="text-xs font-bold text-slate-900 leading-tight">{userName}</p>
@@ -324,20 +342,116 @@ export default function Navigation() {
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 glass-nav z-40 flex items-center justify-around px-2">
-        {navItems.slice(0, 5).map((item) => {
-          const isActive = currentView === item.view || (item.view === 'subjects' && currentView === 'assignment-details');
+      {/* Mobile Drawer (Accessible from Top Left Hamburger) */}
+      {showMobileDrawer && (
+        <div className="fixed inset-0 z-50 md:hidden flex animate-fade-in">
+          {/* Backdrop */}
+          <div 
+            onClick={() => setShowMobileDrawer(false)} 
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"
+          ></div>
+
+          {/* Drawer Panel */}
+          <div className="relative w-4/5 max-w-xs bg-white h-full shadow-2xl z-10 flex flex-col justify-between p-6 overflow-y-auto">
+            <div className="space-y-6">
+              
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
+                    S
+                  </div>
+                  <div>
+                    <h3 className="font-heading font-extrabold text-sm text-slate-900">SCHOLAR</h3>
+                    <p className="text-[10px] font-mono text-slate-400">STUDENT OS</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowMobileDrawer(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-700"
+                >
+                  <span className="material-symbols-outlined text-base">close</span>
+                </button>
+              </div>
+
+              {/* Navigation List */}
+              <nav className="space-y-1">
+                {navItems.map((item) => {
+                  const isActive = currentView === item.view || (item.view === 'subjects' && currentView === 'assignment-details');
+                  return (
+                    <button
+                      key={item.view}
+                      onClick={() => handleNavClick(item.view)}
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all cursor-pointer text-left ${
+                        isActive 
+                          ? 'bg-slate-900 text-white font-semibold shadow-sm' 
+                          : 'text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-base">{item.icon}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+
+            </div>
+
+            {/* Bottom Section */}
+            <div className="space-y-2 pt-4 border-t border-slate-100">
+              <button
+                onClick={() => handleNavClick('profile')}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all cursor-pointer ${
+                  currentView === 'profile' ? 'bg-slate-900 text-white font-semibold' : 'text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                <span className="material-symbols-outlined text-base">person</span>
+                <span>Profile</span>
+              </button>
+
+              <button
+                onClick={() => handleNavClick('settings')}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all cursor-pointer ${
+                  currentView === 'settings' ? 'bg-slate-900 text-white font-semibold' : 'text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                <span className="material-symbols-outlined text-base">settings</span>
+                <span>Settings</span>
+              </button>
+
+              <button
+                onClick={() => { setShowMobileDrawer(false); logout(); }}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-rose-600 hover:bg-rose-50 transition-all cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-base">logout</span>
+                <span>Sign Out</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Bottom Navigation Bar (5 Core Actions) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 glass-nav z-40 flex items-center justify-around px-2 border-t border-slate-200/80">
+        {[
+          { view: 'dashboard', label: 'Home', icon: 'grid_view' },
+          { view: 'tasks', label: 'Tasks', icon: 'checklist' },
+          { view: 'projects', label: 'Projects', icon: 'folder_open' },
+          { view: 'calendar', label: 'Calendar', icon: 'calendar_today' },
+          { view: 'analytics', label: 'Stats', icon: 'insights' }
+        ].map((item) => {
+          const isActive = currentView === item.view || (item.view === 'tasks' && currentView === 'assignment-details');
           return (
             <button
               key={item.view}
               onClick={() => setCurrentView(item.view)}
-              className={`flex flex-col items-center justify-center p-1.5 transition-colors cursor-pointer ${
-                isActive ? 'text-slate-900 font-bold' : 'text-slate-400'
+              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all cursor-pointer ${
+                isActive ? 'text-slate-900 font-bold scale-105' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
               <span className="material-symbols-outlined text-xl">{item.icon}</span>
-              <span className="text-[10px] mt-0.5">{item.label.split(' ')[0]}</span>
+              <span className="text-[10px] mt-0.5 font-medium">{item.label}</span>
             </button>
           );
         })}
