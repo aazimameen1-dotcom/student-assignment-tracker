@@ -3,36 +3,168 @@ import { AppContext } from '../context/AppContext';
 
 export default function Calendar() {
   const { 
-    tasks, 
+    tasks = [], 
     addTask, 
-    enrolledSubjects,
+    updateTaskMilestone,
+    enrolledSubjects = [],
     selectedDate, 
     setSelectedDate, 
     setCurrentView, 
     setSelectedTaskId 
   } = useContext(AppContext);
 
+  // Active View Mode: 'month' | 'week' | 'agenda'
+  const [viewMode, setViewMode] = useState('month');
+
+  // Month navigation state
+  const [currentDate, setCurrentDate] = useState(() => {
+    if (selectedDate) {
+      const parts = selectedDate.split('-');
+      if (parts.length === 3) {
+        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, 1);
+      }
+    }
+    return new Date();
+  });
+
+  // Modal State
   const [showAddModal, setShowAddModal] = useState(false);
   const [title, setTitle] = useState('');
-  const [subject, setSubject] = useState(enrolledSubjects[0]?.code || '');
+  const [subject, setSubject] = useState(enrolledSubjects[0]?.code || 'CS101');
   const [description, setDescription] = useState('');
   const [dueTime, setDueTime] = useState('11:59 PM');
-
-  // Custom Course Contact and Milestones states for Calendar.jsx
   const [profName, setProfName] = useState('');
   const [profHours, setProfHours] = useState('');
   const [milestonesList, setMilestonesList] = useState([]);
   const [newMilestoneTitle, setNewMilestoneTitle] = useState('');
 
+  // Real today's date formatted YYYY-MM-DD
+  const realToday = new Date();
+  const realTodayStr = `${realToday.getFullYear()}-${String(realToday.getMonth() + 1).padStart(2, '0')}-${String(realToday.getDate()).padStart(2, '0')}`;
+
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth();
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const monthTitle = `${monthNames[currentMonth]} ${currentYear}`;
+
+  // Month Navigation Handlers
+  const handlePrevMonth = () => {
+    setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
+  };
+
+  const handleTodayJump = () => {
+    const today = new Date();
+    setCurrentDate(new Date(today.getFullYear(), today.getMonth(), 1));
+    setSelectedDate(realTodayStr);
+  };
+
+  // Generate Calendar Grid Days (Monday start)
+  const generateCalendarDays = () => {
+    const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay(); // 0 is Sun
+    const mondayBasedFirstDay = (firstDayIndex + 6) % 7; // 0 is Mon, 6 is Sun
+    
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
+
+    const days = [];
+
+    // 1. Previous month trailing days
+    for (let i = mondayBasedFirstDay - 1; i >= 0; i--) {
+      const dayNum = daysInPrevMonth - i;
+      const prevMonthIdx = currentMonth === 0 ? 11 : currentMonth - 1;
+      const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+      const dateStr = `${prevYear}-${String(prevMonthIdx + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+      days.push({
+        dateStr,
+        num: dayNum,
+        isCurrentMonth: false,
+        isToday: dateStr === realTodayStr
+      });
+    }
+
+    // 2. Current month days
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      days.push({
+        dateStr,
+        num: d,
+        isCurrentMonth: true,
+        isToday: dateStr === realTodayStr
+      });
+    }
+
+    // 3. Next month leading days to complete grid (multiples of 7)
+    const remainingDays = (7 - (days.length % 7)) % 7;
+    for (let d = 1; d <= remainingDays; d++) {
+      const nextMonthIdx = currentMonth === 11 ? 0 : currentMonth + 1;
+      const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+      const dateStr = `${nextYear}-${String(nextMonthIdx + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      days.push({
+        dateStr,
+        num: d,
+        isCurrentMonth: false,
+        isToday: dateStr === realTodayStr
+      });
+    }
+
+    return days;
+  };
+
+  const calendarDays = generateCalendarDays();
+
+  // Tasks for the selected date
+  const activeSelectedDate = selectedDate || realTodayStr;
+  const selectedDayTasks = tasks.filter(t => t.dueDate === activeSelectedDate);
+
+  // Color mapping helper
+  const getSubjectBadgeStyle = (code) => {
+    if (!code) return 'bg-slate-100 text-slate-700 border-slate-200';
+    if (code.startsWith('CS') || code.startsWith('SE')) return 'bg-blue-50 text-blue-700 border-blue-200';
+    if (code.startsWith('MATH') || code.startsWith('STAT')) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    if (code.startsWith('HIST') || code.startsWith('ENG')) return 'bg-amber-50 text-amber-700 border-amber-200';
+    if (code.startsWith('PHYS') || code.startsWith('CHEM')) return 'bg-purple-50 text-purple-700 border-purple-200';
+    return 'bg-slate-100 text-slate-700 border-slate-200';
+  };
+
+  const getSubjectDotColor = (code) => {
+    if (!code) return 'bg-slate-400';
+    if (code.startsWith('CS') || code.startsWith('SE')) return 'bg-blue-600';
+    if (code.startsWith('MATH') || code.startsWith('STAT')) return 'bg-emerald-600';
+    if (code.startsWith('HIST') || code.startsWith('ENG')) return 'bg-amber-500';
+    if (code.startsWith('PHYS') || code.startsWith('CHEM')) return 'bg-purple-600';
+    return 'bg-slate-500';
+  };
+
+  // Format date helper
+  const formatFriendlyDate = (dateStr) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    const dateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short', year: 'numeric' });
+  };
+
+  // Add Task Milestone
   const handleAddMilestone = (e) => {
     e.preventDefault();
     if (!newMilestoneTitle.trim()) return;
-    const newMilestone = {
-      id: `m-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      title: newMilestoneTitle.trim(),
-      completed: false
-    };
-    setMilestonesList(prev => [...prev, newMilestone]);
+    setMilestonesList(prev => [
+      ...prev,
+      {
+        id: `m-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+        title: newMilestoneTitle.trim(),
+        completed: false
+      }
+    ]);
     setNewMilestoneTitle('');
   };
 
@@ -40,87 +172,43 @@ export default function Calendar() {
     setMilestonesList(prev => prev.filter(m => m.id !== id));
   };
 
-  const monthName = 'October 2024';
-
-  // October 2024 starts on a Tuesday (day 2 in grid if Mon is 1). 
-  // Let's build a grid of days matching the mockup:
-  // Preceded by Sep 30, Sep 29... let's just make a static array of days to represent the grid structure:
-  // Each day has: date string (YYYY-MM-DD), displayNum, isCurrentMonth, dots (array of task objects)
-  const calendarDays = [];
-
-  // Add leading September days (matching mockup)
-  // Sep 26 (Thu) to Sep 30 (Mon)
-  const sepDays = [
-    { dateStr: '2024-09-26', num: 26, currentMonth: false },
-    { dateStr: '2024-09-27', num: 27, currentMonth: false },
-    { dateStr: '2024-09-28', num: 28, currentMonth: false },
-    { dateStr: '2024-09-29', num: 29, currentMonth: false },
-    { dateStr: '2024-09-30', num: 30, currentMonth: false },
-  ];
-  calendarDays.push(...sepDays);
-
-  // Add October days (1 to 31)
-  for (let d = 1; d <= 31; d++) {
-    const pad = d < 10 ? '0' + d : d;
-    calendarDays.push({
-      dateStr: `2024-10-${pad}`,
-      num: d,
-      currentMonth: true
-    });
-  }
-
-  // Add trailing November days (1 to 6 to fill grid)
-  for (let d = 1; d <= 6; d++) {
-    calendarDays.push({
-      dateStr: `2024-11-0${d}`,
-      num: d,
-      currentMonth: false
-    });
-  }
-
-  // Find tasks matching selected day
-  const selectedDayTasks = tasks.filter(t => t.dueDate === selectedDate);
-
-  const handleDayClick = (dateStr) => {
-    setSelectedDate(dateStr);
-  };
-
-  const handleAddTask = (e) => {
+  // Submit new task from Calendar
+  const handleAddTaskSubmit = async (e) => {
     e.preventDefault();
-    if (!title) return;
+    if (!title.trim()) return;
 
-    // Estimate time left based on selected date
-    const dateObj = new Date(selectedDate);
-    const today = new Date('2024-10-12'); // set static mock current date
-    const diffTime = dateObj - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    const calculateTimeLeft = (days) => {
-      if (days === 0) return 'Today';
-      if (days === 1) return 'Tomorrow';
-      if (days < 0) return 'Overdue';
-      return `${days} Days Left`;
-    };
-    const timeLeft = calculateTimeLeft(diffDays);
+    // Calculate time left relative to today
+    const taskDate = new Date(activeSelectedDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    taskDate.setHours(0, 0, 0, 0);
+    const diffDays = Math.ceil((taskDate - today) / (1000 * 60 * 60 * 24));
 
-    // Determine category based on due date
+    let timeLeft = `${diffDays} Days Left`;
+    if (diffDays === 0) timeLeft = 'Due Today';
+    else if (diffDays === 1) timeLeft = 'Tomorrow';
+    else if (diffDays < 0) timeLeft = 'Overdue';
+
     let category = 'Later';
     if (diffDays <= 7 && diffDays >= 0) category = 'This Week';
     else if (diffDays <= 14 && diffDays > 7) category = 'Next Week';
 
-    addTask({
-      title,
-      subject,
-      description,
-      dueDate: selectedDate,
+    await addTask({
+      title: title.trim(),
+      subject: subject || (enrolledSubjects[0]?.code || 'CS101'),
+      description: description.trim() || 'Scheduled via Calendar workspace.',
+      dueDate: activeSelectedDate,
       dueTime,
       category,
       timeLeft,
       professor: {
-        name: profName.trim(),
-        officeHours: profHours.trim()
+        name: profName.trim() || 'Faculty Instructor',
+        officeHours: profHours.trim() || 'Mon/Wed 2-4 PM'
       },
-      milestones: milestonesList
+      milestones: milestonesList.length > 0 ? milestonesList : [
+        { id: 'm1', title: 'Prepare deliverables & outline', completed: false },
+        { id: 'm2', title: 'Finalize submission', completed: false }
+      ]
     });
 
     setTitle('');
@@ -128,325 +216,485 @@ export default function Calendar() {
     setProfName('');
     setProfHours('');
     setMilestonesList([]);
-    setNewMilestoneTitle('');
     setShowAddModal(false);
   };
 
-  const handleCardClick = (id) => {
-    setSelectedTaskId(id);
-    setCurrentView('assignment-details');
-  };
-
-  // Helper to retrieve color representation for dots
-  const getSubjectDotColor = (subjectCode) => {
-    if (subjectCode.startsWith('CS')) return 'bg-primary';
-    if (subjectCode.startsWith('MATH')) return 'bg-secondary';
-    if (subjectCode.startsWith('HIST')) return 'bg-tertiary-container';
-    return 'bg-error';
-  };
-
-  // Formatted selected date
-  const formatSelectedDate = () => {
-    const parts = selectedDate.split('-');
-    if (parts.length !== 3) return selectedDate;
-    const dateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-    return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' });
-  };
+  // Sort upcoming agenda tasks
+  const agendaTasks = [...tasks].sort((a, b) => {
+    const da = a.dueDate || '9999';
+    const db = b.dueDate || '9999';
+    return da.localeCompare(db);
+  });
 
   return (
-    <div className="animate-fade-in max-w-container-max-width mx-auto px-margin-mobile md:px-margin-desktop py-8 text-left pb-24">
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 space-y-6 animate-fade-in text-left pb-24">
       
-      <main className="flex flex-col lg:flex-row gap-8">
-        
-        {/* Left Side: Calendar Grid Panel */}
-        <section className="flex-grow lg:max-w-4xl">
-          <div className="bg-surface-container-lowest border border-outline-variant p-3 sm:p-6 rounded-2xl shadow-sm">
+      {/* Top Header & View Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-2xl font-bold text-slate-900 flex items-center gap-2.5">
+            <span className="material-symbols-outlined text-slate-700 text-2xl">calendar_month</span>
+            <span>Academic Schedule</span>
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Interactive syllabus calendar with milestone deadlines and scheduled deliverables.
+          </p>
+        </div>
+
+        {/* View Switcher & Action Bar */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Today Button */}
+          <button
+            type="button"
+            onClick={handleTodayJump}
+            className="app-btn-secondary text-xs"
+          >
+            <span className="material-symbols-outlined text-sm">today</span>
+            <span>Today</span>
+          </button>
+
+          {/* View Mode Buttons */}
+          <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 border border-slate-200">
+            <button
+              type="button"
+              onClick={() => setViewMode('month')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === 'month' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Month
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('agenda')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === 'agenda' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Agenda
+            </button>
+          </div>
+
+          {/* Add Task Button */}
+          <button
+            type="button"
+            onClick={() => setShowAddModal(true)}
+            className="app-btn-primary text-xs"
+          >
+            <span className="material-symbols-outlined text-sm">add</span>
+            <span>Add Event</span>
+          </button>
+        </div>
+      </div>
+
+      {/* VIEW 1: MONTH VIEW */}
+      {viewMode === 'month' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          {/* Main Month Grid (8 Cols) */}
+          <div className="lg:col-span-8 app-card p-4 sm:p-6 space-y-4">
             
-            {/* Header controls */}
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="font-headline text-headline-md font-bold text-on-surface">{monthName}</h2>
-              <div className="flex gap-2">
-                <button className="p-2 hover:bg-surface-container rounded-full transition-colors cursor-pointer">
-                  <span className="material-symbols-outlined">chevron_left</span>
+            {/* Month Header Navigation */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <h2 className="font-heading text-lg font-bold text-slate-900">{monthTitle}</h2>
+              
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={handlePrevMonth}
+                  className="p-1.5 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors cursor-pointer"
+                  title="Previous Month"
+                >
+                  <span className="material-symbols-outlined text-lg">chevron_left</span>
                 </button>
-                <button className="p-2 hover:bg-surface-container rounded-full transition-colors cursor-pointer">
-                  <span className="material-symbols-outlined">chevron_right</span>
+                <button
+                  type="button"
+                  onClick={handleNextMonth}
+                  className="p-1.5 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors cursor-pointer"
+                  title="Next Month"
+                >
+                  <span className="material-symbols-outlined text-lg">chevron_right</span>
                 </button>
               </div>
             </div>
 
-            {/* Week Headers */}
-            <div className="calendar-grid text-center mb-4 font-semibold">
-              <span className="font-mono text-[10px] sm:text-xs md:text-sm text-on-surface-variant">MON</span>
-              <span className="font-mono text-[10px] sm:text-xs md:text-sm text-on-surface-variant">TUE</span>
-              <span className="font-mono text-[10px] sm:text-xs md:text-sm text-on-surface-variant">WED</span>
-              <span className="font-mono text-[10px] sm:text-xs md:text-sm text-on-surface-variant">THU</span>
-              <span className="font-mono text-[10px] sm:text-xs md:text-sm text-on-surface-variant">FRI</span>
-              <span className="font-mono text-[10px] sm:text-xs md:text-sm text-on-surface-variant">SAT</span>
-              <span className="font-mono text-[10px] sm:text-xs md:text-sm text-on-surface-variant">SUN</span>
+            {/* Weekday Header Labels */}
+            <div className="grid grid-cols-7 text-center font-mono text-[11px] font-bold text-slate-400 pb-1">
+              <span>MON</span>
+              <span>TUE</span>
+              <span>WED</span>
+              <span>THU</span>
+              <span>FRI</span>
+              <span>SAT</span>
+              <span>SUN</span>
             </div>
 
-            {/* Grid days */}
-            <div className="calendar-grid gap-y-4">
+            {/* Calendar Cells Grid */}
+            <div className="grid grid-cols-7 gap-1 sm:gap-2">
               {calendarDays.map((day, idx) => {
-                const isSelected = day.dateStr === selectedDate;
-                const dayTasks = tasks.filter(t => t.dueDate === day.dateStr && t.status !== 'completed');
-                
+                const isSelected = day.dateStr === activeSelectedDate;
+                const dayTasks = tasks.filter(t => t.dueDate === day.dateStr);
+                const pendingTasks = dayTasks.filter(t => t.status !== 'completed');
+
                 return (
                   <div
                     key={idx}
-                    onClick={() => handleDayClick(day.dateStr)}
-                    className={`h-14 flex flex-col items-center justify-center relative cursor-pointer rounded-xl transition-all ${
-                      day.currentMonth 
-                        ? isSelected
-                          ? 'bg-primary text-on-primary shadow-md scale-105 z-10 font-bold'
-                          : 'text-on-surface hover:bg-surface-container'
-                        : 'text-on-surface-variant/30 font-light'
+                    onClick={() => setSelectedDate(day.dateStr)}
+                    className={`min-h-[64px] sm:min-h-[80px] p-1.5 sm:p-2 rounded-xl flex flex-col justify-between transition-all cursor-pointer relative border ${
+                      isSelected
+                        ? 'bg-blue-50/70 border-blue-500 shadow-sm ring-2 ring-blue-500/20'
+                        : day.isToday
+                        ? 'bg-slate-50 border-slate-300 font-bold'
+                        : day.isCurrentMonth
+                        ? 'bg-white hover:bg-slate-50 border-slate-100 text-slate-800'
+                        : 'bg-slate-50/50 border-transparent text-slate-300'
                     }`}
                   >
-                    <span className="font-body text-sm sm:text-base">{day.num}</span>
-                    
-                    {/* Event Dots */}
-                    {dayTasks.length > 0 && (
-                      <div className="flex gap-0.5 sm:gap-1 mt-1 justify-center max-w-full overflow-hidden px-1">
-                        {dayTasks.slice(0, 3).map((task) => (
+                    {/* Day Number and Today Indicator */}
+                    <div className="flex items-center justify-between w-full">
+                      <span className={`text-xs sm:text-sm font-semibold ${
+                        isSelected 
+                          ? 'text-blue-700 font-bold' 
+                          : day.isToday 
+                          ? 'w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[11px]' 
+                          : day.isCurrentMonth 
+                          ? 'text-slate-700' 
+                          : 'text-slate-300'
+                      }`}>
+                        {day.num}
+                      </span>
+
+                      {/* Pending count pill on larger screens */}
+                      {pendingTasks.length > 0 && (
+                        <span className="hidden sm:inline-block px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold bg-blue-100 text-blue-700">
+                          {pendingTasks.length}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Task Indicator Badges / Dots */}
+                    <div className="space-y-1 mt-1 w-full overflow-hidden">
+                      {/* Mobile view dots */}
+                      <div className="flex sm:hidden gap-1 items-center justify-center flex-wrap">
+                        {dayTasks.slice(0, 3).map((t, tidx) => (
                           <div 
-                            key={task.id}
-                            className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${
-                              isSelected ? 'bg-white' : getSubjectDotColor(task.subject)
+                            key={tidx} 
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              t.status === 'completed' ? 'bg-slate-300' : getSubjectDotColor(t.subject)
                             }`}
                           />
                         ))}
                       </div>
-                    )}
+
+                      {/* Desktop view pill cards */}
+                      <div className="hidden sm:block space-y-1">
+                        {dayTasks.slice(0, 2).map((t) => (
+                          <div
+                            key={t.id}
+                            className={`px-1.5 py-0.5 rounded text-[10px] truncate font-medium border ${
+                              t.status === 'completed'
+                                ? 'bg-slate-100 text-slate-400 line-through border-slate-200'
+                                : getSubjectBadgeStyle(t.subject)
+                            }`}
+                            title={t.title}
+                          >
+                            {t.title}
+                          </div>
+                        ))}
+                        {dayTasks.length > 2 && (
+                          <span className="text-[9px] text-slate-400 font-mono block text-left pl-1">
+                            +{dayTasks.length - 2} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
                   </div>
                 );
               })}
             </div>
 
           </div>
-        </section>
 
-        {/* Right Side: Task Details for Selected Day */}
-        <aside className="w-full lg:w-80 flex flex-col gap-6">
-          <div className="flex items-baseline justify-between">
-            <h3 className="font-headline text-headline-sm font-semibold text-on-surface">{formatSelectedDate()}</h3>
-            <span className="font-mono text-label-md text-primary font-bold">
-              {selectedDayTasks.length} {selectedDayTasks.length === 1 ? 'TASK' : 'TASKS'}
-            </span>
+          {/* Right Selected Date Inspector (4 Cols) */}
+          <div className="lg:col-span-4 app-card p-6 space-y-5">
+            
+            {/* Selected Date Header */}
+            <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-mono font-bold uppercase text-slate-400 tracking-wider">
+                  Selected Date
+                </span>
+                <h3 className="font-heading text-base font-bold text-slate-900">
+                  {formatFriendlyDate(activeSelectedDate)}
+                </h3>
+              </div>
+              <span className="app-badge app-badge-blue">
+                {selectedDayTasks.length} {selectedDayTasks.length === 1 ? 'Deliverable' : 'Deliverables'}
+              </span>
+            </div>
+
+            {/* Task list for selected date */}
+            <div className="space-y-3 max-h-[460px] overflow-y-auto pr-1">
+              {selectedDayTasks.length > 0 ? (
+                selectedDayTasks.map((task) => {
+                  const isCompleted = task.status === 'completed';
+                  return (
+                    <div
+                      key={task.id}
+                      className={`p-3.5 rounded-xl border transition-all ${
+                        isCompleted
+                          ? 'bg-slate-50 border-slate-200 opacity-60'
+                          : 'bg-white hover:bg-slate-50/80 border-slate-200 shadow-sm'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase border ${getSubjectBadgeStyle(task.subject)}`}>
+                          {task.subject}
+                        </span>
+                        <span className="text-[11px] font-mono font-semibold text-rose-600 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-xs">schedule</span>
+                          <span>{task.dueTime || '11:59 PM'}</span>
+                        </span>
+                      </div>
+
+                      <h4 
+                        onClick={() => {
+                          setSelectedTaskId(task.id);
+                          setCurrentView('assignment-details');
+                        }}
+                        className="font-heading text-xs font-bold text-slate-900 hover:text-blue-600 transition-colors cursor-pointer mb-1 line-clamp-2"
+                      >
+                        {task.title}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 line-clamp-1 mb-2">
+                        {task.description}
+                      </p>
+
+                      {/* Milestones quick-toggle */}
+                      {task.milestones && task.milestones.length > 0 && (
+                        <div className="pt-2 border-t border-slate-100 space-y-1">
+                          <span className="text-[10px] font-mono text-slate-400 block font-semibold">Milestones:</span>
+                          {task.milestones.map((m) => (
+                            <label key={m.id} className="flex items-center gap-2 text-[11px] text-slate-600 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={m.completed}
+                                onChange={(e) => updateTaskMilestone(task.id, m.id, e.target.checked)}
+                                className="rounded text-blue-600 focus:ring-blue-500 h-3 w-3"
+                              />
+                              <span className={m.completed ? 'line-through text-slate-400' : ''}>{m.title}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="p-8 text-center bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
+                  <span className="material-symbols-outlined text-3xl text-slate-300">event_available</span>
+                  <p className="text-xs text-slate-500 font-medium">No deliverables scheduled for this date.</p>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddModal(true)}
+                    className="text-xs text-blue-600 font-semibold hover:underline"
+                  >
+                    + Schedule an assignment
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Add Button */}
+            <button
+              type="button"
+              onClick={() => setShowAddModal(true)}
+              className="w-full app-btn-primary text-xs py-2.5"
+            >
+              <span className="material-symbols-outlined text-sm">add_task</span>
+              <span>Add Deliverable to Date</span>
+            </button>
+
           </div>
 
-          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
-            {selectedDayTasks.length > 0 ? (
-              selectedDayTasks.map((task) => {
-                const isCompleted = task.status === 'completed';
-                const progress = task.progress !== undefined ? task.progress : 0;
-                
-                return (
-                  <div 
-                    key={task.id}
-                    onClick={() => handleCardClick(task.id)}
-                    className={`group bg-surface-container-lowest border border-outline-variant p-5 rounded-2xl hover:shadow-md transition-all active:scale-[0.98] cursor-pointer text-left ${
-                      isCompleted ? 'opacity-70' : ''
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <span className="px-2 py-0.5 bg-primary/10 text-primary rounded font-mono text-[9px] uppercase tracking-wider border border-primary/20">
-                        {task.subject}
-                      </span>
-                      <span className="font-mono text-label-md text-error">{task.dueTime}</span>
-                    </div>
-                    
-                    <h4 className="font-headline text-headline-sm font-semibold mb-1 truncate text-on-surface group-hover:text-primary transition-colors">
-                      {task.title}
-                    </h4>
-                    <p className="font-body text-body-sm text-on-surface-variant mb-4 line-clamp-1">
-                      {task.description}
-                    </p>
+        </div>
+      )}
 
-                    <div className="w-full bg-surface-container h-1 rounded-full overflow-hidden">
-                      <div 
-                        className="bg-primary h-full transition-all duration-500" 
-                        style={{ width: `${progress}%` }}
-                      ></div>
+      {/* VIEW 2: AGENDA TIMELINE VIEW */}
+      {viewMode === 'agenda' && (
+        <div className="app-card p-6 space-y-4">
+          <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <h2 className="font-heading text-base font-bold text-slate-900">Upcoming Academic Agenda</h2>
+            <span className="text-xs text-slate-500 font-mono">{agendaTasks.length} Total Assignments</span>
+          </div>
+
+          <div className="space-y-3">
+            {agendaTasks.length > 0 ? (
+              agendaTasks.map((task) => (
+                <div
+                  key={task.id}
+                  onClick={() => {
+                    setSelectedTaskId(task.id);
+                    setCurrentView('assignment-details');
+                  }}
+                  className="p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm"
+                >
+                  <div className="flex items-start sm:items-center gap-3">
+                    <span className={`px-2.5 py-1 rounded text-xs font-mono font-bold uppercase border ${getSubjectBadgeStyle(task.subject)}`}>
+                      {task.subject}
+                    </span>
+                    <div>
+                      <h4 className="font-heading text-sm font-bold text-slate-900 hover:text-blue-600 transition-colors">
+                        {task.title}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{task.description}</p>
                     </div>
                   </div>
-                );
-              })
+
+                  <div className="flex items-center gap-3 self-end sm:self-auto">
+                    <div className="text-right font-mono text-xs">
+                      <span className="text-slate-900 font-bold block">{formatFriendlyDate(task.dueDate)}</span>
+                      <span className="text-rose-600 font-semibold text-[11px]">{task.dueTime || '11:59 PM'}</span>
+                    </div>
+                    <span className="material-symbols-outlined text-slate-400">chevron_right</span>
+                  </div>
+                </div>
+              ))
             ) : (
-              <div className="bg-surface-container-lowest border border-outline-variant p-6 rounded-2xl text-center text-on-surface-variant italic">
-                No tasks scheduled for this date.
+              <div className="p-8 text-center bg-slate-50 rounded-xl text-slate-400 text-xs">
+                No upcoming assignments found.
               </div>
             )}
           </div>
+        </div>
+      )}
 
-          <button 
-            onClick={() => setShowAddModal(true)}
-            className="w-full py-4 bg-primary text-on-primary rounded-full font-mono text-label-md shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            ADD TASK
-          </button>
-        </aside>
-
-      </main>
-
-      {/* Add Task Modal targeting selectedDate */}
+      {/* Add Task Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 w-full max-w-lg shadow-xl animate-fade-in text-left max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-headline text-headline-sm font-semibold text-on-surface">
-                Add Task for {formatSelectedDate()}
-              </h3>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 w-full max-w-lg shadow-xl animate-fade-in text-left max-h-[90vh] overflow-y-auto space-y-4">
+            
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="font-heading text-base font-bold text-slate-900">
+                  Schedule Deliverable
+                </h3>
+                <p className="text-xs text-slate-500">Adding to {formatFriendlyDate(activeSelectedDate)}</p>
+              </div>
               <button 
+                type="button"
                 onClick={() => setShowAddModal(false)}
-                className="material-symbols-outlined text-on-surface-variant hover:bg-surface-container rounded-full p-1 cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer"
               >
-                close
+                <span className="material-symbols-outlined text-lg">close</span>
               </button>
             </div>
 
-            <form onSubmit={handleAddTask} className="space-y-4">
+            <form onSubmit={handleAddTaskSubmit} className="space-y-4">
               <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Task Title *</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Deliverable Title *</label>
                 <input 
                   type="text" 
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Econometrics Problem Set 4"
+                  placeholder="e.g. Linear Algebra Problem Set 3"
                   required
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
                 />
               </div>
 
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Course/Subject *</label>
-                <select 
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                >
-                  {enrolledSubjects.map(sub => (
-                    <option key={sub.code} value={sub.code}>{sub.code} - {sub.name}</option>
-                  ))}
-                </select>
-              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Course / Subject *</label>
+                  <select 
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 cursor-pointer"
+                  >
+                    {enrolledSubjects.map(sub => (
+                      <option key={sub.code} value={sub.code}>{sub.code} - {sub.name}</option>
+                    ))}
+                  </select>
+                </div>
 
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Description</label>
-                <textarea 
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Summarize the core deliverables and criteria..."
-                  rows="3"
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface resize-none"
-                />
-              </div>
-
-              <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Due Time</label>
-                <input 
-                  type="text" 
-                  value={dueTime}
-                  onChange={(e) => setDueTime(e.target.value)}
-                  placeholder="e.g. 11:59 PM"
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                />
-              </div>
-
-              {/* Course Contact Section */}
-              <div className="border-t border-outline-variant/30 pt-4">
-                <h4 className="font-headline text-headline-sm font-semibold mb-3 text-on-surface">Course Contact (Optional)</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-mono text-label-md text-on-surface-variant mb-1">Professor Name</label>
-                    <input 
-                      type="text" 
-                      value={profName}
-                      onChange={(e) => setProfName(e.target.value)}
-                      placeholder="e.g. Dr. Sarah Thompson"
-                      className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-mono text-label-md text-on-surface-variant mb-1">Office Hours</label>
-                    <input 
-                      type="text" 
-                      value={profHours}
-                      onChange={(e) => setProfHours(e.target.value)}
-                      placeholder="e.g. Mon/Wed 2-4PM"
-                      className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Due Time</label>
+                  <input 
+                    type="text" 
+                    value={dueTime}
+                    onChange={(e) => setDueTime(e.target.value)}
+                    placeholder="11:59 PM"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+                  />
                 </div>
               </div>
 
-              {/* Milestones Checklist Section */}
-              <div className="border-t border-outline-variant/30 pt-4">
-                <h4 className="font-headline text-headline-sm font-semibold mb-3 text-on-surface">Milestones Checklist</h4>
-                
-                {/* Add Milestone input row */}
-                <div className="flex gap-2 mb-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Description & Criteria</label>
+                <textarea 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Outline syllabus deliverables, formulas, or submission format..."
+                  rows="2"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 resize-none"
+                />
+              </div>
+
+              {/* Milestones Manager */}
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <label className="block text-xs font-semibold text-slate-700">Milestones Breakdown</label>
+                <div className="flex gap-2">
                   <input 
-                    type="text" 
+                    type="text"
                     value={newMilestoneTitle}
                     onChange={(e) => setNewMilestoneTitle(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddMilestone(e);
-                      }
-                    }}
-                    placeholder="Add a milestone (e.g. Final Draft)"
-                    className="flex-1 px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
+                    placeholder="e.g. Read Chapters 4-5"
+                    className="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
                   />
                   <button 
                     type="button"
                     onClick={handleAddMilestone}
-                    className="px-4 bg-secondary-container text-on-secondary-container rounded-lg font-mono text-label-md hover:bg-secondary-fixed-dim transition-colors flex items-center justify-center cursor-pointer"
+                    className="app-btn-secondary text-xs"
                   >
                     Add
                   </button>
                 </div>
 
-                {/* Milestones List */}
-                {milestonesList.length > 0 ? (
-                  <div className="space-y-2 max-h-32 overflow-y-auto p-1 bg-surface-container-low rounded-lg border border-outline-variant/30">
-                    {milestonesList.map((m) => (
-                      <div key={m.id} className="flex justify-between items-center bg-surface-container-lowest px-3 py-2 rounded-md border border-outline-variant/20">
-                        <span className="font-body text-body-sm text-on-surface truncate pr-2">{m.title}</span>
+                {milestonesList.length > 0 && (
+                  <div className="space-y-1.5 max-h-28 overflow-y-auto">
+                    {milestonesList.map(m => (
+                      <div key={m.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg text-xs">
+                        <span className="text-slate-800">{m.title}</span>
                         <button 
-                          type="button"
+                          type="button" 
                           onClick={() => handleRemoveMilestone(m.id)}
-                          className="material-symbols-outlined text-on-surface-variant hover:text-error text-[18px] cursor-pointer"
+                          className="text-rose-500 hover:text-rose-700 font-bold"
                         >
-                          close
+                          <span className="material-symbols-outlined text-xs">close</span>
                         </button>
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <p className="font-body text-[12px] text-on-surface-variant italic">No milestones added. List will be empty unless items are added.</p>
                 )}
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
                 <button 
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 py-3 border border-outline text-on-surface rounded-lg font-mono text-label-md hover:bg-surface-container transition-all cursor-pointer"
+                  className="app-btn-secondary text-xs"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
-                  className="flex-1 py-3 bg-primary text-on-primary rounded-lg font-mono text-label-md hover:bg-primary-container transition-all cursor-pointer shadow-sm"
+                  className="app-btn-primary text-xs"
                 >
-                  Create Task
+                  Schedule Assignment
                 </button>
               </div>
+
             </form>
           </div>
         </div>
