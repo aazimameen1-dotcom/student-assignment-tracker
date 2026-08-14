@@ -490,7 +490,7 @@ export const AppContextProvider = ({ children }) => {
           category: updatedTask.category,
           time_left: updatedTask.timeLeft,
           milestones
-        }).eq('id', taskId);
+        }).eq('id', taskId).eq('user_id', user.id);
       } catch (err) {
         console.error(err);
       }
@@ -502,7 +502,7 @@ export const AppContextProvider = ({ children }) => {
     setTasks(prev => prev.filter(t => t.id !== taskId));
     if (user && user.id !== 'guest-user') {
       try {
-        await supabase.from('tasks').delete().eq('id', taskId);
+        await supabase.from('tasks').delete().eq('id', taskId).eq('user_id', user.id);
       } catch (err) {
         console.error(err);
       }
@@ -540,7 +540,7 @@ export const AppContextProvider = ({ children }) => {
     setEnrolledSubjects(prev => prev.map(s => s.code === code ? { ...s, ...updatedSub } : s));
     if (user && user.id !== 'guest-user') {
       try {
-        await supabase.from('subjects').update(updatedSub).eq('code', code);
+        await supabase.from('subjects').update(updatedSub).eq('code', code).eq('user_id', user.id);
       } catch (err) {
         console.error(err);
       }
@@ -554,8 +554,8 @@ export const AppContextProvider = ({ children }) => {
 
     if (user && user.id !== 'guest-user') {
       try {
-        await supabase.from('subjects').delete().eq('code', code);
-        await supabase.from('tasks').delete().eq('subject', code);
+        await supabase.from('subjects').delete().eq('code', code).eq('user_id', user.id);
+        await supabase.from('tasks').delete().eq('subject', code).eq('user_id', user.id);
       } catch (err) {
         console.error(err);
       }

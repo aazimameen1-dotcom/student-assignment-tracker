@@ -79,8 +79,18 @@ export default function Profile() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
+    // Security Hardening: Cap image file size at 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size exceeds the 5MB limit. Please select a smaller image.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    // Strict MIME validation
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
       alert('Please upload a valid image file (PNG, JPG, WEBP).');
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
@@ -446,14 +456,22 @@ export default function Profile() {
 
               <div>
                 <span className="text-[10px] uppercase font-mono font-semibold text-slate-400 block">Repository / Portfolio</span>
-                <a 
-                  href={githubUrl} 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  className="font-medium text-blue-600 hover:underline mt-0.5 block truncate"
-                >
-                  {githubUrl}
-                </a>
+                {githubUrl ? (
+                  <a 
+                    href={
+                      githubUrl.startsWith('https://') || githubUrl.startsWith('http://')
+                        ? githubUrl
+                        : `https://${githubUrl}`
+                    } 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="font-medium text-blue-600 hover:underline mt-0.5 block truncate"
+                  >
+                    {githubUrl}
+                  </a>
+                ) : (
+                  <span className="text-slate-400 italic">Not set</span>
+                )}
               </div>
 
               <div>
