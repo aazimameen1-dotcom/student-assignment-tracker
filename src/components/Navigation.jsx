@@ -73,7 +73,7 @@ export default function Navigation() {
   };
 
   const getAvatarUrl = () => {
-    return user?.user_metadata?.custom_avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.photoURL;
+    return user?.user_metadata?.custom_avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.photoURL || localStorage.getItem('user_avatar');
   };
 
   const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Alex Morgan';
