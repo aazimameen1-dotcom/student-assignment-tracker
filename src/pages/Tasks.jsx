@@ -590,33 +590,61 @@ export default function Tasks() {
 
               {/* Milestones Manager */}
               <div className="space-y-2 pt-2 border-t border-slate-100">
-                <label className="block text-xs font-semibold text-slate-700">Milestone Checkpoints</label>
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-semibold text-slate-700">Milestone Checkpoints</label>
+                  <span className="text-[10px] font-mono text-slate-400">
+                    {milestonesList.length} {milestonesList.length === 1 ? 'checkpoint' : 'checkpoints'}
+                  </span>
+                </div>
+                
                 <div className="flex gap-2">
                   <input 
                     type="text"
                     value={newMilestoneTitle}
                     onChange={(e) => setNewMilestoneTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleAddMilestone(e);
+                      }
+                    }}
                     placeholder="e.g. Complete test cases & write-up"
-                    className="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+                    className="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
                   />
                   <button 
                     type="button"
-                    onClick={handleAddMilestone}
-                    className="app-btn-secondary text-xs"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleAddMilestone(e);
+                    }}
+                    className="app-btn-primary text-xs px-3.5 py-2 shrink-0 cursor-pointer flex items-center gap-1"
                   >
-                    Add
+                    <span className="material-symbols-outlined text-sm">add</span>
+                    <span>Add</span>
                   </button>
                 </div>
 
                 {milestonesList.length > 0 && (
-                  <div className="space-y-1.5 max-h-28 overflow-y-auto">
-                    {milestonesList.map(m => (
-                      <div key={m.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg text-xs">
-                        <span className="text-slate-800">{m.title}</span>
+                  <div className="space-y-1.5 max-h-32 overflow-y-auto mt-2 p-1">
+                    {milestonesList.map((m, idx) => (
+                      <div key={m.id || idx} className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="w-4 h-4 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold font-mono flex items-center justify-center">
+                            {idx + 1}
+                          </span>
+                          <span className="text-slate-800 font-medium">{m.title}</span>
+                        </div>
                         <button 
                           type="button" 
-                          onClick={() => handleRemoveMilestone(m.id)}
-                          className="text-rose-500 hover:text-rose-700 font-bold"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleRemoveMilestone(m.id);
+                          }}
+                          className="p-1 text-slate-400 hover:text-rose-600 rounded-md transition-colors cursor-pointer"
+                          title="Remove Checkpoint"
                         >
                           <span className="material-symbols-outlined text-xs">close</span>
                         </button>

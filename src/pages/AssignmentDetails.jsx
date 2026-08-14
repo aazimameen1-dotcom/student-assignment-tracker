@@ -29,10 +29,30 @@ export default function AssignmentDetails() {
   const [editProfHours, setEditProfHours] = useState('');
   const [editMilestonesList, setEditMilestonesList] = useState([]);
   const [editNewMilestoneTitle, setEditNewMilestoneTitle] = useState('');
+  const [quickCheckpointTitle, setQuickCheckpointTitle] = useState('');
 
   const triggerToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(''), 3000);
+  };
+
+  const handleAddQuickCheckpoint = async (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!quickCheckpointTitle.trim() || !task) return;
+
+    const newCheckpoint = {
+      id: `m-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      title: quickCheckpointTitle.trim(),
+      completed: false
+    };
+
+    const updatedMilestones = [...(task.milestones || []), newCheckpoint];
+    await editTask(task.id, { milestones: updatedMilestones });
+    setQuickCheckpointTitle('');
+    triggerToast('Milestone checkpoint added!');
   };
 
   const openEditModal = () => {
@@ -60,7 +80,10 @@ export default function AssignmentDetails() {
   };
 
   const handleAddMilestone = (e) => {
-    e.preventDefault();
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (!editNewMilestoneTitle.trim()) return;
     const newMilestone = {
       id: `m-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
@@ -296,6 +319,35 @@ export default function AssignmentDetails() {
               )}
             </div>
 
+            {/* Quick Inline Checkpoint Adder */}
+            <div className="pt-2 border-t border-slate-100 space-y-2">
+              <span className="text-xs font-semibold text-slate-700 block">Add Milestone Checkpoint</span>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={quickCheckpointTitle}
+                  onChange={(e) => setQuickCheckpointTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleAddQuickCheckpoint(e);
+                    }
+                  }}
+                  placeholder="e.g. Complete section 3 & submit draft"
+                  className="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddQuickCheckpoint}
+                  className="app-btn-primary text-xs px-3.5 py-2 shrink-0 cursor-pointer flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-sm">add</span>
+                  <span>Add Checkpoint</span>
+                </button>
+              </div>
+            </div>
+
             {!isCompleted && totalMCount > 0 && (
               <div className="pt-2 flex justify-end">
                 <button
@@ -327,36 +379,36 @@ export default function AssignmentDetails() {
                 <span className="text-slate-500 font-mono">Due Date</span>
                 <span className="font-bold text-slate-900">{task.dueDate}</span>
               </div>
-
               <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-mono">Due Time</span>
-                <span className="font-bold text-rose-600">{task.dueTime || '11:59 PM'}</span>
+                <span className="text-slate-500 font-mono">Submission Time</span>
+                <span className="font-bold text-slate-900">{task.dueTime || '11:59 PM'}</span>
               </div>
-
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 font-mono">Time Remaining</span>
-                <span className="px-2 py-0.5 rounded font-mono font-bold text-[11px] bg-blue-50 text-blue-700 border border-blue-100">
-                  {task.timeLeft || 'In Progress'}
+                <span className={`font-bold font-mono ${task.timeLeft?.includes('Passed') ? 'text-rose-600' : 'text-blue-600'}`}>
+                  {task.timeLeft || 'On Schedule'}
                 </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-mono">Category</span>
+                <span className="font-semibold text-slate-700">{task.category || 'General'}</span>
               </div>
             </div>
           </div>
 
-          {/* Instructor & Office Hours */}
+          {/* Instructor & Office Hours Card */}
           <div className="app-card p-6 space-y-4">
             <h3 className="font-heading text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2.5">
-              Course Advisory Contact
+              Course Instructor
             </h3>
 
-            <div className="space-y-3 text-xs">
-              <div>
-                <span className="text-[10px] font-mono uppercase text-slate-400 block font-semibold">Faculty Instructor</span>
-                <p className="font-bold text-slate-900 mt-0.5">{task.professor?.name || 'Faculty Instructor'}</p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-sm shadow-sm">
+                {task.professor?.name?.charAt(0) || 'P'}
               </div>
-
               <div>
-                <span className="text-[10px] font-mono uppercase text-slate-400 block font-semibold">Office Hours</span>
-                <p className="font-medium text-slate-700 mt-0.5">{task.professor?.officeHours || 'Mon/Wed 2-4 PM'}</p>
+                <p className="font-bold text-xs text-slate-900">{task.professor?.name || 'Professor'}</p>
+                <p className="text-[11px] text-slate-500">{task.professor?.officeHours || 'Office hours on syllabus'}</p>
               </div>
             </div>
           </div>
@@ -365,38 +417,35 @@ export default function AssignmentDetails() {
 
       </div>
 
-      {/* MODERN FROSTED EDIT TASK MODAL */}
+      {/* Edit Task Modal */}
       {showEditModal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-fade-in text-left max-h-[90vh] overflow-y-auto space-y-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 w-full max-w-xl shadow-2xl animate-fade-in text-left max-h-[90vh] overflow-y-auto space-y-6">
             
-            {/* Modal Header */}
-            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-heading text-base font-bold text-slate-900">
                   Edit Assignment Deliverable
                 </h3>
-                <p className="text-xs text-slate-500">Update syllabus details, submission deadline, and milestone list</p>
+                <p className="text-xs text-slate-500">Update parameters, milestone checkpoints, or course deadlines.</p>
               </div>
               <button 
-                type="button"
+                type="button" 
                 onClick={() => setShowEditModal(false)}
                 className="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer"
               >
-                <span className="material-symbols-outlined text-lg">close</span>
+                <span className="material-symbols-outlined text-base">close</span>
               </button>
             </div>
 
-            {/* Modal Form */}
             <form onSubmit={handleEditTaskSubmit} className="space-y-4">
               
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Task Title *</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Title *</label>
                 <input 
                   type="text" 
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  placeholder="e.g. Econometrics Problem Set 4"
                   required
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
                 />
@@ -404,7 +453,7 @@ export default function AssignmentDetails() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Course / Module *</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Course *</label>
                   <select 
                     value={editSubject}
                     onChange={(e) => setEditSubject(e.target.value)}
@@ -417,25 +466,24 @@ export default function AssignmentDetails() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Timeline Category</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Category / Grouping</label>
                   <select 
                     value={editCategory}
                     onChange={(e) => setEditCategory(e.target.value)}
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 cursor-pointer"
                   >
+                    <option value="Today">Today</option>
                     <option value="This Week">This Week</option>
-                    <option value="Next Week">Next Week</option>
-                    <option value="Later">Later</option>
+                    <option value="Upcoming">Upcoming</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Brief Description</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Assignment Scope & Instructions</label>
                 <textarea 
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  placeholder="Summarize the core requirements, deliverables, and criteria..."
                   rows="3"
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 resize-none"
                 />
@@ -491,33 +539,60 @@ export default function AssignmentDetails() {
 
               {/* Milestones Builder */}
               <div className="space-y-2 pt-2 border-t border-slate-100">
-                <label className="block text-xs font-semibold text-slate-700">Milestone Checkpoints</label>
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-semibold text-slate-700">Milestone Checkpoints</label>
+                  <span className="text-[10px] font-mono text-slate-400">
+                    {editMilestonesList.length} checkpoints
+                  </span>
+                </div>
                 
                 <div className="flex gap-2">
                   <input 
                     type="text" 
                     value={editNewMilestoneTitle}
                     onChange={(e) => setEditNewMilestoneTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleAddMilestone(e);
+                      }
+                    }}
                     placeholder="Add a milestone (e.g. Final Code Polish)"
-                    className="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+                    className="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
                   />
                   <button 
                     type="button"
-                    onClick={handleAddMilestone}
-                    className="app-btn-secondary text-xs"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleAddMilestone(e);
+                    }}
+                    className="app-btn-primary text-xs px-3.5 py-2 shrink-0 cursor-pointer flex items-center gap-1"
                   >
-                    Add
+                    <span className="material-symbols-outlined text-sm">add</span>
+                    <span>Add</span>
                   </button>
                 </div>
 
-                <div className="space-y-1.5 max-h-32 overflow-y-auto">
-                  {editMilestonesList.map(m => (
-                    <div key={m.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg text-xs">
-                      <span className="text-slate-800">{m.title}</span>
+                <div className="space-y-1.5 max-h-32 overflow-y-auto mt-2">
+                  {editMilestonesList.map((m, idx) => (
+                    <div key={m.id || idx} className="flex items-center justify-between p-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="w-4 h-4 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold font-mono flex items-center justify-center">
+                          {idx + 1}
+                        </span>
+                        <span className="text-slate-800 font-medium">{m.title}</span>
+                      </div>
                       <button 
                         type="button" 
-                        onClick={() => handleRemoveMilestone(m.id)}
-                        className="text-rose-500 hover:text-rose-700 font-bold"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleRemoveMilestone(m.id);
+                        }}
+                        className="p-1 text-slate-400 hover:text-rose-600 rounded-md transition-colors cursor-pointer"
+                        title="Remove Checkpoint"
                       >
                         <span className="material-symbols-outlined text-xs">close</span>
                       </button>
