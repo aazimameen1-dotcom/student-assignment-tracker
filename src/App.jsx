@@ -1,6 +1,7 @@
 import { useContext, lazy, Suspense } from 'react';
 import { AppContext } from './context/AppContext';
 import Navigation from './components/Navigation';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const Login = lazy(() => import('./pages/Login'));
 const Landing = lazy(() => import('./pages/Landing'));
@@ -15,7 +16,7 @@ const ResearchDiscovery = lazy(() => import('./pages/ResearchDiscovery'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Profile = lazy(() => import('./pages/Profile'));
 
-function App() {
+function AppContent() {
   const { user, authLoading, currentView, isPasswordRecovery } = useContext(AppContext);
 
   // loading state fallback
@@ -110,4 +111,10 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppContent />
+    </ErrorBoundary>
+  );
+}
