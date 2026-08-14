@@ -313,10 +313,16 @@ export const AppContextProvider = ({ children }) => {
     return supabase.auth.signUp({ email, password, options: { data: metadata } });
   };
 
-  const resetPasswordForEmail = (email) => {
-    return supabase.auth.resetPasswordForEmail(email, {
+  const resetPasswordForEmail = async (targetEmail) => {
+    const emailToSend = targetEmail || user?.email;
+    if (!emailToSend) {
+      throw new Error("No valid email address found. Please enter your email.");
+    }
+    const res = await supabase.auth.resetPasswordForEmail(emailToSend.trim(), {
       redirectTo: window.location.origin
     });
+    if (res.error) throw res.error;
+    return res;
   };
 
   const updateUserPassword = async (newPassword) => {

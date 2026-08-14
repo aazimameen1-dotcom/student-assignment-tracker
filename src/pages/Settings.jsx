@@ -16,9 +16,11 @@ export default function Settings() {
   
   // Settings Form State
   const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name || user?.user_metadata?.name || 'Alex Morgan');
-  const [email] = useState(user?.email || 'student@scholar.app');
+  const [email, setEmail] = useState(user?.email || '');
   const [targetGpa, setTargetGpa] = useState(user?.user_metadata?.target_gpa || '3.90');
   const [defaultReminderDays, setDefaultReminderDays] = useState('2');
+  const [isSendingReset, setIsSendingReset] = useState(false);
+  const [resetFeedback, setResetFeedback] = useState({ type: '', message: '' });
   
   // Toggle states
   const [notifDeadlines, setNotifDeadlines] = useState(true);
@@ -44,24 +46,40 @@ export default function Settings() {
     }
   };
 
-  const handlePasswordReset = async () => {
-    if (!email) return;
+  const handlePasswordReset = async (e) => {
+    e?.preventDefault();
+    const targetEmail = email || user?.email;
+    if (!targetEmail) {
+      setResetFeedback({ type: 'error', message: 'Please enter your registered Gmail/email address.' });
+      return;
+    }
+
+    setIsSendingReset(true);
+    setResetFeedback({ type: '', message: '' });
+
     try {
       if (resetPasswordForEmail) {
-        await resetPasswordForEmail(email);
-        setSaveStatus(`Password reset email sent to ${email}`);
-        setTimeout(() => setSaveStatus(''), 4000);
+        await resetPasswordForEmail(targetEmail);
+        setResetFeedback({
+          type: 'success',
+          message: `Password reset email sent to ${targetEmail}! Please check your Inbox and Spam/Junk folder.`
+        });
       }
     } catch (err) {
       console.error('Failed to send reset email:', err);
-      setSaveStatus('Failed to trigger reset email.');
+      setResetFeedback({
+        type: 'error',
+        message: err.message || 'Failed to send reset email. Supabase allows 1 reset per minute.'
+      });
+    } finally {
+      setIsSendingReset(false);
     }
   };
 
   const handleExportData = () => {
     const exportPayload = {
       exportDate: new Date().toISOString(),
-      user: { email, name: displayName },
+      user: { email: email || user?.email, name: displayName },
       subjects: enrolledSubjects,
       tasks: tasks
     };
@@ -147,28 +165,51 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Registered University Email</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Registered University / Gmail Address</label>
                   <input 
                     type="email" 
                     value={email} 
-                    disabled 
-                    className="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-500 cursor-not-allowed"
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
                   />
-                  <span className="text-[10px] text-slate-400 mt-1 block font-mono">Managed securely through Supabase Auth</span>
+                  <span className="text-[10px] text-slate-400 mt-1 block font-mono">
+                    {user?.email ? `Current Account Email: ${user.email}` : 'Managed securely via Supabase Auth'}
+                  </span>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900">Password & Security</h4>
-                    <p className="text-[11px] text-slate-500">Send a password reset email to your university address.</p>
+                {/* Password Reset Section with Feedback */}
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900">Password Recovery</h4>
+                      <p className="text-[11px] text-slate-500">Send an official Supabase password reset link to your email.</p>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={handlePasswordReset}
+                      disabled={isSendingReset}
+                      className="app-btn-primary text-xs self-start sm:self-auto"
+                    >
+                      <span className="material-symbols-outlined text-sm">
+                        {isSendingReset ? 'sync' : 'lock_reset'}
+                      </span>
+                      <span>{isSendingReset ? 'Sending...' : 'Send Reset Link'}</span>
+                    </button>
                   </div>
-                  <button 
-                    type="button" 
-                    onClick={handlePasswordReset}
-                    className="app-btn-secondary text-xs"
-                  >
-                    Reset Password
-                  </button>
+
+                  {resetFeedback.message && (
+                    <div className={`p-3 rounded-xl text-xs font-medium flex items-center gap-2 animate-fade-in ${
+                      resetFeedback.type === 'error'
+                        ? 'bg-rose-50 border border-rose-200 text-rose-700'
+                        : 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+                    }`}>
+                      <span className="material-symbols-outlined text-sm">
+                        {resetFeedback.type === 'error' ? 'error' : 'check_circle'}
+                      </span>
+                      <span>{resetFeedback.message}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
