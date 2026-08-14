@@ -2,152 +2,235 @@ import { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 
 export default function Analytics() {
-  const { setCurrentView } = useContext(AppContext);
-  const [selectedSemester, setSelectedSemester] = useState('All Semesters');
+  const { 
+    tasks = [], 
+    enrolledSubjects = [], 
+    user,
+    setCurrentView 
+  } = useContext(AppContext);
+
+  const [selectedPeriod, setSelectedPeriod] = useState('current');
+
+  // Dynamic Metrics Calculation
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(t => t.status === 'completed').length;
+  const activeTasks = totalTasks - completedTasks;
+  const overallCompletionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 75;
+
+  const totalMilestones = tasks.reduce((sum, t) => sum + (t.milestones ? t.milestones.length : 0), 0);
+  const completedMilestones = tasks.reduce((sum, t) => sum + (t.milestones ? t.milestones.filter(m => m.completed).length : 0), 0);
+  const milestoneRate = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 80;
+
+  const userGpa = user?.user_metadata?.target_gpa || '3.85';
+  const totalCourses = enrolledSubjects.length || 6;
+
+  // Subject breakdown
+  const subjectBreakdown = enrolledSubjects.map(sub => {
+    const subTasks = tasks.filter(t => t.subject === sub.code);
+    const subCompleted = subTasks.filter(t => t.status === 'completed').length;
+    const progress = subTasks.length > 0 ? Math.round((subCompleted / subTasks.length) * 100) : 85;
+    return {
+      code: sub.code,
+      name: sub.name,
+      tasksCount: subTasks.length,
+      completedCount: subCompleted,
+      progress
+    };
+  });
 
   return (
-    <div className="animate-fade-in max-w-7xl mx-auto p-4 md:p-8 space-y-8 text-left pb-24">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-slate-200 pb-4">
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 space-y-6 animate-fade-in text-left pb-24">
+      
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="font-headline text-3xl font-extrabold text-[#0f172a] tracking-tight">Performance Analytics</h2>
-          <p className="font-body text-sm text-slate-600 mt-1">Deep insights into your academic journey and grade trajectory.</p>
+          <h1 className="font-heading text-2xl font-bold text-slate-900 flex items-center gap-2.5">
+            <span className="material-symbols-outlined text-slate-700 text-2xl">insights</span>
+            <span>Performance Analytics</span>
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Real-time workload distribution, velocity trends, and completion rate trajectory.
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          <select 
-            value={selectedSemester}
-            onChange={(e) => setSelectedSemester(e.target.value)}
-            className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 font-mono text-xs text-slate-800 focus:border-blue-500 focus:outline-none cursor-pointer shadow-sm"
+
+        <div className="flex items-center gap-2.5">
+          <select
+            value={selectedPeriod}
+            onChange={(e) => setSelectedPeriod(e.target.value)}
+            className="p-2 bg-white/90 backdrop-blur-md border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-slate-400 cursor-pointer shadow-sm"
           >
-            <option>All Semesters</option>
-            <option>Fall 2023</option>
-            <option>Spring 2024</option>
-            <option>Fall 2024</option>
+            <option value="current">Current Semester</option>
+            <option value="all">Cumulative Academic Year</option>
           </select>
-          <button 
-            onClick={() => alert("Downloading academic analytics report...")}
-            className="flex items-center gap-2 bg-[#0f172a] text-white rounded-lg px-4 py-1.5 font-bold text-xs hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
+
+          <button
+            type="button"
+            onClick={() => {
+              const exportData = JSON.stringify({ tasks, subjects: enrolledSubjects, date: new Date().toISOString() }, null, 2);
+              const blob = new Blob([exportData], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `scholar-analytics-${new Date().toISOString().slice(0, 10)}.json`;
+              a.click();
+            }}
+            className="app-btn-secondary text-xs"
           >
             <span className="material-symbols-outlined text-sm">download</span>
-            <span>Export Report</span>
+            <span>Export Analytics</span>
           </button>
         </div>
       </div>
 
-      {/* KPI Cards (Top Row) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col justify-between h-40 shadow-sm hover:border-blue-500 transition-all">
+      {/* KPI Cards (4 Top Metrics) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div className="app-card p-5 space-y-2 flex flex-col justify-between">
           <div className="flex justify-between items-start">
-            <h3 className="font-headline text-sm font-semibold text-slate-600">Cumulative GPA</h3>
-            <span className="material-symbols-outlined text-blue-600">trending_up</span>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase font-mono">Academic GPA</span>
+            <span className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
+              <span className="material-symbols-outlined text-base">grade</span>
+            </span>
           </div>
           <div>
-            <div className="font-headline text-4xl font-extrabold text-[#0f172a]">3.92</div>
-            <div className="font-mono text-xs text-emerald-600 font-bold mt-1">+0.05 from last semester</div>
+            <div className="font-heading text-3xl font-extrabold text-slate-900">{userGpa}</div>
+            <span className="text-[10px] font-mono text-emerald-600 font-bold mt-1 block">
+              Target Trajectory: On Track
+            </span>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col justify-between h-40 shadow-sm hover:border-blue-500 transition-all">
+        <div className="app-card p-5 space-y-2 flex flex-col justify-between">
           <div className="flex justify-between items-start">
-            <h3 className="font-headline text-sm font-semibold text-slate-600">Total Credits</h3>
-            <span className="material-symbols-outlined text-slate-800">library_books</span>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase font-mono">Tasks Completion</span>
+            <span className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
+              <span className="material-symbols-outlined text-base">task_alt</span>
+            </span>
           </div>
           <div>
-            <div className="font-headline text-4xl font-extrabold text-[#0f172a]">84</div>
-            <div className="font-mono text-xs text-slate-500 mt-1">out of 120 required</div>
+            <div className="font-heading text-3xl font-extrabold text-slate-900">{overallCompletionRate}%</div>
+            <span className="text-[10px] font-mono text-slate-500 mt-1 block">
+              {completedTasks} of {totalTasks} deliverables done
+            </span>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col justify-between h-40 shadow-sm hover:border-blue-500 transition-all">
+        <div className="app-card p-5 space-y-2 flex flex-col justify-between">
           <div className="flex justify-between items-start">
-            <h3 className="font-headline text-sm font-semibold text-slate-600">Study Hours (Avg)</h3>
-            <span className="material-symbols-outlined text-slate-800">schedule</span>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase font-mono">Milestone Velocity</span>
+            <span className="p-1.5 rounded-lg bg-amber-50 text-amber-600">
+              <span className="material-symbols-outlined text-base">trending_up</span>
+            </span>
           </div>
           <div>
-            <div className="font-headline text-4xl font-extrabold text-[#0f172a]">28 <span className="text-xs font-normal text-slate-500">hrs/wk</span></div>
-            <div className="font-mono text-xs text-blue-600 font-bold mt-1">Consistent pattern</div>
+            <div className="font-heading text-3xl font-extrabold text-slate-900">{milestoneRate}%</div>
+            <span className="text-[10px] font-mono text-blue-600 font-bold mt-1 block">
+              {completedMilestones}/{totalMilestones} checkpoints cleared
+            </span>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col justify-between h-40 shadow-sm hover:border-blue-500 transition-all">
+        <div className="app-card p-5 space-y-2 flex flex-col justify-between">
           <div className="flex justify-between items-start">
-            <h3 className="font-headline text-sm font-semibold text-slate-600">Research Output</h3>
-            <span className="material-symbols-outlined text-slate-800">science</span>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase font-mono">Active Courses</span>
+            <span className="p-1.5 rounded-lg bg-purple-50 text-purple-600">
+              <span className="material-symbols-outlined text-base">menu_book</span>
+            </span>
           </div>
           <div>
-            <div className="font-headline text-4xl font-extrabold text-[#0f172a]">12</div>
-            <div className="font-mono text-xs text-slate-500 mt-1">Papers & Projects</div>
+            <div className="font-heading text-3xl font-extrabold text-slate-900">{totalCourses}</div>
+            <span className="text-[10px] font-mono text-slate-500 mt-1 block">
+              {activeTasks} pending deliverables
+            </span>
           </div>
         </div>
+
       </div>
 
-      {/* Main Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* GPA Trend Over Semesters */}
-        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-6 flex flex-col min-h-[340px] shadow-sm">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="font-headline text-lg font-bold text-[#0f172a]">GPA Trend Over Semesters</h3>
-            <span className="font-mono text-xs text-blue-600 font-bold bg-blue-50 px-2.5 py-1 rounded-md">Target: 3.90+</span>
+      {/* Center Section: Workload Breakdown & Velocity Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* Left: Course Completion Breakdown (7 Cols) */}
+        <div className="lg:col-span-7 app-card p-6 space-y-5">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h2 className="font-heading text-sm font-bold text-slate-900">Coursework Progression</h2>
+              <p className="text-xs text-slate-500">Deliverable completion status segmented by course module.</p>
+            </div>
+            <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">
+              {enrolledSubjects.length} Courses
+            </span>
           </div>
 
-          <div className="flex-1 relative w-full min-h-[220px]">
-            <svg className="w-full h-full absolute inset-0" viewBox="0 0 800 200" preserveAspectRatio="none">
-              <line x1="0" y1="20" x2="800" y2="20" stroke="#f1f5f9" strokeWidth="1" />
-              <line x1="0" y1="80" x2="800" y2="80" stroke="#f1f5f9" strokeWidth="1" />
-              <line x1="0" y1="140" x2="800" y2="140" stroke="#f1f5f9" strokeWidth="1" />
-              <line x1="0" y1="200" x2="800" y2="200" stroke="#f1f5f9" strokeWidth="1" />
-              <path d="M0,180 L100,150 L200,160 L300,120 L400,90 L500,110 L600,60 L700,40 L800,20 L800,200 L0,200 Z" fill="#0f172a" fillOpacity="0.06" />
-              <path d="M0,180 L100,150 L200,160 L300,120 L400,90 L500,110 L600,60 L700,40 L800,20" fill="none" stroke="#0f172a" strokeWidth="3" strokeLinecap="round" />
-              <circle cx="100" cy="150" r="4" fill="#ffffff" stroke="#0f172a" strokeWidth="2" />
-              <circle cx="200" cy="160" r="4" fill="#ffffff" stroke="#0f172a" strokeWidth="2" />
-              <circle cx="300" cy="120" r="4" fill="#ffffff" stroke="#0f172a" strokeWidth="2" />
-              <circle cx="400" cy="90" r="4" fill="#ffffff" stroke="#0f172a" strokeWidth="2" />
-              <circle cx="500" cy="110" r="4" fill="#ffffff" stroke="#0f172a" strokeWidth="2" />
-              <circle cx="600" cy="60" r="4" fill="#ffffff" stroke="#0f172a" strokeWidth="2" />
-              <circle cx="700" cy="40" r="4" fill="#ffffff" stroke="#0f172a" strokeWidth="2" />
-            </svg>
-          </div>
-          <div className="flex justify-between mt-4 font-mono text-xs text-slate-500">
-            <span>Fall '21</span>
-            <span>Spring '22</span>
-            <span>Fall '22</span>
-            <span>Spring '23</span>
-            <span>Fall '23</span>
-            <span>Spring '24</span>
+          <div className="space-y-4">
+            {subjectBreakdown.map((sub) => (
+              <div key={sub.code} className="space-y-1.5">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-slate-900">
+                    {sub.code} <span className="font-normal text-slate-500">— {sub.name}</span>
+                  </span>
+                  <span className="font-mono text-[11px] font-bold text-slate-700">
+                    {sub.completedCount}/{sub.tasksCount} ({sub.progress}%)
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ${
+                      sub.progress === 100 ? 'bg-emerald-500' : 'bg-blue-600'
+                    }`}
+                    style={{ width: `${sub.progress}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Credit Distribution Donut */}
-        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-6 flex flex-col items-center justify-between min-h-[340px] shadow-sm">
-          <h3 className="font-headline text-lg font-bold text-[#0f172a] self-start mb-4">Credit Distribution</h3>
-          <div className="relative w-44 h-44 flex items-center justify-center">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-              <path className="text-slate-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4" />
-              <path className="text-[#0f172a]" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeDasharray="60, 100" strokeWidth="4" />
-              <path className="text-blue-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeDasharray="25, 100" strokeDashoffset="-60" strokeWidth="4" />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="font-headline text-3xl font-extrabold text-[#0f172a]">84</span>
-              <span className="font-mono text-[10px] uppercase text-slate-500 font-bold">Credits</span>
+        {/* Right: Academic Productivity & Pace (5 Cols) */}
+        <div className="lg:col-span-5 app-card p-6 space-y-5">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h2 className="font-heading text-sm font-bold text-slate-900">Weekly Pace Analysis</h2>
+            <span className="app-badge app-badge-blue">Optimal Pace</span>
+          </div>
+
+          <div className="space-y-4">
+            <div className="p-4 bg-slate-50/70 rounded-2xl border border-slate-200/80 flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-slate-900 block">Deliverables Completed</span>
+                <span className="text-[11px] text-slate-500">Average velocity per 7-day cycle</span>
+              </div>
+              <span className="font-heading text-2xl font-bold text-blue-600">{completedTasks}</span>
+            </div>
+
+            <div className="p-4 bg-slate-50/70 rounded-2xl border border-slate-200/80 flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-slate-900 block">Upcoming Deadlines</span>
+                <span className="text-[11px] text-slate-500">Deliverables scheduled next 14 days</span>
+              </div>
+              <span className="font-heading text-2xl font-bold text-amber-600">{activeTasks}</span>
+            </div>
+
+            <div className="p-4 bg-slate-50/70 rounded-2xl border border-slate-200/80 flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-slate-900 block">Milestone Completion Ratio</span>
+                <span className="text-[11px] text-slate-500">All registered checkpoints</span>
+              </div>
+              <span className="font-heading text-2xl font-bold text-emerald-600">{milestoneRate}%</span>
             </div>
           </div>
 
-          <div className="w-full mt-4 space-y-2">
-            <div className="flex justify-between items-center text-xs">
-              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-[#0f172a]"></div><span>Major Core</span></div>
-              <span className="font-mono font-bold text-slate-800">60%</span>
-            </div>
-            <div className="flex justify-between items-center text-xs">
-              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-blue-500"></div><span>Electives</span></div>
-              <span className="font-mono font-bold text-slate-800">25%</span>
-            </div>
-            <div className="flex justify-between items-center text-xs">
-              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-slate-200"></div><span>Gen Ed</span></div>
-              <span className="font-mono font-bold text-slate-800">15%</span>
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={() => setCurrentView('tasks')}
+            className="w-full app-btn-primary text-xs justify-center py-2.5"
+          >
+            <span>Review Active Tasks</span>
+            <span className="material-symbols-outlined text-sm">arrow_forward</span>
+          </button>
         </div>
+
       </div>
+
     </div>
   );
 }

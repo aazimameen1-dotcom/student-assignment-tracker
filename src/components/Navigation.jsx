@@ -83,9 +83,9 @@ export default function Navigation() {
 
   return (
     <>
-      {/* Modern Top Header Bar */}
-      <header className="fixed top-0 left-0 md:left-64 right-0 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 z-30 flex items-center justify-between px-4 md:px-8 transition-all">
-        {/* Left Side: Page Title / Mobile Logo */}
+      {/* Modern Fixed Top Utility Header */}
+      <header className="fixed top-0 left-0 right-0 h-16 glass-nav z-30 flex items-center justify-between px-4 md:px-8 md:pl-72 transition-all">
+        {/* Left Side: Dynamic Page Title / Breadcrumb */}
         <div className="flex items-center gap-3">
           <div className="md:hidden flex items-center gap-2" onClick={() => setCurrentView('dashboard')}>
             <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
@@ -262,7 +262,7 @@ export default function Navigation() {
       </header>
 
       {/* Modern Left Sidebar (Desktop) */}
-      <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-slate-200/80 z-40 flex-col justify-between py-6 px-4">
+      <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 glass-sidebar z-40 flex-col justify-between py-6 px-4">
         <div className="space-y-6">
           {/* App Brand Header */}
           <div 
@@ -289,7 +289,7 @@ export default function Navigation() {
                   className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all cursor-pointer ${
                     isActive 
                       ? 'bg-slate-900 text-white font-semibold shadow-sm' 
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
                   }`}
                 >
                   <span className="material-symbols-outlined text-lg">{item.icon}</span>
@@ -305,7 +305,7 @@ export default function Navigation() {
           <button
             onClick={() => setCurrentView('profile')}
             className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all cursor-pointer ${
-              currentView === 'profile' ? 'bg-slate-900 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              currentView === 'profile' ? 'bg-slate-900 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
             }`}
           >
             <span className="material-symbols-outlined text-lg">person</span>
@@ -315,7 +315,7 @@ export default function Navigation() {
           <button
             onClick={() => setCurrentView('settings')}
             className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all cursor-pointer ${
-              currentView === 'settings' ? 'bg-slate-900 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              currentView === 'settings' ? 'bg-slate-900 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
             }`}
           >
             <span className="material-symbols-outlined text-lg">settings</span>
@@ -325,7 +325,7 @@ export default function Navigation() {
       </aside>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-t border-slate-200 z-40 flex items-center justify-around px-2">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 glass-nav z-40 flex items-center justify-around px-2">
         {navItems.slice(0, 5).map((item) => {
           const isActive = currentView === item.view || (item.view === 'subjects' && currentView === 'assignment-details');
           return (
