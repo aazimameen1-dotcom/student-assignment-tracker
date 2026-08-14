@@ -242,6 +242,10 @@ export const AppContextProvider = ({ children }) => {
     }
   };
 
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(() => {
+    return window.location.hash.includes('type=recovery') || window.location.search.includes('type=recovery');
+  });
+
   // Listen for authentication state changes on mount
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -252,7 +256,10 @@ export const AppContextProvider = ({ children }) => {
       setAuthLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordRecovery(true);
+      }
       if (session) {
         setUser(session.user);
         fetchUserData();
@@ -308,8 +315,15 @@ export const AppContextProvider = ({ children }) => {
 
   const resetPasswordForEmail = (email) => {
     return supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`
+      redirectTo: window.location.origin
     });
+  };
+
+  const updateUserPassword = async (newPassword) => {
+    const res = await supabase.auth.updateUser({ password: newPassword });
+    if (res.error) throw res.error;
+    setIsPasswordRecovery(false);
+    return res;
   };
 
   const loginAsGuest = () => {
@@ -574,6 +588,9 @@ export const AppContextProvider = ({ children }) => {
       loginWithEmail,
       signUpWithEmail,
       resetPasswordForEmail,
+      updateUserPassword,
+      isPasswordRecovery,
+      setIsPasswordRecovery,
       loginAsGuest,
       logout,
       theme,
