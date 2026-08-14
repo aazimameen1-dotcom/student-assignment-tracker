@@ -8,7 +8,8 @@ export default function Settings() {
     updateUserProfile, 
     resetPasswordForEmail, 
     tasks = [], 
-    enrolledSubjects = [] 
+    enrolledSubjects = [],
+    setCurrentView 
   } = useContext(AppContext);
 
   const [activeTab, setActiveTab] = useState('account');
@@ -28,6 +29,9 @@ export default function Settings() {
   const [notifGroupActivity, setNotifGroupActivity] = useState(false);
   const [emailDigest, setEmailDigest] = useState(true);
   const [soundEffects, setSoundEffects] = useState(true);
+
+  // Expandable legal readers inside settings
+  const [expandedSection, setExpandedSection] = useState(null); // 'privacy' | 'terms' | 'security' | null
 
   const handleSavePreferences = async () => {
     try {
@@ -83,34 +87,34 @@ export default function Settings() {
       subjects: enrolledSubjects,
       tasks: tasks
     };
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `scholar_data_export_${new Date().toISOString().slice(0,10)}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `scholar-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
   };
 
   const tabs = [
     { id: 'account', label: 'Account & Security', icon: 'shield_person' },
     { id: 'academic', label: 'Academic Preferences', icon: 'school' },
     { id: 'notifications', label: 'Notifications & Alerts', icon: 'notifications_active' },
-    { id: 'data', label: 'Data & Backup', icon: 'database' }
+    { id: 'data', label: 'Data & Backup', icon: 'database' },
+    { id: 'privacy-terms', label: 'Privacy, Security & Terms', icon: 'gavel' }
   ];
 
   return (
-    <div className="max-w-5xl mx-auto px-4 md:px-8 py-8 space-y-6 animate-fade-in text-left pb-20">
+    <div className="max-w-5xl mx-auto px-4 md:px-8 py-8 space-y-6 animate-fade-in text-left pb-24">
       
       {/* Page Header */}
       <div>
         <h2 className="font-heading text-2xl font-bold text-slate-900">Workspace Settings</h2>
-        <p className="text-xs text-slate-500 mt-0.5">Manage your scholar profile credentials, notification triggers, and data preferences.</p>
+        <p className="text-xs text-slate-500 mt-0.5">Manage your scholar credentials, notification preferences, data storage, and statutory legal disclosures.</p>
       </div>
 
       {/* Status banner */}
       {saveStatus && (
-        <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold flex items-center justify-between">
+        <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold flex items-center justify-between animate-fade-in">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-sm text-emerald-600">check_circle</span>
             <span>{saveStatus}</span>
@@ -204,26 +208,16 @@ export default function Settings() {
                         ? 'bg-rose-50 border border-rose-200 text-rose-700'
                         : 'bg-emerald-50 border border-emerald-200 text-emerald-800'
                     }`}>
-                      <span className="material-symbols-outlined text-sm">
+                      <span className="material-symbols-outlined text-base">
                         {resetFeedback.type === 'error' ? 'error' : 'check_circle'}
                       </span>
                       <span>{resetFeedback.message}</span>
                     </div>
                   )}
-                </div>
 
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                  <div>
-                    <h4 className="text-xs font-bold text-rose-600">Sign Out</h4>
-                    <p className="text-[11px] text-slate-500">Safely log out of your current session.</p>
-                  </div>
-                  <button 
-                    type="button" 
-                    onClick={logout}
-                    className="px-4 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 font-semibold text-xs rounded-xl border border-rose-200 cursor-pointer transition-colors"
-                  >
-                    Sign Out
-                  </button>
+                  <p className="text-[10px] text-slate-400">
+                    💡 Tip: Clicking the link in your email will open the dedicated Set New Password screen. Please check Spam/Junk if not found in Inbox.
+                  </p>
                 </div>
               </div>
             </div>
@@ -233,48 +227,43 @@ export default function Settings() {
           {activeTab === 'academic' && (
             <div className="space-y-6 animate-fade-in">
               <div>
-                <h3 className="font-heading text-base font-bold text-slate-900">Academic Parameters</h3>
-                <p className="text-xs text-slate-500">Configure your target GPA, grading standards, and submission reminders.</p>
+                <h3 className="font-heading text-base font-bold text-slate-900">Academic Standing & Goals</h3>
+                <p className="text-xs text-slate-500">Configure target metrics, GPA goals, and default course reminders.</p>
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Target Semester GPA</label>
-                  <input 
-                    type="text" 
-                    value={targetGpa} 
-                    onChange={(e) => setTargetGpa(e.target.value)} 
-                    placeholder="3.90"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
-                  />
-                  <span className="text-[10px] text-slate-400 mt-1 block">Used to compute SGPA trajectory on your dashboard</span>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Default Deadline Alert Lead Time</label>
-                  <select 
-                    value={defaultReminderDays}
-                    onChange={(e) => setDefaultReminderDays(e.target.value)}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
-                  >
-                    <option value="1">24 Hours Before Deadline</option>
-                    <option value="2">48 Hours (2 Days) Before Deadline</option>
-                    <option value="3">3 Days Before Deadline</option>
-                    <option value="7">1 Week Before Deadline</option>
-                  </select>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">Audio Feedback</h4>
-                    <p className="text-[11px] text-slate-500">Play subtle confirmation chimes when completing tasks</p>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Target Cumulative GPA (out of 4.0)</label>
+                    <input 
+                      type="text" 
+                      value={targetGpa} 
+                      onChange={(e) => setTargetGpa(e.target.value)}
+                      placeholder="e.g. 3.90"
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+                    />
                   </div>
-                  <input 
-                    type="checkbox" 
-                    checked={soundEffects} 
-                    onChange={(e) => setSoundEffects(e.target.checked)}
-                    className="w-4 h-4 rounded text-slate-900 focus:ring-slate-900 cursor-pointer"
-                  />
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Default Deadline Alert Lead Time</label>
+                    <select 
+                      value={defaultReminderDays}
+                      onChange={(e) => setDefaultReminderDays(e.target.value)}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 cursor-pointer"
+                    >
+                      <option value="1">1 Day Before Due Date</option>
+                      <option value="2">2 Days Before Due Date</option>
+                      <option value="3">3 Days Before Due Date</option>
+                      <option value="7">1 Week Before Due Date</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
+                  <span className="font-semibold text-slate-800 block">Grading Scale: 4.0 Standard Letter</span>
+                  <p className="text-[11px] text-slate-500">
+                    A = 4.0, A- = 3.7, B+ = 3.3, B = 3.0, B- = 2.7, C+ = 2.3, C = 2.0. GPA calculations adapt automatically based on recorded course credits.
+                  </p>
                 </div>
               </div>
             </div>
@@ -285,14 +274,14 @@ export default function Settings() {
             <div className="space-y-6 animate-fade-in">
               <div>
                 <h3 className="font-heading text-base font-bold text-slate-900">Notification Triggers</h3>
-                <p className="text-xs text-slate-500">Choose when and how Scholar notifies you of upcoming deadlines.</p>
+                <p className="text-xs text-slate-500">Choose when and how Scholar sends deliverable reminders and study group alerts.</p>
               </div>
 
               <div className="space-y-3">
-                <label className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-colors cursor-pointer">
+                <label className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between cursor-pointer">
                   <div>
-                    <span className="text-xs font-bold text-slate-900 block">Critical Deadline Alerts</span>
-                    <span className="text-[11px] text-slate-500">Receive urgent notices when tasks are due within 24 hours</span>
+                    <span className="text-xs font-semibold text-slate-900 block">Assignment Due Date Reminders</span>
+                    <span className="text-[11px] text-slate-500">Receive alerts 48 hours and 24 hours prior to deadline submissions</span>
                   </div>
                   <input 
                     type="checkbox" 
@@ -302,10 +291,10 @@ export default function Settings() {
                   />
                 </label>
 
-                <label className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-colors cursor-pointer">
+                <label className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between cursor-pointer">
                   <div>
-                    <span className="text-xs font-bold text-slate-900 block">Daily Morning Briefing</span>
-                    <span className="text-[11px] text-slate-500">Summary of today's classes, meetings, and pending milestones</span>
+                    <span className="text-xs font-semibold text-slate-900 block">Daily Morning Academic Brief</span>
+                    <span className="text-[11px] text-slate-500">Receive a digest at 8:00 AM of today's classes, exams, and deliverables</span>
                   </div>
                   <input 
                     type="checkbox" 
@@ -315,10 +304,10 @@ export default function Settings() {
                   />
                 </label>
 
-                <label className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-colors cursor-pointer">
+                <label className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between cursor-pointer">
                   <div>
-                    <span className="text-xs font-bold text-slate-900 block">Study Group Activity</span>
-                    <span className="text-[11px] text-slate-500">Notices when peer study sessions or code reviews begin</span>
+                    <span className="text-xs font-semibold text-slate-900 block">Peer Study Group Updates</span>
+                    <span className="text-[11px] text-slate-500">Get notified when a classmate shares notes or schedules a session</span>
                   </div>
                   <input 
                     type="checkbox" 
@@ -328,10 +317,10 @@ export default function Settings() {
                   />
                 </label>
 
-                <label className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-colors cursor-pointer">
+                <label className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between cursor-pointer">
                   <div>
-                    <span className="text-xs font-bold text-slate-900 block">Weekly Email Digest</span>
-                    <span className="text-[11px] text-slate-500">Sunday evening progress report sent to your university inbox</span>
+                    <span className="text-xs font-semibold text-slate-900 block">Weekly Performance Summary Email</span>
+                    <span className="text-[11px] text-slate-500">Receive weekly progress and velocity recap every Sunday</span>
                   </div>
                   <input 
                     type="checkbox" 
@@ -398,50 +387,6 @@ export default function Settings() {
                 </button>
               </div>
 
-              {/* Statutory Privacy & Data Rights (DPDP Act, 2023) */}
-              <div className="p-4 bg-blue-50/60 rounded-2xl border border-blue-200 space-y-3 mt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-base text-blue-600">verified_user</span>
-                      <span>Statutory Data Rights & Grievance (DPDP Act)</span>
-                    </h4>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
-                      Exercise your statutory rights (Access, Rectify, Erase, Withdraw, Nominate) or view statutory disclosures.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2.5 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setCurrentView('data-rights')}
-                    className="app-btn-primary text-xs"
-                  >
-                    <span className="material-symbols-outlined text-sm">assignment_turned_in</span>
-                    <span>Submit Data Rights Request</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCurrentView('privacy-policy')}
-                    className="app-btn-secondary text-xs"
-                  >
-                    <span>Privacy Notice</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCurrentView('terms-of-service')}
-                    className="app-btn-secondary text-xs"
-                  >
-                    <span>Terms of Service</span>
-                  </button>
-                </div>
-
-                <p className="text-[10px] text-slate-400 font-mono pt-1">
-                  Grievance Officer: grievance-officer@scholar.app • SLA: 30 days
-                </p>
-              </div>
-
               {/* Danger Zone */}
               <div className="p-4 bg-rose-50/50 rounded-2xl border border-rose-200 space-y-3 mt-4">
                 <div>
@@ -472,21 +417,154 @@ export default function Settings() {
             </div>
           )}
 
-          {/* Global Save Button for active form settings */}
-          <div className="pt-6 border-t border-slate-100 flex justify-end">
-            <button 
-              type="button" 
-              onClick={handleSavePreferences}
-              className="app-btn-primary text-xs"
-            >
-              <span className="material-symbols-outlined text-base">save</span>
-              <span>Save Workspace Preferences</span>
-            </button>
-          </div>
+          {/* TAB 5: Privacy, Security & Legal Terms */}
+          {activeTab === 'privacy-terms' && (
+            <div className="space-y-6 animate-fade-in">
+              <div>
+                <h3 className="font-heading text-base font-bold text-slate-900">
+                  Privacy, Security & Legal Terms
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Read statutory disclosures under the Digital Personal Data Protection Act (DPDP Act, 2023), terms of service, and security standards.
+                </p>
+              </div>
+
+              {/* Item 1: Privacy Notice Card */}
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <span className="p-2 rounded-xl bg-blue-100 text-blue-700">
+                      <span className="material-symbols-outlined text-base">privacy_tip</span>
+                    </span>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900">Privacy Notice & Data Processing</h4>
+                      <p className="text-[11px] text-slate-500">Detailed disclosure of data collected, lawful purpose, retention, and third parties.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setExpandedSection(expandedSection === 'privacy' ? null : 'privacy')}
+                      className="app-btn-secondary text-xs"
+                    >
+                      {expandedSection === 'privacy' ? 'Hide Summary' : 'Read Summary'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentView('privacy-policy')}
+                      className="app-btn-primary text-xs"
+                    >
+                      <span>Full Page</span>
+                      <span className="material-symbols-outlined text-xs">open_in_new</span>
+                    </button>
+                  </div>
+                </div>
+
+                {expandedSection === 'privacy' && (
+                  <div className="pt-3 border-t border-slate-200/80 text-xs text-slate-700 space-y-2 animate-fade-in">
+                    <p><strong>• Data Fiduciary:</strong> Scholar Academic Technologies Pvt. Ltd. (DPDP Act, 2023 registered).</p>
+                    <p><strong>• What We Process:</strong> Account credentials, student enrollment ID, course tasks, deadline milestones, and optional diagnostics.</p>
+                    <p><strong>• Purpose Limitation:</strong> Data is strictly processed for coursework scheduling and academic analytics. We never sell data to advertisers.</p>
+                    <p><strong>• Data Retention:</strong> Maintained during active registration; purged within 30 days of account deletion.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Item 2: Terms of Service Card */}
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <span className="p-2 rounded-xl bg-emerald-100 text-emerald-700">
+                      <span className="material-symbols-outlined text-base">description</span>
+                    </span>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900">Terms of Service & Agreement</h4>
+                      <p className="text-[11px] text-slate-500">Acceptable use rules, Data Fiduciary obligations, and dispute escalation.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setExpandedSection(expandedSection === 'terms' ? null : 'terms')}
+                      className="app-btn-secondary text-xs"
+                    >
+                      {expandedSection === 'terms' ? 'Hide Summary' : 'Read Summary'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentView('terms-of-service')}
+                      className="app-btn-primary text-xs"
+                    >
+                      <span>Full Page</span>
+                      <span className="material-symbols-outlined text-xs">open_in_new</span>
+                    </button>
+                  </div>
+                </div>
+
+                {expandedSection === 'terms' && (
+                  <div className="pt-3 border-t border-slate-200/80 text-xs text-slate-700 space-y-2 animate-fade-in">
+                    <p><strong>• User Eligibility:</strong> Authorized for students 18+ pursuing higher education degrees.</p>
+                    <p><strong>• Intellectual Property:</strong> You own all uploaded assignments, research notes, and personal project files.</p>
+                    <p><strong>• Statutory Dispute Resolution:</strong> Unresolved privacy grievances escalate to the Data Protection Board of India (DPBI) under Section 13(3).</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Item 3: Data Principal Statutory Rights Portal */}
+              <div className="p-5 bg-blue-50/70 rounded-2xl border border-blue-200 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <span className="p-2 rounded-xl bg-blue-600 text-white">
+                      <span className="material-symbols-outlined text-base">assignment_turned_in</span>
+                    </span>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900">Exercise Data Principal Rights (DPDP Portal)</h4>
+                      <p className="text-[11px] text-slate-600">Submit statutory requests for Access/Export, Correction, Erasure, Consent Withdrawal, or Nomination.</p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setCurrentView('data-rights')}
+                    className="app-btn-primary text-xs"
+                  >
+                    <span>Launch Rights Portal</span>
+                    <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Item 4: Grievance Redressal Officer Contact Box */}
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs font-mono space-y-1">
+                <p className="font-bold text-slate-900">Grievance Redressal Officer (DPDP Act, India):</p>
+                <p className="text-slate-600">Officer Designation: Data Protection & Grievance Officer</p>
+                <p className="text-slate-600">Official Email: <a href="mailto:grievance-officer@scholar.app" className="text-blue-600 underline font-bold">grievance-officer@scholar.app</a></p>
+                <p className="text-[10px] text-slate-400 pt-1">Statutory Response SLA: Acknowledgment in 48 hours; full resolution within thirty (30) calendar days.</p>
+              </div>
+
+            </div>
+          )}
+
+          {/* Global Save Button for active form settings (Tabs 1-3) */}
+          {activeTab !== 'privacy-terms' && activeTab !== 'data' && (
+            <div className="pt-6 border-t border-slate-100 flex justify-end">
+              <button 
+                type="button" 
+                onClick={handleSavePreferences}
+                className="app-btn-primary text-xs"
+              >
+                <span className="material-symbols-outlined text-base">save</span>
+                <span>Save Workspace Preferences</span>
+              </button>
+            </div>
+          )}
 
         </div>
 
       </div>
+
     </div>
   );
 }
