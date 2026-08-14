@@ -4,22 +4,18 @@ import { AppContext } from '../context/AppContext';
 export default function AssignmentDetails() {
   const { 
     selectedTaskId, 
-    tasks, 
+    tasks = [], 
     updateTaskMilestone, 
     setCurrentView,
-    enrolledSubjects,
+    enrolledSubjects = [],
     editTask,
     deleteTask
   } = useContext(AppContext);
 
   const [toastMessage, setToastMessage] = useState('');
 
-  const handleDeleteTask = async () => {
-    if (window.confirm("Are you sure you want to delete this assignment?")) {
-      await deleteTask(task.id);
-      setCurrentView('tasks');
-    }
-  };
+  // Find the selected task, or default to the first available task
+  const task = tasks.find(t => t.id === selectedTaskId) || tasks[0];
 
   // Task Edit Modal states
   const [showEditModal, setShowEditModal] = useState(false);
@@ -34,25 +30,40 @@ export default function AssignmentDetails() {
   const [editMilestonesList, setEditMilestonesList] = useState([]);
   const [editNewMilestoneTitle, setEditNewMilestoneTitle] = useState('');
 
+  const triggerToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(''), 3000);
+  };
+
   const openEditModal = () => {
+    if (!task) return;
     setEditTitle(task.title || '');
-    setEditSubject(task.subject || '');
+    setEditSubject(task.subject || (enrolledSubjects[0]?.code || 'CS101'));
     setEditDescription(task.description || '');
-    setEditDueDate(task.dueDate || '2024-10-24');
+    setEditDueDate(task.dueDate || new Date().toISOString().split('T')[0]);
     setEditDueTime(task.dueTime || '11:59 PM');
     setEditCategory(task.category || 'This Week');
     setEditProfName(task.professor?.name || '');
     setEditProfHours(task.professor?.officeHours || '');
-    setEditMilestonesList(task.milestones || []);
+    setEditMilestonesList(task.milestones ? [...task.milestones] : []);
     setEditNewMilestoneTitle('');
     setShowEditModal(true);
+  };
+
+  const handleDeleteTask = async () => {
+    if (!task) return;
+    if (window.confirm(`Are you sure you want to delete "${task.title}"?`)) {
+      await deleteTask(task.id);
+      triggerToast('Assignment deleted');
+      setCurrentView('tasks');
+    }
   };
 
   const handleAddMilestone = (e) => {
     e.preventDefault();
     if (!editNewMilestoneTitle.trim()) return;
     const newMilestone = {
-      id: `m-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `m-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
       title: editNewMilestoneTitle.trim(),
       completed: false
     };
@@ -64,54 +75,63 @@ export default function AssignmentDetails() {
     setEditMilestonesList(prev => prev.filter(m => m.id !== id));
   };
 
-  const handleEditTask = async (e) => {
+  const handleEditTaskSubmit = async (e) => {
     e.preventDefault();
-    if (!editTitle) return;
+    if (!editTitle.trim() || !task) return;
 
-    // Estimate time left based on due date
-    const dateObj = new Date(editDueDate);
-    const today = new Date('2024-10-12'); // set static mock current date
-    const diffTime = dateObj - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    const calculateTimeLeft = (days) => {
-      if (days === 0) return 'Today';
-      if (days === 1) return 'Tomorrow';
-      if (days < 0) return 'Overdue';
-      return `${days} Days Left`;
-    };
-    const timeLeft = calculateTimeLeft(diffDays);
+    // Calculate dynamic time left relative to today
+    const taskDate = new Date(editDueDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    taskDate.setHours(0, 0, 0, 0);
+    const diffDays = Math.ceil((taskDate - today) / (1000 * 60 * 60 * 24));
+
+    let timeLeft = `${diffDays} Days Left`;
+    if (diffDays === 0) timeLeft = 'Due Today';
+    else if (diffDays === 1) timeLeft = 'Tomorrow';
+    else if (diffDays < 0) timeLeft = 'Overdue';
+
+    let category = editCategory;
+    if (diffDays <= 7 && diffDays >= 0) category = 'This Week';
+    else if (diffDays <= 14 && diffDays > 7) category = 'Next Week';
 
     try {
       await editTask(task.id, {
-        title: editTitle,
+        title: editTitle.trim(),
         subject: editSubject,
-        description: editDescription,
+        description: editDescription.trim(),
         dueDate: editDueDate,
         dueTime: editDueTime,
-        category: editCategory,
+        category,
         timeLeft,
         professor: {
-          name: editProfName.trim(),
-          officeHours: editProfHours.trim()
+          name: editProfName.trim() || 'Faculty Instructor',
+          officeHours: editProfHours.trim() || 'Mon/Wed 2-4 PM'
         },
         milestones: editMilestonesList
       });
       setShowEditModal(false);
-      triggerToast("Assignment updated successfully!");
+      triggerToast('Assignment updated successfully!');
     } catch (err) {
       console.error(err);
-      alert("Error updating task.");
+      alert('Error updating task. Please try again.');
     }
   };
 
-  // Find the selected task, or default to the first available task
-  const task = tasks.find(t => t.id === selectedTaskId) || tasks[0];
+  const handleCompleteAllMilestones = () => {
+    if (!task || !task.milestones) return;
+    task.milestones.forEach(m => {
+      if (!m.completed) {
+        updateTaskMilestone(task.id, m.id, true);
+      }
+    });
+    triggerToast('All milestones completed! Assignment cleared.');
+  };
 
   // If no tasks exist in workspace, show empty state
   if (!task) {
     return (
-      <div className="max-w-xl mx-auto p-12 app-card text-center space-y-4 my-12 animate-fade-in">
+      <div className="max-w-xl mx-auto p-12 app-card text-center space-y-4 my-12 animate-fade-in text-left">
         <span className="material-symbols-outlined text-4xl text-slate-300">folder_open</span>
         <h3 className="font-heading text-base font-bold text-slate-900">No Assignment Selected</h3>
         <p className="text-xs text-slate-500">Pick an assignment from your tasks board or project hub to view its deliverables.</p>
@@ -127,365 +147,268 @@ export default function AssignmentDetails() {
     );
   }
 
-  const handleMilestoneToggle = (milestoneId, currentCompleted) => {
-    updateTaskMilestone(task.id, milestoneId, !currentCompleted);
-  };
-
-  const triggerToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 3000);
-  };
-
-  const handleSubmit = () => {
-    // Check off all milestones as a shortcut of completion
-    task.milestones.forEach(m => {
-      if (!m.completed) {
-        updateTaskMilestone(task.id, m.id, true);
-      }
-    });
-    triggerToast("Assignment submitted successfully!");
-    setTimeout(() => {
-      setCurrentView('tasks');
-    }, 1500);
-  };
-
   const isCompleted = task.status === 'completed';
+  const completedMCount = task.milestones ? task.milestones.filter(m => m.completed).length : 0;
+  const totalMCount = task.milestones ? task.milestones.length : 0;
+  const progress = task.progress !== undefined ? task.progress : 0;
+
+  const getSubjectBadgeStyle = (code) => {
+    if (!code) return 'bg-slate-100 text-slate-700 border-slate-200';
+    if (code.startsWith('CS') || code.startsWith('SE')) return 'bg-blue-50 text-blue-700 border-blue-200';
+    if (code.startsWith('MATH') || code.startsWith('STAT')) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    if (code.startsWith('HIST') || code.startsWith('ENG')) return 'bg-amber-50 text-amber-700 border-amber-200';
+    return 'bg-purple-50 text-purple-700 border-purple-200';
+  };
 
   return (
-    <div className="animate-fade-in max-w-container-max-width mx-auto px-margin-mobile md:px-margin-desktop py-8 text-left pb-32">
+    <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 space-y-6 animate-fade-in text-left pb-32">
       
-      {/* Toast Alert */}
+      {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 bg-primary text-on-primary px-6 py-3 rounded-lg shadow-lg font-mono text-label-md flex items-center gap-2 animate-fade-in transition-all">
-          <span className="material-symbols-outlined">check_circle</span>
-          {toastMessage}
+        <div className="fixed top-20 right-6 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl font-mono text-xs flex items-center gap-2 animate-fade-in border border-slate-700">
+          <span className="material-symbols-outlined text-emerald-400 text-sm">check_circle</span>
+          <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Back button and title top row */}
-      <header className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <button 
+      {/* Top Header Bar: Breadcrumb, Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
             onClick={() => setCurrentView('tasks')}
-            aria-label="Go back" 
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors cursor-pointer"
+            className="p-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-slate-600 transition-colors cursor-pointer"
+            title="Back to Tasks"
           >
-            <span className="material-symbols-outlined text-primary text-[24px]">arrow_back</span>
+            <span className="material-symbols-outlined text-base">arrow_back</span>
           </button>
           <div>
-            <span className="font-mono text-label-md text-on-surface-variant">{task.subject}</span>
-            <h2 className="font-headline text-headline-md font-bold text-primary truncate max-w-[250px] md:max-w-none">
-              {task.subject} Details
-            </h2>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={openEditModal}
-            className="px-4 py-2 border border-outline text-primary rounded-xl font-mono text-label-md hover:bg-surface-container transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-          >
-            <span className="material-symbols-outlined text-[18px]">edit</span>
-            Edit Task
-          </button>
-
-          <button 
-            onClick={handleDeleteTask}
-            className="px-3 py-2 border border-red-200 text-red-600 hover:bg-red-50 rounded-xl font-mono text-label-md transition-all flex items-center gap-1 cursor-pointer shadow-sm"
-            title="Delete Assignment"
-          >
-            <span className="material-symbols-outlined text-[18px]">delete</span>
-            <span className="hidden md:inline">Delete</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Header Info Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop mb-8">
-        
-        {/* Left Info: Title & Metadata */}
-        <div className="lg:col-span-8 flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className={`inline-flex items-center px-3 py-1 rounded-full font-mono text-label-md ${
-              isCompleted 
-                ? 'bg-emerald-100 text-emerald-700' 
-                : 'bg-primary-container text-on-primary-container'
-            }`}>
-              {isCompleted ? 'COMPLETED' : 'IN PROGRESS'}
-            </span>
-            <span className="inline-flex items-center px-3 py-1 rounded-full bg-surface-container-highest text-primary font-mono text-label-md border border-outline-variant">
-              {task.subject}
-            </span>
-          </div>
-
-          <h3 className="font-headline text-headline-lg font-bold text-on-surface tracking-tight leading-tight">
-            {task.title}
-          </h3>
-
-          <div className="flex flex-wrap items-center gap-6 text-on-surface-variant">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">calendar_today</span>
-              <span className="font-body text-body-sm">
-                {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • {task.dueTime}
+              <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase border ${getSubjectBadgeStyle(task.subject)}`}>
+                {task.subject}
+              </span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                isCompleted ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
+              }`}>
+                {isCompleted ? 'COMPLETED' : 'IN PROGRESS'}
               </span>
             </div>
-            
-            {!isCompleted && (
-              <div className="flex items-center gap-2 px-3 py-1 rounded bg-error-container/30 border border-error/15 text-error">
-                <span className="material-symbols-outlined text-[18px]">alarm</span>
-                <span className="font-mono text-label-md font-bold uppercase tracking-wider">
-                  {task.timeLeft}
-                </span>
-              </div>
-            )}
+            <h1 className="font-heading text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mt-1">
+              {task.title}
+            </h1>
           </div>
         </div>
 
-        {/* Right Info: Circular Progress Widget */}
-        <div className="lg:col-span-4 paper-card p-6 rounded-2xl flex flex-col items-center justify-center">
-          <div className="relative w-24 h-24 mb-4">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-              <circle 
-                className="text-surface-container-highest" 
-                cx="18" 
-                cy="18" 
-                fill="none" 
-                r="15.915" 
-                stroke="currentColor" 
-                strokeWidth="3"
-              />
-              <circle 
-                className="text-primary transition-all duration-500" 
-                cx="18" 
-                cy="18" 
-                fill="none" 
-                r="15.915" 
-                stroke="currentColor" 
-                strokeDasharray={`${task.progress} ${100 - task.progress}`} 
-                strokeLinecap="round" 
-                strokeWidth="3"
-              />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="font-headline text-headline-sm font-bold text-primary">{task.progress}%</span>
-            </div>
-          </div>
-          <p className="font-mono text-label-md text-on-surface-variant uppercase tracking-wider">Current Progress</p>
-        </div>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            type="button"
+            onClick={openEditModal}
+            className="app-btn-secondary text-xs"
+          >
+            <span className="material-symbols-outlined text-sm">edit</span>
+            <span>Edit Task</span>
+          </button>
 
+          <button
+            type="button"
+            onClick={handleDeleteTask}
+            className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold text-xs rounded-xl border border-rose-200 transition-colors cursor-pointer flex items-center gap-1.5"
+          >
+            <span className="material-symbols-outlined text-sm">delete</span>
+            <span>Delete</span>
+          </button>
+        </div>
       </div>
 
-      {/* Main Content Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-start">
+      {/* Main Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* Main Brief & Checklist */}
-        <div className="lg:col-span-8 space-y-gutter-desktop">
+        {/* Left Column: Brief & Milestones (8 Cols) */}
+        <div className="lg:col-span-8 space-y-6">
           
-          {/* Brief */}
-          <section className="paper-card p-8 rounded-2xl">
-            <h4 className="font-headline text-headline-sm mb-4 flex items-center gap-2 font-semibold">
-              <span className="material-symbols-outlined text-primary">description</span>
-              Assignment Brief
-            </h4>
-            <div className="font-body text-body-md text-on-surface-variant leading-relaxed whitespace-pre-line space-y-4">
-              {task.description}
+          {/* Section 1: Assignment Brief */}
+          <div className="app-card p-6 space-y-3">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+              <span className="material-symbols-outlined text-base text-slate-700">description</span>
+              <h2 className="font-heading text-sm font-bold text-slate-900">Assignment Brief & Scope</h2>
             </div>
-          </section>
+            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+              {task.description || 'No detailed instructions recorded for this assignment.'}
+            </p>
+          </div>
 
-          {/* Checklist */}
-          <section className="paper-card p-8 rounded-2xl">
-            <h4 className="font-headline text-headline-sm mb-6 flex items-center gap-2 font-semibold">
-              <span className="material-symbols-outlined text-primary">checklist</span>
-              Milestones
-            </h4>
-            
-            <div className="space-y-3">
-              {task.milestones.map((m) => (
-                <label 
-                  key={m.id}
-                  className="flex items-start gap-4 p-4 rounded-xl bg-surface-container-low cursor-pointer hover:bg-surface-container transition-colors group"
-                >
-                  <input 
-                    type="checkbox"
-                    checked={m.completed}
-                    onChange={() => handleMilestoneToggle(m.id, m.completed)}
-                    className="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary mt-0.5 cursor-pointer"
-                  />
-                  <div className="flex-1">
-                    <p className={`font-body text-body-md transition-all ${
-                      m.completed ? 'line-through text-on-surface-variant/65' : 'text-on-surface font-medium'
-                    }`}>
-                      {m.title}
-                    </p>
-                    {m.completed && m.completedDate && (
-                      <span className="font-mono text-[11px] text-on-surface-variant opacity-60">
-                        Completed on {m.completedDate}
+          {/* Section 2: Interactive Milestone Checklist */}
+          <div className="app-card p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-base text-slate-700">checklist</span>
+                <h2 className="font-heading text-sm font-bold text-slate-900">Deliverable Milestones</h2>
+              </div>
+              <span className="text-xs font-mono font-bold text-slate-700">
+                {completedMCount}/{totalMCount} Cleared ({progress}%)
+              </span>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  progress === 100 ? 'bg-emerald-500' : 'bg-blue-600'
+                }`}
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+
+            {/* Checkpoints list */}
+            <div className="space-y-2.5">
+              {task.milestones && task.milestones.length > 0 ? (
+                task.milestones.map((m) => (
+                  <label
+                    key={m.id}
+                    className={`p-3 rounded-xl border transition-all flex items-center justify-between cursor-pointer ${
+                      m.completed 
+                        ? 'bg-slate-50/70 border-slate-200/80 text-slate-400' 
+                        : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800 shadow-xs'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={m.completed}
+                        onChange={(e) => updateTaskMilestone(task.id, m.id, e.target.checked)}
+                        className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4 cursor-pointer"
+                      />
+                      <span className={`text-xs font-medium ${m.completed ? 'line-through' : ''}`}>
+                        {m.title}
+                      </span>
+                    </div>
+
+                    {m.completedDate && (
+                      <span className="text-[10px] font-mono text-slate-400">
+                        Cleared {m.completedDate}
                       </span>
                     )}
-                  </div>
-                </label>
-              ))}
-            </div>
-          </section>
-        </div>
-
-        {/* Sidebar panels */}
-        <aside className="lg:col-span-4 space-y-gutter-desktop">
-          
-          {/* Resources Panel */}
-          <section className="paper-card p-6 rounded-2xl">
-            <h4 className="font-headline text-headline-sm mb-4 flex items-center gap-2 font-semibold">
-              <span className="material-symbols-outlined text-primary">link</span>
-              Resources
-            </h4>
-            
-            <div className="space-y-3">
-              {task.resources && task.resources.length > 0 ? (
-                task.resources.map((res, index) => {
-                  const isPdf = res.type === 'pdf';
-                  const isExcel = res.type === 'excel';
-                  const icon = isPdf ? 'picture_as_pdf' : isExcel ? 'description' : 'language';
-                  const iconColor = isPdf ? 'text-red-600 bg-red-50' : isExcel ? 'text-blue-600 bg-blue-50' : 'text-on-surface-variant bg-surface-container-highest';
-                  
-                  return (
-                    <a 
-                      key={index}
-                      href={res.link || '#'}
-                      target={res.link ? '_blank' : undefined}
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container-low transition-all border border-transparent hover:border-outline-variant group"
-                    >
-                      <div className={`w-10 h-10 rounded flex items-center justify-center ${iconColor}`}>
-                        <span className="material-symbols-outlined">{icon}</span>
-                      </div>
-                      <div className="flex-1 overflow-hidden">
-                        <p className="font-body text-body-sm truncate text-on-surface group-hover:text-primary transition-colors">
-                          {res.name}
-                        </p>
-                        <p className="font-mono text-[11px] text-on-surface-variant">
-                          {res.size || 'External Link'}
-                        </p>
-                      </div>
-                    </a>
-                  );
-                })
+                  </label>
+                ))
               ) : (
-                <p className="font-body text-body-sm text-on-surface-variant italic">No resources attached.</p>
+                <p className="text-xs text-slate-400 italic">No milestones defined.</p>
               )}
             </div>
 
-            <button 
-              onClick={() => triggerToast("New material uploaded (Mocked)")}
-              className="w-full mt-4 py-2.5 border border-outline-variant rounded-lg font-mono text-label-md text-primary hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[18px]">add</span>
-              Add Material
-            </button>
-          </section>
-
-          {/* Contact Professor Panel */}
-          {task.professor && (
-            <section className="paper-card p-6 rounded-2xl">
-              <h4 className="font-headline text-headline-sm mb-4 flex items-center gap-2 font-semibold">
-                <span className="material-symbols-outlined text-primary">person_search</span>
-                Course Contact
-              </h4>
-              <div className="flex items-center gap-3">
-                {task.professor.avatar ? (
-                  <img 
-                    alt={task.professor.name || 'Professor'} 
-                    className="w-10 h-10 rounded-full object-cover border border-outline-variant"
-                    src={task.professor.avatar}
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold">
-                    {task.professor.name 
-                      ? task.professor.name.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2)
-                      : 'Prof'}
-                  </div>
-                )}
-                <div>
-                  <p className="font-body text-body-md font-semibold text-on-surface">{task.professor.name || 'TBD'}</p>
-                  <p className="font-mono text-[11px] text-on-surface-variant">Office Hours: {task.professor.officeHours || 'TBD'}</p>
-                </div>
+            {!isCompleted && totalMCount > 0 && (
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleCompleteAllMilestones}
+                  className="app-btn-secondary text-xs"
+                >
+                  <span className="material-symbols-outlined text-sm">done_all</span>
+                  <span>Mark All Milestones Complete</span>
+                </button>
               </div>
-              
-              <button 
-                onClick={() => triggerToast(`Message compose window opened for ${task.professor.name || 'Professor'}`)}
-                className="w-full mt-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-mono text-label-md hover:bg-secondary-fixed-dim transition-colors flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[18px]">mail</span>
-                Message Professor
-              </button>
-            </section>
-          )}
+            )}
 
-        </aside>
+          </div>
+
+        </div>
+
+        {/* Right Column: Metadata & Course Contact (4 Cols) */}
+        <div className="lg:col-span-4 space-y-6">
+          
+          {/* Submission Deadlines Card */}
+          <div className="app-card p-6 space-y-4">
+            <h3 className="font-heading text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2.5">
+              Deadline Information
+            </h3>
+
+            <div className="space-y-3 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-mono">Due Date</span>
+                <span className="font-bold text-slate-900">{task.dueDate}</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-mono">Due Time</span>
+                <span className="font-bold text-rose-600">{task.dueTime || '11:59 PM'}</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-mono">Time Remaining</span>
+                <span className="px-2 py-0.5 rounded font-mono font-bold text-[11px] bg-blue-50 text-blue-700 border border-blue-100">
+                  {task.timeLeft || 'In Progress'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Instructor & Office Hours */}
+          <div className="app-card p-6 space-y-4">
+            <h3 className="font-heading text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2.5">
+              Course Advisory Contact
+            </h3>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <span className="text-[10px] font-mono uppercase text-slate-400 block font-semibold">Faculty Instructor</span>
+                <p className="font-bold text-slate-900 mt-0.5">{task.professor?.name || 'Faculty Instructor'}</p>
+              </div>
+
+              <div>
+                <span className="text-[10px] font-mono uppercase text-slate-400 block font-semibold">Office Hours</span>
+                <p className="font-medium text-slate-700 mt-0.5">{task.professor?.officeHours || 'Mon/Wed 2-4 PM'}</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
       </div>
 
-      {/* Bottom Action Bar */}
-      <footer className="fixed bottom-0 left-0 w-full bg-surface border-t border-outline-variant z-40 px-margin-mobile md:px-margin-desktop py-4 shadow-lg">
-        <div className="max-w-container-max-width mx-auto flex items-center justify-between gap-4">
-          <div className="hidden md:flex items-center gap-2 text-on-surface-variant font-mono text-label-md">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-            <span>Last autosaved at {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
-          </div>
-
-          <div className="flex gap-4 w-full md:w-auto">
-            <button 
-              onClick={() => {
-                triggerToast("Draft version saved locally!");
-                setTimeout(() => setCurrentView('tasks'), 1000);
-              }}
-              className="flex-1 md:flex-none px-6 py-3 border border-primary text-primary rounded-lg font-mono text-label-md hover:bg-primary/5 transition-all active:scale-95 cursor-pointer text-center"
-            >
-              Save Draft
-            </button>
-            <button 
-              onClick={handleSubmit}
-              className="flex-1 md:flex-none px-8 py-3 bg-primary text-on-primary rounded-lg font-headline text-headline-sm font-bold shadow-md hover:bg-primary-fixed-dim hover:text-primary transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer text-center"
-            >
-              Submit Assignment
-              <span className="material-symbols-outlined">send</span>
-            </button>
-          </div>
-        </div>
-      </footer>
-
-      {/* Edit Task Modal */}
+      {/* MODERN FROSTED EDIT TASK MODAL */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 w-full max-w-lg shadow-xl animate-fade-in text-left max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-headline text-headline-sm font-semibold text-on-surface">Edit Task</h3>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-fade-in text-left max-h-[90vh] overflow-y-auto space-y-4">
+            
+            {/* Modal Header */}
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="font-heading text-base font-bold text-slate-900">
+                  Edit Assignment Deliverable
+                </h3>
+                <p className="text-xs text-slate-500">Update syllabus details, submission deadline, and milestone list</p>
+              </div>
               <button 
+                type="button"
                 onClick={() => setShowEditModal(false)}
-                className="material-symbols-outlined text-on-surface-variant hover:bg-surface-container rounded-full p-1 cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer"
               >
-                close
+                <span className="material-symbols-outlined text-lg">close</span>
               </button>
             </div>
 
-            <form onSubmit={handleEditTask} className="space-y-4">
+            {/* Modal Form */}
+            <form onSubmit={handleEditTaskSubmit} className="space-y-4">
+              
               <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Task Title *</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Task Title *</label>
                 <input 
                   type="text" 
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
                   placeholder="e.g. Econometrics Problem Set 4"
                   required
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-mono text-label-md text-on-surface-variant mb-1">Course/Subject *</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Course / Module *</label>
                   <select 
                     value={editSubject}
                     onChange={(e) => setEditSubject(e.target.value)}
-                    className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 cursor-pointer"
                   >
                     {enrolledSubjects.map(sub => (
                       <option key={sub.code} value={sub.code}>{sub.code} - {sub.name}</option>
@@ -494,11 +417,11 @@ export default function AssignmentDetails() {
                 </div>
 
                 <div>
-                  <label className="block font-mono text-label-md text-on-surface-variant mb-1">Timeline Group</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Timeline Category</label>
                   <select 
                     value={editCategory}
                     onChange={(e) => setEditCategory(e.target.value)}
-                    className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 cursor-pointer"
                   >
                     <option value="This Week">This Week</option>
                     <option value="Next Week">Next Week</option>
@@ -508,135 +431,123 @@ export default function AssignmentDetails() {
               </div>
 
               <div>
-                <label className="block font-mono text-label-md text-on-surface-variant mb-1">Description</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Brief Description</label>
                 <textarea 
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  placeholder="Summarize the deliverables and criteria..."
+                  placeholder="Summarize the core requirements, deliverables, and criteria..."
                   rows="3"
-                  className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface resize-none"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400 resize-none"
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-mono text-label-md text-on-surface-variant mb-1">Due Date</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Due Date</label>
                   <input 
                     type="date" 
                     value={editDueDate}
                     onChange={(e) => setEditDueDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-mono text-label-md text-on-surface-variant mb-1">Due Time</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Due Time</label>
                   <input 
                     type="text" 
                     value={editDueTime}
                     onChange={(e) => setEditDueTime(e.target.value)}
-                    placeholder="e.g. 11:59 PM"
-                    className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
+                    placeholder="11:59 PM"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
                   />
                 </div>
               </div>
 
-              {/* Course Contact Section */}
-              <div className="border-t border-outline-variant/30 pt-4">
-                <h4 className="font-headline text-headline-sm font-semibold mb-3 text-on-surface">Course Contact (Optional)</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-mono text-label-md text-on-surface-variant mb-1">Professor Name</label>
-                    <input 
-                      type="text" 
-                      value={editProfName}
-                      onChange={(e) => setEditProfName(e.target.value)}
-                      placeholder="e.g. Dr. Sarah Thompson"
-                      className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                    />
-                  </div>
+              {/* Course Contact Details */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Instructor Name</label>
+                  <input 
+                    type="text" 
+                    value={editProfName}
+                    onChange={(e) => setEditProfName(e.target.value)}
+                    placeholder="Dr. Sarah Thompson"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+                  />
+                </div>
 
-                  <div>
-                    <label className="block font-mono text-label-md text-on-surface-variant mb-1">Office Hours</label>
-                    <input 
-                      type="text" 
-                      value={editProfHours}
-                      onChange={(e) => setEditProfHours(e.target.value)}
-                      placeholder="e.g. Mon/Wed 2-4PM"
-                      className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Office Hours</label>
+                  <input 
+                    type="text" 
+                    value={editProfHours}
+                    onChange={(e) => setEditProfHours(e.target.value)}
+                    placeholder="Mon/Wed 2-4 PM"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+                  />
                 </div>
               </div>
 
-              {/* Milestones Checklist Section */}
-              <div className="border-t border-outline-variant/30 pt-4">
-                <h4 className="font-headline text-headline-sm font-semibold mb-3 text-on-surface">Milestones Checklist</h4>
+              {/* Milestones Builder */}
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <label className="block text-xs font-semibold text-slate-700">Milestone Checkpoints</label>
                 
-                {/* Add Milestone input row */}
-                <div className="flex gap-2 mb-3">
+                <div className="flex gap-2">
                   <input 
                     type="text" 
                     value={editNewMilestoneTitle}
                     onChange={(e) => setEditNewMilestoneTitle(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddMilestone(e);
-                      }
-                    }}
-                    placeholder="Add a milestone (e.g. Final Draft)"
-                    className="flex-1 px-3 py-2 border border-outline-variant rounded-lg bg-surface focus:outline-none focus:border-primary text-on-surface"
+                    placeholder="Add a milestone (e.g. Final Code Polish)"
+                    className="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
                   />
                   <button 
                     type="button"
                     onClick={handleAddMilestone}
-                    className="px-4 bg-secondary-container text-on-secondary-container rounded-lg font-mono text-label-md hover:bg-secondary-fixed-dim transition-colors flex items-center justify-center cursor-pointer"
+                    className="app-btn-secondary text-xs"
                   >
                     Add
                   </button>
                 </div>
 
-                {/* Milestones List */}
-                {editMilestonesList.length > 0 ? (
-                  <div className="space-y-2 max-h-32 overflow-y-auto p-1 bg-surface-container-low rounded-lg border border-outline-variant/30">
-                    {editMilestonesList.map((m) => (
-                      <div key={m.id} className="flex justify-between items-center bg-surface-container-lowest px-3 py-2 rounded-md border border-outline-variant/20">
-                        <span className="font-body text-body-sm text-on-surface truncate pr-2">{m.title}</span>
-                        <button 
-                          type="button"
-                          onClick={() => handleRemoveMilestone(m.id)}
-                          className="material-symbols-outlined text-on-surface-variant hover:text-error text-[18px] cursor-pointer"
-                        >
-                          close
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="font-body text-[12px] text-on-surface-variant italic">No milestones added.</p>
-                )}
+                <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                  {editMilestonesList.map(m => (
+                    <div key={m.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg text-xs">
+                      <span className="text-slate-800">{m.title}</span>
+                      <button 
+                        type="button" 
+                        onClick={() => handleRemoveMilestone(m.id)}
+                        className="text-rose-500 hover:text-rose-700 font-bold"
+                      >
+                        <span className="material-symbols-outlined text-xs">close</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              {/* Modal Actions */}
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
                 <button 
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="flex-1 py-3 border border-outline text-on-surface rounded-lg font-mono text-label-md hover:bg-surface-container transition-all cursor-pointer"
+                  className="app-btn-secondary text-xs"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
-                  className="flex-1 py-3 bg-primary text-on-primary rounded-lg font-mono text-label-md hover:bg-primary-container transition-all cursor-pointer shadow-sm"
+                  className="app-btn-primary text-xs"
                 >
                   Save Changes
                 </button>
               </div>
+
             </form>
           </div>
         </div>
       )}
+
     </div>
   );
 }
