@@ -7,8 +7,8 @@ export default function Navigation() {
     setCurrentView, 
     user, 
     logout,
-    notifications,
-    readNotificationIds,
+    notifications = [],
+    readNotificationIds = [],
     markNotificationAsRead,
     markAllNotificationsAsRead,
     setSelectedTaskId,
@@ -17,427 +17,326 @@ export default function Navigation() {
     enrolledSubjects = []
   } = useContext(AppContext);
 
-  const [showDrawer, setShowDrawer] = useState(false);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
-  const dropdownRef = useRef(null);
+  
+  const notifRef = useRef(null);
+  const userMenuRef = useRef(null);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
         setShowNotificationsDropdown(false);
       }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSearchDropdown(false);
+      }
     }
-    if (showNotificationsDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showNotificationsDropdown]);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const unreadNotifications = notifications.filter(n => !readNotificationIds.includes(n.id));
   const hasUnread = unreadNotifications.length > 0;
 
-  // Determine title badge text based on currentView
-  const getHeaderTitle = () => {
-    switch (currentView) {
-      case 'profile':
-        return 'Your Profile';
-      case 'subjects':
-      case 'courses':
-        return 'Courses Overview';
-      case 'tasks':
-        return 'Tasks & Deliverables';
-      case 'assignment-details':
-      case 'projects':
-        return 'Projects Tracking';
-      case 'analytics':
-        return 'Performance Analytics';
-      case 'calendar':
-        return 'Academic Calendar';
-      case 'study-groups':
-        return 'Study Groups';
-      case 'research':
-        return 'Research Discovery';
-      case 'settings':
-        return 'Settings';
-      default:
-        return 'Scholar Tracker';
-    }
-  };
-
   const navItems = [
-    { view: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { view: 'subjects', label: 'Courses Overview', icon: 'school' },
-    { view: 'tasks', label: 'Tasks', icon: 'assignment' },
-    { view: 'assignment-details', label: 'Projects', icon: 'account_tree' },
-    { view: 'analytics', label: 'Analytics', icon: 'analytics' },
-    { view: 'calendar', label: 'Calendar', icon: 'calendar_month' },
+    { view: 'dashboard', label: 'Dashboard', icon: 'grid_view' },
+    { view: 'subjects', label: 'Courses', icon: 'auto_stories' },
+    { view: 'tasks', label: 'Tasks & Deadlines', icon: 'checklist' },
+    { view: 'assignment-details', label: 'Projects', icon: 'folder_open' },
+    { view: 'calendar', label: 'Calendar', icon: 'calendar_today' },
+    { view: 'analytics', label: 'Analytics', icon: 'insights' },
     { view: 'study-groups', label: 'Study Groups', icon: 'groups' },
-    { view: 'research', label: 'Research Discovery', icon: 'biotech' },
-    { view: 'profile', label: 'Profile', icon: 'person' },
-    { view: 'settings', label: 'Settings', icon: 'settings' }
+    { view: 'research', label: 'Research Papers', icon: 'menu_book' }
   ];
 
-  // Helper for dynamic user avatar
-  const renderAvatar = () => {
-    const avatarCleared = user?.user_metadata?.avatar_cleared;
-    const avatarUrl = !avatarCleared && (user?.user_metadata?.custom_avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.photoURL);
-    if (avatarUrl) {
-      return (
-        <img 
-          alt={user?.user_metadata?.full_name || user?.user_metadata?.name || 'user profile'} 
-          className="w-full h-full object-cover" 
-          src={avatarUrl}
-        />
-      );
+  const getPageTitle = () => {
+    switch (currentView) {
+      case 'dashboard': return 'Dashboard Overview';
+      case 'subjects': return 'Enrolled Courses';
+      case 'tasks': return 'Tasks & Deadlines';
+      case 'assignment-details': return 'Project Workspace';
+      case 'calendar': return 'Academic Calendar';
+      case 'analytics': return 'Performance Analytics';
+      case 'study-groups': return 'Peer Study Groups';
+      case 'research': return 'Research Discovery';
+      case 'profile': return 'Scholar Profile';
+      case 'settings': return 'Account Settings';
+      default: return 'Scholar Workspace';
     }
-    const nameToUse = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Alex Morgan';
-    const initial = nameToUse ? nameToUse[0].toUpperCase() : 'A';
-    return (
-      <div className="w-full h-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
-        {initial}
-      </div>
-    );
   };
 
-  const handleBackNav = () => {
-    if (currentView === 'dashboard') return;
-    if (currentView === 'assignment-details') {
-      setCurrentView('subjects');
-    } else {
-      setCurrentView('dashboard');
-    }
+  const getAvatarUrl = () => {
+    return user?.user_metadata?.custom_avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.photoURL;
   };
+
+  const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Alex Morgan';
+  const userInitial = userName[0]?.toUpperCase() || 'A';
+  const avatarUrl = getAvatarUrl();
 
   return (
     <>
-      {/* Simple Clean Header Bar */}
-      <header className="fixed top-0 left-0 w-full h-16 z-40 bg-white text-slate-900 border-b border-slate-200 shadow-sm flex items-center justify-between px-4 md:px-8">
-        
-        {/* Left Side: Hamburger Menu + Back Arrow + Title Badge */}
+      {/* Modern Top Header Bar */}
+      <header className="fixed top-0 left-0 md:left-64 right-0 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 z-30 flex items-center justify-between px-4 md:px-8 transition-all">
+        {/* Left Side: Page Title / Mobile Logo */}
         <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setShowDrawer(true)}
-            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer text-slate-700 flex items-center justify-center"
-            title="Open Menu"
-            aria-label="Open Navigation Menu"
-          >
-            <span className="material-symbols-outlined text-[26px]">menu</span>
-          </button>
+          <div className="md:hidden flex items-center gap-2" onClick={() => setCurrentView('dashboard')}>
+            <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
+              S
+            </div>
+            <span className="font-heading font-bold text-sm text-slate-900">Scholar</span>
+          </div>
 
-          {currentView !== 'dashboard' && (
-            <button 
-              onClick={handleBackNav}
-              className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer text-slate-700 flex items-center justify-center"
-              title="Go Back"
-              aria-label="Go Back to Previous Page"
-            >
-              <span className="material-symbols-outlined text-[24px]">arrow_back</span>
-            </button>
-          )}
-
-          {/* Title Badge */}
-          <div 
-            onClick={() => setCurrentView('dashboard')}
-            className="bg-slate-100 text-slate-900 px-3.5 py-1.5 rounded-lg font-bold text-sm md:text-base cursor-pointer hover:bg-slate-200 transition-colors"
-          >
-            {getHeaderTitle()}
+          <div className="hidden md:block">
+            <h1 className="font-heading font-bold text-lg text-slate-900 tracking-tight">{getPageTitle()}</h1>
           </div>
         </div>
 
-        {/* Center / Search bar with live results dropdown */}
-        <div className="hidden md:flex flex-1 max-w-sm mx-6 relative">
-          <div className="relative w-full">
+        {/* Center: Search Bar */}
+        <div className="relative max-w-md w-full mx-4 hidden sm:block" ref={searchRef}>
+          <div className="relative">
             <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
             <input 
               type="text" 
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setShowSearchDropdown(true);
-              }}
+              onChange={(e) => { setSearchQuery(e.target.value); setShowSearchDropdown(true); }}
               onFocus={() => setShowSearchDropdown(true)}
-              placeholder="Search subjects, assignments..."
-              className="w-full pl-9 pr-8 py-1.5 bg-slate-100 text-slate-800 placeholder-slate-400 rounded-xl text-xs focus:outline-none focus:bg-slate-200 transition-all border border-slate-200"
+              placeholder="Search assignments, courses, papers..." 
+              className="w-full pl-9 pr-8 py-2 bg-slate-100/80 hover:bg-slate-100 focus:bg-white text-slate-800 placeholder-slate-400 rounded-xl text-xs border border-transparent focus:border-slate-300 focus:outline-none transition-all"
             />
             {searchQuery && (
-              <button 
-                onClick={() => { setSearchQuery(''); setShowSearchDropdown(false); }}
-                className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600"
-              >
+              <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600">
                 <span className="material-symbols-outlined text-sm">close</span>
               </button>
             )}
           </div>
 
-          {/* Search Dropdown Results */}
+          {/* Live Search Dropdown */}
           {showSearchDropdown && searchQuery.trim().length > 0 && (
-            <div className="absolute top-10 left-0 w-full bg-white text-slate-800 rounded-2xl shadow-2xl z-50 p-2 border border-slate-200 text-left animate-fade-in max-h-80 overflow-y-auto">
-              {/* Tasks Results */}
-              <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase font-mono">Assignments</div>
-              {tasks.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.subject.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
-                <p className="px-3 py-1.5 text-xs text-slate-400 italic">No matching tasks</p>
-              ) : (
-                tasks.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.subject.toLowerCase().includes(searchQuery.toLowerCase())).map(t => (
-                  <div 
-                    key={t.id}
-                    onClick={() => {
-                      setSelectedTaskId(t.id);
-                      setCurrentView('assignment-details');
-                      setSearchQuery('');
-                      setShowSearchDropdown(false);
-                    }}
-                    className="p-2 hover:bg-slate-100 rounded-xl cursor-pointer flex items-center justify-between transition-colors"
-                  >
-                    <div>
-                      <p className="text-xs font-bold text-slate-900">{t.title}</p>
-                      <p className="text-[10px] text-slate-500">{t.subject} • {t.timeLeft}</p>
-                    </div>
-                    <span className="material-symbols-outlined text-xs text-blue-600">chevron_right</span>
+            <div className="absolute top-11 left-0 w-full bg-white rounded-2xl shadow-xl border border-slate-200 p-2 z-50 animate-fade-in max-h-80 overflow-y-auto">
+              <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase font-mono">Tasks</div>
+              {tasks.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.subject.toLowerCase().includes(searchQuery.toLowerCase())).map(t => (
+                <div 
+                  key={t.id}
+                  onClick={() => {
+                    setSelectedTaskId(t.id);
+                    setCurrentView('assignment-details');
+                    setShowSearchDropdown(false);
+                    setSearchQuery('');
+                  }}
+                  className="p-2.5 hover:bg-slate-50 rounded-xl cursor-pointer flex items-center justify-between text-left"
+                >
+                  <div>
+                    <p className="text-xs font-semibold text-slate-900">{t.title}</p>
+                    <p className="text-[11px] text-slate-500">{t.subject} • Due {t.dueDate}</p>
                   </div>
-                ))
-              )}
-
-              {/* Subjects Results */}
-              <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase font-mono mt-2 border-t border-slate-100 pt-2">Subjects</div>
-              {enrolledSubjects.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.code.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
-                <p className="px-3 py-1.5 text-xs text-slate-400 italic">No matching subjects</p>
-              ) : (
-                enrolledSubjects.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.code.toLowerCase().includes(searchQuery.toLowerCase())).map(s => (
-                  <div 
-                    key={s.code}
-                    onClick={() => {
-                      if (setSelectedSubjectKey) {
-                        const keyMap = {
-                          'DIC107T': 'web-design',
-                          'DIC102C': 'python',
-                          'DIC105E': 'disaster-management',
-                          'DIC110H': 'global-literature',
-                          'DIC102S': 'physics',
-                          'DIC103M': 'mathematics'
-                        };
-                        setSelectedSubjectKey(keyMap[s.code] || 'web-design');
-                      }
-                      setCurrentView('subjects');
-                      setSearchQuery('');
-                      setShowSearchDropdown(false);
-                    }}
-                    className="p-2 hover:bg-slate-100 rounded-xl cursor-pointer flex items-center justify-between transition-colors"
-                  >
-                    <div>
-                      <p className="text-xs font-bold text-slate-900">{s.name}</p>
-                      <p className="text-[10px] text-slate-500">{s.code}</p>
-                    </div>
-                    <span className="material-symbols-outlined text-xs text-blue-600">chevron_right</span>
-                  </div>
-                ))
-              )}
+                  <span className="material-symbols-outlined text-xs text-slate-400">arrow_forward</span>
+                </div>
+              ))}
             </div>
           )}
         </div>
 
-        {/* Right Side: Notifications + Profile Avatar */}
+        {/* Right Side: Notifications & User Avatar Profile Button */}
         <div className="flex items-center gap-3">
-          {/* Notifications Button */}
-          <div className="relative" ref={dropdownRef}>
+          {/* Notifications Dropdown */}
+          <div className="relative" ref={notifRef}>
             <button 
               onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
-              className="p-1.5 hover:bg-slate-100 rounded-full transition-colors relative cursor-pointer text-slate-800 flex items-center"
+              className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors relative cursor-pointer"
               title="Notifications"
-              aria-label="Toggle Notifications Menu"
             >
-              <span className="material-symbols-outlined text-[22px]">notifications</span>
+              <span className="material-symbols-outlined text-xl">notifications</span>
               {hasUnread && (
-                <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-red-500 border border-slate-900 animate-pulse"></span>
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white"></span>
               )}
             </button>
 
-            {/* Notifications Dropdown */}
             {showNotificationsDropdown && (
-              <div className="absolute right-0 mt-2 w-80 bg-white text-slate-800 rounded-2xl shadow-2xl z-50 py-3 text-left border border-slate-200 overflow-hidden animate-fade-in">
-                <div className="px-4 py-2 border-b border-slate-100 flex justify-between items-center">
-                  <h4 className="font-headline text-sm font-bold text-slate-900">Notifications</h4>
+              <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-fade-in text-left">
+                <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
+                  <span className="font-heading font-bold text-xs text-slate-900">Notifications ({unreadNotifications.length})</span>
                   {hasUnread && (
                     <button 
                       onClick={() => markAllNotificationsAsRead(unreadNotifications.map(n => n.id))}
-                      className="text-[11px] text-blue-600 font-semibold hover:underline bg-transparent border-none cursor-pointer"
+                      className="text-[11px] font-semibold text-blue-600 hover:underline"
                     >
                       Mark all read
                     </button>
                   )}
                 </div>
-
-                <div className="max-h-72 overflow-y-auto divide-y divide-slate-100">
+                <div className="max-h-64 overflow-y-auto divide-y divide-slate-100">
                   {notifications.length === 0 ? (
-                    <div className="p-4 text-center text-slate-500 text-xs italic">
-                      No new notifications.
-                    </div>
+                    <div className="p-4 text-center text-xs text-slate-400">No new alerts</div>
                   ) : (
-                    notifications.map(n => {
-                      const isUnread = !readNotificationIds.includes(n.id);
-                      return (
-                        <div 
-                          key={n.id}
-                          onClick={() => {
-                            markNotificationAsRead(n.id);
-                            if (n.taskId) {
-                              setSelectedTaskId(n.taskId);
-                              setCurrentView('assignment-details');
-                            }
-                            setShowNotificationsDropdown(false);
-                          }}
-                          className={`p-3 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3 items-start ${
-                            isUnread ? 'bg-slate-50' : ''
-                          }`}
-                        >
-                          <span className="material-symbols-outlined text-blue-600 text-lg mt-0.5">info</span>
-                          <div className="flex-1">
-                            <p className={`text-xs text-slate-900 ${isUnread ? 'font-bold' : ''}`}>{n.title}</p>
-                            <p className="text-[11px] text-slate-500 mt-0.5">{n.message}</p>
-                          </div>
+                    notifications.map(n => (
+                      <div 
+                        key={n.id}
+                        onClick={() => {
+                          markNotificationAsRead(n.id);
+                          if (n.taskId) {
+                            setSelectedTaskId(n.taskId);
+                            setCurrentView('assignment-details');
+                          }
+                          setShowNotificationsDropdown(false);
+                        }}
+                        className="p-3 hover:bg-slate-50 cursor-pointer flex gap-3 items-start"
+                      >
+                        <span className="material-symbols-outlined text-blue-600 text-base mt-0.5">info</span>
+                        <div>
+                          <p className="text-xs font-semibold text-slate-900">{n.title}</p>
+                          <p className="text-[11px] text-slate-500 mt-0.5">{n.message}</p>
                         </div>
-                      );
-                    })
+                      </div>
+                    ))
                   )}
                 </div>
               </div>
             )}
           </div>
 
-          {/* User Profile Avatar */}
-          <div 
-            onClick={() => setCurrentView('profile')}
-            className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/40 cursor-pointer hover:border-white transition-all shadow-sm"
-            title="View Profile"
-          >
-            {renderAvatar()}
+          {/* User Profile Trigger */}
+          <div className="relative" ref={userMenuRef}>
+            <button 
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center gap-2.5 p-1 pl-2 rounded-xl hover:bg-slate-100 transition-all cursor-pointer border border-transparent hover:border-slate-200"
+            >
+              <div className="text-right hidden md:block">
+                <p className="text-xs font-bold text-slate-900 leading-tight">{userName}</p>
+                <p className="text-[10px] text-slate-500 font-mono">Scholar</p>
+              </div>
+
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-sm ring-2 ring-slate-200">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={userName} className="w-full h-full object-cover" />
+                ) : (
+                  <span>{userInitial}</span>
+                )}
+              </div>
+            </button>
+
+            {/* Profile Dropdown Menu */}
+            {showUserMenu && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 p-1.5 z-50 animate-fade-in text-left">
+                <div className="p-3 border-b border-slate-100 mb-1">
+                  <p className="text-xs font-bold text-slate-900">{userName}</p>
+                  <p className="text-[11px] text-slate-500 truncate">{user?.email || 'student@scholar.app'}</p>
+                </div>
+                
+                <button 
+                  onClick={() => { setCurrentView('profile'); setShowUserMenu(false); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-base">person</span>
+                  <span>Your Profile</span>
+                </button>
+
+                <button 
+                  onClick={() => { setCurrentView('settings'); setShowUserMenu(false); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-base">settings</span>
+                  <span>Settings & Preferences</span>
+                </button>
+
+                <div className="border-t border-slate-100 my-1"></div>
+
+                <button 
+                  onClick={() => { setShowUserMenu(false); logout(); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-base">logout</span>
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Slide-out Drawer Navigation Menu */}
-      {showDrawer && (
-        <div className="fixed inset-0 z-50 flex">
-          {/* Backdrop */}
+      {/* Modern Left Sidebar (Desktop) */}
+      <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-slate-200/80 z-40 flex-col justify-between py-6 px-4">
+        <div className="space-y-6">
+          {/* App Brand Header */}
           <div 
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity"
-            onClick={() => setShowDrawer(false)}
-          ></div>
-
-          {/* Sidebar Panel */}
-          <div className="relative w-72 max-w-[80%] bg-slate-900 text-white h-full shadow-2xl flex flex-col z-10 animate-fade-in">
-            {/* Drawer Header */}
-            <div className="p-6 border-b border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full overflow-hidden border border-white/30">
-                  {renderAvatar()}
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-white">
-                    {user?.user_metadata?.full_name || 'Alex Morgan'}
-                  </h3>
-                  <p className="text-[11px] text-slate-300 opacity-80">{user?.user_metadata?.student_id || 'STU102938'}</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setShowDrawer(false)}
-                className="text-white/70 hover:text-white p-1 rounded-lg"
-              >
-                <span className="material-symbols-outlined text-xl">close</span>
-              </button>
+            onClick={() => setCurrentView('dashboard')}
+            className="flex items-center gap-3 px-3 cursor-pointer group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+              <span className="material-symbols-outlined text-xl">school</span>
             </div>
-
-            {/* Navigation Items */}
-            <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-              {navItems.map((item) => {
-                const isActive = currentView === item.view || (item.view === 'subjects' && currentView === 'assignment-details');
-                return (
-                  <button
-                    key={item.view}
-                    onClick={() => {
-                      setCurrentView(item.view);
-                      setShowDrawer(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all cursor-pointer ${
-                      isActive 
-                        ? 'bg-slate-800 text-white font-bold shadow-md' 
-                        : 'text-slate-300 hover:bg-white/10 hover:text-white'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-xl">{item.icon}</span>
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-
-            {/* Drawer Footer */}
-            <div className="p-4 border-t border-white/10">
-              <button 
-                onClick={() => {
-                  setShowDrawer(false);
-                  logout();
-                }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-xs text-red-400 hover:bg-red-500/20 hover:text-red-100 transition-colors cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-lg">logout</span>
-                <span>Sign Out</span>
-              </button>
+            <div>
+              <h2 className="font-heading font-extrabold text-base text-slate-900 tracking-tight leading-tight">SCHOLAR</h2>
+              <p className="text-[10px] text-slate-400 font-mono tracking-wider">ACADEMIC TRACKER</p>
             </div>
           </div>
+
+          {/* Navigation Links */}
+          <nav className="space-y-1">
+            {navItems.map((item) => {
+              const isActive = currentView === item.view || (item.view === 'subjects' && currentView === 'assignment-details');
+              return (
+                <button
+                  key={item.view}
+                  onClick={() => setCurrentView(item.view)}
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all cursor-pointer ${
+                    isActive 
+                      ? 'bg-slate-900 text-white font-semibold shadow-sm' 
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-lg">{item.icon}</span>
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
         </div>
-      )}
 
-      {/* Slim Desktop Sidebar Rail (Hidden on Mobile) */}
-      <aside className="hidden md:flex fixed left-0 top-16 h-[calc(100vh-64px)] w-16 flex-col items-center py-6 bg-slate-900 text-white border-r border-slate-800 space-y-5 z-35 shadow-sm">
-        {navItems.slice(0, 5).map((item) => {
-          const isActive = currentView === item.view || (item.view === 'subjects' && currentView === 'assignment-details');
-          return (
-            <button
-              key={item.view}
-              onClick={() => setCurrentView(item.view)}
-              title={item.label}
-              className={`p-2.5 rounded-xl transition-all cursor-pointer ${
-                isActive 
-                  ? 'bg-slate-800 text-white shadow-md scale-105' 
-                  : 'text-slate-400 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
-            </button>
-          );
-        })}
-
-        <div className="mt-auto space-y-3">
-          <button 
-            onClick={() => setCurrentView('settings')}
-            title="Settings"
-            className={`p-2.5 rounded-xl transition-all cursor-pointer ${
-              currentView === 'settings' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:bg-white/10 hover:text-white'
+        {/* Bottom Quick Links (Profile & Settings) */}
+        <div className="space-y-1 pt-4 border-t border-slate-100">
+          <button
+            onClick={() => setCurrentView('profile')}
+            className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all cursor-pointer ${
+              currentView === 'profile' ? 'bg-slate-900 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
-            <span className="material-symbols-outlined text-[22px]">settings</span>
+            <span className="material-symbols-outlined text-lg">person</span>
+            <span>Profile</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentView('settings')}
+            className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all cursor-pointer ${
+              currentView === 'settings' ? 'bg-slate-900 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+          >
+            <span className="material-symbols-outlined text-lg">settings</span>
+            <span>Settings</span>
           </button>
         </div>
       </aside>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full z-45 border-t border-slate-200 bg-slate-900 text-white h-16 flex justify-around items-center">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-t border-slate-200 z-40 flex items-center justify-around px-2">
         {navItems.slice(0, 5).map((item) => {
           const isActive = currentView === item.view || (item.view === 'subjects' && currentView === 'assignment-details');
           return (
             <button
               key={item.view}
               onClick={() => setCurrentView(item.view)}
-              className={`flex flex-col items-center justify-center flex-1 h-full py-1 cursor-pointer transition-colors ${
-                isActive ? 'text-white font-bold' : 'text-slate-400'
+              className={`flex flex-col items-center justify-center p-1.5 transition-colors cursor-pointer ${
+                isActive ? 'text-slate-900 font-bold' : 'text-slate-400'
               }`}
             >
-              <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-              <span className="text-[10px] mt-0.5 leading-none">{item.label.split(' ')[0]}</span>
+              <span className="material-symbols-outlined text-xl">{item.icon}</span>
+              <span className="text-[10px] mt-0.5">{item.label.split(' ')[0]}</span>
             </button>
           );
         })}
@@ -445,4 +344,3 @@ export default function Navigation() {
     </>
   );
 }
-

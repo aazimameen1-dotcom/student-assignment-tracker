@@ -99,7 +99,7 @@ function App() {
       <Navigation />
 
       {/* Main content viewport */}
-      <div className="pt-16 pb-16 md:pb-0 md:pl-20 min-h-screen w-full transition-all duration-300">
+      <div className="pt-16 pb-16 md:pb-8 md:pl-64 min-h-screen w-full transition-all duration-300">
         <Suspense fallback={<PageFallback />}>
           {renderActiveView()}
         </Suspense>

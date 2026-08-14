@@ -1,284 +1,361 @@
-import { useContext, useState } from 'react';
+import { useState, useContext } from 'react';
 import { AppContext } from '../context/AppContext';
 
 export default function Settings() {
   const { 
     user, 
     logout, 
-    theme, 
-    setTheme, 
-    subjects, 
-    setCurrentView,
-    notificationsEnabled,
-    toggleNotifications
+    updateUserProfile, 
+    resetPasswordForEmail, 
+    tasks = [], 
+    enrolledSubjects = [] 
   } = useContext(AppContext);
 
-  const [showPersonalInfo, setShowPersonalInfo] = useState(false);
+  const [activeTab, setActiveTab] = useState('account');
+  const [saveStatus, setSaveStatus] = useState('');
+  
+  // Settings Form State
+  const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name || user?.user_metadata?.name || 'Alex Morgan');
+  const [email] = useState(user?.email || 'student@scholar.app');
+  const [targetGpa, setTargetGpa] = useState(user?.user_metadata?.target_gpa || '3.90');
+  const [defaultReminderDays, setDefaultReminderDays] = useState('2');
+  
+  // Toggle states
+  const [notifDeadlines, setNotifDeadlines] = useState(true);
+  const [notifDailyBrief, setNotifDailyBrief] = useState(true);
+  const [notifGroupActivity, setNotifGroupActivity] = useState(false);
+  const [emailDigest, setEmailDigest] = useState(true);
+  const [soundEffects, setSoundEffects] = useState(true);
 
-  // Helper for dynamic user avatar
-  const renderAvatar = () => {
-    const avatarCleared = user?.user_metadata?.avatar_cleared;
-    const avatarUrl = !avatarCleared && (user?.user_metadata?.custom_avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.photoURL);
-    if (avatarUrl) {
-      return (
-        <img 
-          alt={user?.user_metadata?.full_name || user?.user_metadata?.name || 'user profile'} 
-          className="w-24 h-24 rounded-full border-4 border-surface-container object-cover" 
-          src={avatarUrl}
-        />
-      );
+  const handleSavePreferences = async () => {
+    try {
+      if (updateUserProfile) {
+        await updateUserProfile({
+          full_name: displayName,
+          name: displayName,
+          target_gpa: targetGpa
+        });
+      }
+      setSaveStatus('Preferences saved successfully!');
+      setTimeout(() => setSaveStatus(''), 3000);
+    } catch (err) {
+      console.error('Failed to save settings:', err);
+      setSaveStatus('Failed to save preferences.');
     }
-    const nameToUse = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Guest User';
-    const initial = nameToUse ? nameToUse[0].toUpperCase() : 'G';
-    return (
-      <div className="w-24 h-24 rounded-full border-4 border-surface-container bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-3xl">
-        {initial}
-      </div>
-    );
   };
 
-  const activeSubjectsCount = subjects.filter(s => s.pendingCount > 0).length;
+  const handlePasswordReset = async () => {
+    if (!email) return;
+    try {
+      if (resetPasswordForEmail) {
+        await resetPasswordForEmail(email);
+        setSaveStatus(`Password reset email sent to ${email}`);
+        setTimeout(() => setSaveStatus(''), 4000);
+      }
+    } catch (err) {
+      console.error('Failed to send reset email:', err);
+      setSaveStatus('Failed to trigger reset email.');
+    }
+  };
+
+  const handleExportData = () => {
+    const exportPayload = {
+      exportDate: new Date().toISOString(),
+      user: { email, name: displayName },
+      subjects: enrolledSubjects,
+      tasks: tasks
+    };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `scholar_data_export_${new Date().toISOString().slice(0,10)}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  const tabs = [
+    { id: 'account', label: 'Account & Security', icon: 'shield_person' },
+    { id: 'academic', label: 'Academic Preferences', icon: 'school' },
+    { id: 'notifications', label: 'Notifications & Alerts', icon: 'notifications_active' },
+    { id: 'data', label: 'Data & Backup', icon: 'database' }
+  ];
 
   return (
-    <div className="animate-fade-in max-w-xl mx-auto px-margin-mobile py-8 text-left pb-24">
-      {/* Top Header Row (Back & Title) */}
-      <header className="flex items-center gap-4 mb-8">
-        <button 
-          onClick={() => setCurrentView('dashboard')}
-          aria-label="Go back"
-          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors cursor-pointer"
-        >
-          <span className="material-symbols-outlined text-primary text-[24px]">arrow_back</span>
-        </button>
-        <h2 className="font-headline text-headline-md font-bold text-primary">Settings</h2>
-      </header>
-
-      {/* Profile Header */}
-      <section className="py-6 flex flex-col items-center text-center border-b border-outline-variant mb-6">
-        <div className="relative mb-4">
-          {renderAvatar()}
-          <div className="absolute bottom-0 right-0 bg-primary p-1.5 rounded-full border-2 border-surface cursor-pointer hover:scale-105 active:scale-95 transition-transform">
-            <span className="material-symbols-outlined text-white text-[16px]">edit</span>
-          </div>
-        </div>
-        
-        <h3 className="font-headline text-headline-sm font-bold text-on-surface">
-          {user?.user_metadata?.full_name || user?.user_metadata?.name || 'Guest User'}
-        </h3>
-        <p className="font-body text-body-sm text-on-surface-variant mt-1">
-          {user?.email || 'guest@studytrack.demo'}
-        </p>
-        <p className="font-body text-[11px] text-on-surface-variant/70 mt-0.5">
-          {user?.user_metadata?.major && user?.user_metadata?.year 
-            ? `${user.user_metadata.major} • ${user.user_metadata.year}` 
-            : user?.user_metadata?.major || user?.user_metadata?.year || 'Academic Profile'}
-        </p>
-
-        <button 
-          onClick={() => setCurrentView('profile')}
-          className="mt-4 px-6 py-2 rounded-full border border-outline font-mono text-label-md text-primary hover:bg-primary/5 active:scale-[0.98] transition-all cursor-pointer"
-        >
-          View Profile
-        </button>
-      </section>
-
-      {/* Account Section */}
-      <div className="mb-6">
-        <h4 className="font-mono text-label-md text-on-surface-variant uppercase tracking-wider mb-2 ml-2">Account</h4>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant divide-y divide-outline-variant">
-          <div>
-            <div 
-              onClick={() => setShowPersonalInfo(!showPersonalInfo)}
-              className="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors cursor-pointer group"
-            >
-              <div className="flex items-center gap-4">
-                <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">person</span>
-                <div>
-                  <p className="font-body text-body-md font-semibold text-on-surface">Personal Information</p>
-                  <p className="font-body text-body-sm text-on-surface-variant">Email</p>
-                </div>
-              </div>
-              <span className="material-symbols-outlined text-outline">
-                {showPersonalInfo ? 'expand_less' : 'expand_more'}
-              </span>
-            </div>
-
-            {showPersonalInfo && (
-              <div className="p-4 bg-surface-container-low border-t border-outline-variant/30 space-y-4 text-left">
-                <div>
-                  <label className="block font-mono text-label-md text-on-surface-variant mb-1">Email (Account)</label>
-                  <input 
-                    type="email" 
-                    value={user?.email || ''} 
-                    disabled 
-                    className="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface-container-high text-on-surface-variant opacity-75 cursor-not-allowed text-sm font-body"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+    <div className="max-w-5xl mx-auto px-4 md:px-8 py-8 space-y-6 animate-fade-in text-left pb-20">
+      
+      {/* Page Header */}
+      <div>
+        <h2 className="font-heading text-2xl font-bold text-slate-900">Workspace Settings</h2>
+        <p className="text-xs text-slate-500 mt-0.5">Manage your scholar profile credentials, notification triggers, and data preferences.</p>
       </div>
 
-      {/* Academic Preferences */}
-      {(user?.user_metadata?.year || user?.user_metadata?.major || user?.user_metadata?.gpa || activeSubjectsCount > 0) && (
-        <div className="mb-6">
-          <h4 className="font-mono text-label-md text-on-surface-variant uppercase tracking-wider mb-2 ml-2">Academic</h4>
-          <div className="bg-surface-container-lowest rounded-xl border border-outline-variant divide-y divide-outline-variant">
-            {user?.user_metadata?.year && (
-              <div className="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors cursor-pointer group">
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">calendar_today</span>
-                  <div>
-                    <p className="font-body text-body-md font-semibold text-on-surface">Academic Year</p>
-                    <p className="font-body text-body-sm text-on-surface-variant">{user.user_metadata.year}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {user?.user_metadata?.major && (
-              <div className="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors cursor-pointer group">
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">school</span>
-                  <div>
-                    <p className="font-body text-body-md font-semibold text-on-surface">Major</p>
-                    <p className="font-body text-body-sm text-on-surface-variant">{user.user_metadata.major}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {user?.user_metadata?.gpa && (
-              <div className="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors cursor-pointer group">
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">insights</span>
-                  <div>
-                    <p className="font-body text-body-md font-semibold text-on-surface">GPA</p>
-                    <p className="font-body text-body-sm text-on-surface-variant">{user.user_metadata.gpa}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors cursor-pointer group" onClick={() => setCurrentView('subjects')}>
-              <div className="flex items-center gap-4">
-                <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">auto_stories</span>
-                <div>
-                  <p className="font-body text-body-md font-semibold text-on-surface">Course Load</p>
-                  <p className="font-body text-body-sm text-on-surface-variant">{activeSubjectsCount} Active Subjects</p>
-                </div>
-              </div>
-              <span className="material-symbols-outlined text-outline">chevron_right</span>
-            </div>
+      {/* Status banner */}
+      {saveStatus && (
+        <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-sm text-emerald-600">check_circle</span>
+            <span>{saveStatus}</span>
           </div>
+          <button onClick={() => setSaveStatus('')} className="text-emerald-600 hover:text-emerald-900">
+            <span className="material-symbols-outlined text-xs">close</span>
+          </button>
         </div>
       )}
 
-      {/* App Preferences */}
-      <div className="mb-6">
-        <h4 className="font-mono text-label-md text-on-surface-variant uppercase tracking-wider mb-2 ml-2">App Preferences</h4>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant divide-y divide-outline-variant">
-          {/* Deadline Reminders Toggle */}
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-4">
-              <span className="material-symbols-outlined text-on-surface-variant">notifications_active</span>
+      {/* Layout: Sidebar Tabs + Content Area */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+        
+        {/* Left Settings Navigation Rail */}
+        <div className="col-span-1 md:col-span-4 app-card p-2 space-y-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium text-xs transition-all cursor-pointer text-left ${
+                activeTab === tab.id 
+                  ? 'bg-slate-900 text-white font-semibold shadow-sm' 
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+            >
+              <span className="material-symbols-outlined text-lg">{tab.icon}</span>
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Right Settings Content Card */}
+        <div className="col-span-1 md:col-span-8 app-card p-6 md:p-8 space-y-6">
+          
+          {/* TAB 1: Account & Security */}
+          {activeTab === 'account' && (
+            <div className="space-y-6 animate-fade-in">
               <div>
-                <p className="font-body text-body-md font-semibold text-on-surface">Deadline Reminders</p>
-                <p className="font-body text-body-sm text-on-surface-variant">24h & 1h before due</p>
+                <h3 className="font-heading text-base font-bold text-slate-900">Account Credentials</h3>
+                <p className="text-xs text-slate-500">Update your primary display name and login parameters.</p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Scholar Full Name</label>
+                  <input 
+                    type="text" 
+                    value={displayName} 
+                    onChange={(e) => setDisplayName(e.target.value)} 
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Registered University Email</label>
+                  <input 
+                    type="email" 
+                    value={email} 
+                    disabled 
+                    className="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-500 cursor-not-allowed"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-1 block font-mono">Managed securely through Supabase Auth</span>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900">Password & Security</h4>
+                    <p className="text-[11px] text-slate-500">Send a password reset email to your university address.</p>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={handlePasswordReset}
+                    className="app-btn-secondary text-xs"
+                  >
+                    Reset Password
+                  </button>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-rose-600">Sign Out</h4>
+                    <p className="text-[11px] text-slate-500">Safely log out of your current session.</p>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={logout}
+                    className="px-4 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 font-semibold text-xs rounded-xl border border-rose-200 cursor-pointer transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </div>
               </div>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                type="checkbox"
-                checked={notificationsEnabled}
-                onChange={toggleNotifications}
-                className="sr-only"
-              />
-              <div className={`w-11 h-6 rounded-full transition-colors flex items-center px-1 ${
-                notificationsEnabled ? 'bg-primary' : 'bg-outline-variant'
-              }`}>
-                <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
-                  notificationsEnabled ? 'translate-x-5' : 'translate-x-0'
-                }`}></div>
+          )}
+
+          {/* TAB 2: Academic Preferences */}
+          {activeTab === 'academic' && (
+            <div className="space-y-6 animate-fade-in">
+              <div>
+                <h3 className="font-heading text-base font-bold text-slate-900">Academic Parameters</h3>
+                <p className="text-xs text-slate-500">Configure your target GPA, grading standards, and submission reminders.</p>
               </div>
-            </label>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Target Semester GPA</label>
+                  <input 
+                    type="text" 
+                    value={targetGpa} 
+                    onChange={(e) => setTargetGpa(e.target.value)} 
+                    placeholder="3.90"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-1 block">Used to compute SGPA trajectory on your dashboard</span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Default Deadline Alert Lead Time</label>
+                  <select 
+                    value={defaultReminderDays}
+                    onChange={(e) => setDefaultReminderDays(e.target.value)}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+                  >
+                    <option value="1">24 Hours Before Deadline</option>
+                    <option value="2">48 Hours (2 Days) Before Deadline</option>
+                    <option value="3">3 Days Before Deadline</option>
+                    <option value="7">1 Week Before Deadline</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900">Audio Feedback</h4>
+                    <p className="text-[11px] text-slate-500">Play subtle confirmation chimes when completing tasks</p>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={soundEffects} 
+                    onChange={(e) => setSoundEffects(e.target.checked)}
+                    className="w-4 h-4 rounded text-slate-900 focus:ring-slate-900 cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: Notifications */}
+          {activeTab === 'notifications' && (
+            <div className="space-y-6 animate-fade-in">
+              <div>
+                <h3 className="font-heading text-base font-bold text-slate-900">Notification Triggers</h3>
+                <p className="text-xs text-slate-500">Choose when and how Scholar notifies you of upcoming deadlines.</p>
+              </div>
+
+              <div className="space-y-3">
+                <label className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-colors cursor-pointer">
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">Critical Deadline Alerts</span>
+                    <span className="text-[11px] text-slate-500">Receive urgent notices when tasks are due within 24 hours</span>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={notifDeadlines} 
+                    onChange={(e) => setNotifDeadlines(e.target.checked)}
+                    className="w-4 h-4 rounded text-slate-900 focus:ring-slate-900 cursor-pointer"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-colors cursor-pointer">
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">Daily Morning Briefing</span>
+                    <span className="text-[11px] text-slate-500">Summary of today's classes, meetings, and pending milestones</span>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={notifDailyBrief} 
+                    onChange={(e) => setNotifDailyBrief(e.target.checked)}
+                    className="w-4 h-4 rounded text-slate-900 focus:ring-slate-900 cursor-pointer"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-colors cursor-pointer">
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">Study Group Activity</span>
+                    <span className="text-[11px] text-slate-500">Notices when peer study sessions or code reviews begin</span>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={notifGroupActivity} 
+                    onChange={(e) => setNotifGroupActivity(e.target.checked)}
+                    className="w-4 h-4 rounded text-slate-900 focus:ring-slate-900 cursor-pointer"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-colors cursor-pointer">
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">Weekly Email Digest</span>
+                    <span className="text-[11px] text-slate-500">Sunday evening progress report sent to your university inbox</span>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={emailDigest} 
+                    onChange={(e) => setEmailDigest(e.target.checked)}
+                    className="w-4 h-4 rounded text-slate-900 focus:ring-slate-900 cursor-pointer"
+                  />
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: Data & Backup */}
+          {activeTab === 'data' && (
+            <div className="space-y-6 animate-fade-in">
+              <div>
+                <h3 className="font-heading text-base font-bold text-slate-900">Cloud Sync & Data Portability</h3>
+                <p className="text-xs text-slate-500">Manage Supabase cloud database synchronization and backup your records.</p>
+              </div>
+
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-base">cloud_done</span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900">Supabase Cloud Sync</h4>
+                    <p className="text-[11px] text-slate-500">All tasks and enrolled subjects are backed up in real time.</p>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800">
+                  CONNECTED
+                </span>
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <h4 className="text-xs font-bold text-slate-900">Export Records</h4>
+                <p className="text-xs text-slate-500">Download a complete JSON snapshot of your curriculum, deliverables, and notes.</p>
+                <button 
+                  type="button" 
+                  onClick={handleExportData}
+                  className="app-btn-secondary text-xs"
+                >
+                  <span className="material-symbols-outlined text-base">download</span>
+                  <span>Export Complete Dataset (.JSON)</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Global Save Button for active form settings */}
+          <div className="pt-6 border-t border-slate-100 flex justify-end">
+            <button 
+              type="button" 
+              onClick={handleSavePreferences}
+              className="app-btn-primary text-xs"
+            >
+              <span className="material-symbols-outlined text-base">save</span>
+              <span>Save Workspace Preferences</span>
+            </button>
           </div>
 
-          {/* Theme Switcher */}
-          <div className="p-4">
-            <div className="flex items-center gap-4 mb-4">
-              <span className="material-symbols-outlined text-on-surface-variant">palette</span>
-              <p className="font-body text-body-md font-semibold text-on-surface">Appearance</p>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-2">
-              <button 
-                onClick={() => setTheme('light')}
-                className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-all cursor-pointer ${
-                  theme === 'light' 
-                    ? 'border-primary bg-surface-container-low text-primary' 
-                    : 'border-outline-variant hover:bg-surface-container-low text-on-surface-variant'
-                }`}
-              >
-                <span className="material-symbols-outlined">light_mode</span>
-                <span className="font-mono text-[11px]">Light</span>
-              </button>
-              
-              <button 
-                onClick={() => setTheme('dark')}
-                className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-all cursor-pointer ${
-                  theme === 'dark' 
-                    ? 'border-primary bg-surface-container-low text-primary font-bold' 
-                    : 'border-outline-variant hover:bg-surface-container-low text-on-surface-variant'
-                }`}
-              >
-                <span className="material-symbols-outlined">dark_mode</span>
-                <span className="font-mono text-[11px]">Dark</span>
-              </button>
-              
-              <button 
-                onClick={() => setTheme('system')}
-                className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-all cursor-pointer ${
-                  theme === 'system' 
-                    ? 'border-primary bg-surface-container-low text-primary font-bold' 
-                    : 'border-outline-variant hover:bg-surface-container-low text-on-surface-variant'
-                }`}
-              >
-                <span className="material-symbols-outlined">settings_brightness</span>
-                <span className="font-mono text-[11px]">System</span>
-              </button>
-            </div>
-          </div>
         </div>
+
       </div>
-
-      {/* Support Section */}
-      <div className="mb-8">
-        <h4 className="font-mono text-label-md text-on-surface-variant uppercase tracking-wider mb-2 ml-2">Support & About</h4>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant divide-y divide-outline-variant">
-          <div className="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors cursor-pointer">
-            <div className="flex items-center gap-4">
-              <span className="material-symbols-outlined text-on-surface-variant">info</span>
-              <p className="font-body text-body-md font-semibold text-on-surface">About StudyTrack</p>
-            </div>
-            <p className="font-mono text-label-md text-outline">v2.4.0</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Sign Out Button */}
-      <button 
-        onClick={logout}
-        className="w-full py-4 rounded-xl border border-error text-error font-headline text-headline-sm font-bold hover:bg-error-container/10 active:scale-[0.98] transition-all cursor-pointer text-center"
-      >
-        Sign Out
-      </button>
-
-      <p className="text-center mt-6 font-body text-body-sm text-on-surface-variant/40 italic">
-        Designed for Academic Excellence
-      </p>
-
     </div>
   );
 }

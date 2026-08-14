@@ -1,337 +1,318 @@
-import { useContext, useState } from 'react';
+import { useState, useContext } from 'react';
 import { AppContext } from '../context/AppContext';
 
+// Modern clean avatar presets
+const AVATAR_PRESETS = [
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=face',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face',
+  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face',
+  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face',
+  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face'
+];
+
 export default function Profile() {
-  const { user, setCurrentView, updateUserProfile } = useContext(AppContext);
+  const { user, updateUserProfile, setCurrentView, enrolledSubjects = [], tasks = [] } = useContext(AppContext);
 
   const [isEditing, setIsEditing] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Profile data states based on PDF wireframe pages 3 & 4
-  const [name, setName] = useState(user?.user_metadata?.full_name || 'Alex Morgan');
-  const [studentId, setStudentId] = useState(user?.user_metadata?.student_id || 'STU102938');
-  const [bio, setBio] = useState(
-    user?.user_metadata?.bio || 
-    'Computer Science student with a growing interest in web design and literature. Currently balancing coursework across programming, writing, and design, aiming to build practical skills in each. Always working toward the next deadline.'
+  // Form State initialized from user metadata
+  const [name, setName] = useState(user?.user_metadata?.full_name || user?.user_metadata?.name || 'Alex Morgan');
+  const [studentId, setStudentId] = useState(user?.user_metadata?.student_id || 'STU-2026-9041');
+  const [institution, setInstitution] = useState(user?.user_metadata?.institution || 'Faculty of Computer Science & Design');
+  const [degree, setDegree] = useState(user?.user_metadata?.degree || 'B.S. in Software Systems & UI/UX');
+  const [semester, setSemester] = useState(user?.user_metadata?.semester || 'Semester 4 (Spring 2026)');
+  const [bio, setBio] = useState(user?.user_metadata?.bio || 'Focused on human-computer interaction, distributed systems, and modern web architecture. Currently maintaining high academic standing while researching intelligent workflows.');
+  const [email, setEmail] = useState(user?.email || 'alex.morgan@university.edu');
+  const [avatarUrl, setAvatarUrl] = useState(
+    user?.user_metadata?.custom_avatar_url || 
+    user?.user_metadata?.avatar_url || 
+    AVATAR_PRESETS[0]
   );
+  const [githubUrl, setGithubUrl] = useState(user?.user_metadata?.github_url || 'https://github.com/scholar-student');
+  const [targetGpa, setTargetGpa] = useState(user?.user_metadata?.target_gpa || '3.90');
 
-  const [institution, setInstitution] = useState(user?.user_metadata?.institution || 'State University of Technology');
-  const [semester, setSemester] = useState(user?.user_metadata?.semester || '2nd');
-  const [program, setProgram] = useState(user?.user_metadata?.program || 'BS Computer Science');
-  const [yearOfStudy, setYearOfStudy] = useState(user?.user_metadata?.year_of_study || '2nd Year');
+  const completedTasks = tasks.filter(t => t.status === 'completed').length;
 
-  const [uniMail, setUniMail] = useState(user?.user_metadata?.uni_mail || 'alex.m@university.edu');
-  const [personalMail, setPersonalMail] = useState(user?.email || 'alex.morgan@example.com');
-  const [phone, setPhone] = useState(user?.user_metadata?.phone || '+1 (555) 019-2834');
-
-  const [link1, setLink1] = useState(user?.user_metadata?.link1 || 'https://github.com/alexmorgan');
-  const [link2, setLink2] = useState(user?.user_metadata?.link2 || 'https://linkedin.com/in/alexmorgan');
-
-  const handleSaveProfile = async (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     try {
       if (updateUserProfile) {
         await updateUserProfile({
           full_name: name,
+          name: name,
           student_id: studentId,
-          bio,
-          institution,
-          semester,
-          program,
-          year_of_study: yearOfStudy,
-          uni_mail: uniMail,
-          phone,
-          link1,
-          link2
+          institution: institution,
+          degree: degree,
+          semester: semester,
+          bio: bio,
+          custom_avatar_url: avatarUrl,
+          github_url: githubUrl,
+          target_gpa: targetGpa
         });
       }
       setIsEditing(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
-      console.error(err);
-      alert('Failed to save profile changes.');
+      console.error('Failed to update profile:', err);
     }
   };
 
   return (
-    <div className="animate-fade-in max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-6 text-left pb-24 select-none">
+    <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-6 animate-fade-in text-left pb-16">
       
-      {/* Top Controls / Mode Indicator */}
-      <div className="flex items-center justify-between bg-slate-900 text-white p-4 rounded-2xl shadow-sm">
-        <h2 className="font-headline text-xl font-bold">
-          {isEditing ? 'Edit Profile' : 'Your Profile'}
-        </h2>
-        <button 
-          onClick={() => setIsEditing(!isEditing)}
-          className="bg-white text-slate-900 px-4 py-1.5 rounded-xl font-bold text-xs hover:bg-slate-100 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-        >
-          <span className="material-symbols-outlined text-base">{isEditing ? 'check' : 'edit'}</span>
-          <span>{isEditing ? 'Save Mode' : 'Edit Profile'}</span>
-        </button>
-      </div>
+      {/* Toast Notification */}
+      {saveSuccess && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl flex items-center justify-between text-xs font-semibold">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-base text-emerald-600">check_circle</span>
+            <span>Profile successfully updated and synced with your account!</span>
+          </div>
+          <button onClick={() => setSaveSuccess(false)} className="text-emerald-600 hover:text-emerald-900">
+            <span className="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+      )}
 
-      {/* Main Profile Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-        
-        {/* Left Sidebar Card */}
-        <div className="col-span-1 md:col-span-4 bg-slate-900 text-white rounded-3xl p-6 shadow-md space-y-6 text-center md:text-left flex flex-col items-center md:items-start">
-          
-          {/* Profile Picture */}
-          <div className="relative group my-2">
-            <div className="w-40 h-40 rounded-full border-4 border-slate-700 overflow-hidden bg-slate-800 shadow-xl flex items-center justify-center">
-              <img 
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&h=300&fit=crop&crop=face" 
-                alt="Profile Avatar" 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            {isEditing && (
-              <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white cursor-pointer opacity-90">
-                <span className="material-symbols-outlined text-3xl">photo_camera</span>
+      {/* Main Profile Header Hero Card */}
+      <div className="app-card p-6 md:p-8 relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
+            {/* Avatar with edit overlay */}
+            <div className="relative group">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-slate-100 ring-4 ring-slate-100 shadow-md flex items-center justify-center">
+                <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
               </div>
-            )}
-          </div>
-
-          <div className="w-full text-center md:text-left">
-            <h3 className="font-headline text-2xl font-bold text-white">{name}</h3>
-            <p className="text-xs text-slate-300 opacity-80 mt-0.5 font-mono">{studentId}</p>
-          </div>
-
-          {/* About Section */}
-          <div className="w-full bg-slate-800 text-white p-5 rounded-2xl border border-slate-700 space-y-2 text-xs leading-relaxed">
-            <div className="flex justify-between items-center text-white font-bold mb-1">
-              <span>About</span>
-              {isEditing && <span className="material-symbols-outlined text-sm">edit</span>}
             </div>
-            {isEditing ? (
-              <textarea 
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                rows={5}
-                className="w-full p-2 bg-slate-900 rounded-xl border border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-slate-400 text-white"
-              />
-            ) : (
-              <p className="text-slate-300">{bio}</p>
-            )}
+
+            {/* Profile Info */}
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                <h2 className="font-heading text-2xl font-bold text-slate-900">{name}</h2>
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                  {studentId}
+                </span>
+              </div>
+              <p className="text-xs font-medium text-slate-600">{degree}</p>
+              <p className="text-xs text-slate-400 font-mono">{institution} • {semester}</p>
+            </div>
           </div>
 
-          {/* Left Action Buttons */}
-          <div className="w-full space-y-2 pt-2">
+          {/* Action Buttons */}
+          <div className="flex items-center justify-center sm:justify-end gap-3">
             <button 
               onClick={() => setIsEditing(!isEditing)}
-              className="w-full py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer border border-white/10"
+              className={isEditing ? 'app-btn-primary' : 'app-btn-secondary'}
             >
-              <span className="material-symbols-outlined text-sm">edit</span>
-              <span>{isEditing ? 'Save Profile' : 'Edit Profile'}</span>
+              <span className="material-symbols-outlined text-base">{isEditing ? 'save' : 'edit'}</span>
+              <span>{isEditing ? 'Save Changes' : 'Edit Profile'}</span>
             </button>
             <button 
               onClick={() => setCurrentView('settings')}
-              className="w-full py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer border border-white/10"
+              className="p-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+              title="Settings"
             >
-              <span className="material-symbols-outlined text-sm">settings</span>
-              <span>Settings</span>
+              <span className="material-symbols-outlined text-base">settings</span>
             </button>
           </div>
-
         </div>
 
-        {/* Right Content Area Cards */}
-        <div className="col-span-1 md:col-span-8 space-y-6">
-          
-          {/* Card 1: Core Identity */}
-          <div className="bg-slate-100 p-6 rounded-2xl space-y-4 shadow-sm border border-slate-200">
-            <div className="bg-slate-900 text-white px-4 py-1.5 rounded-xl font-bold text-xs inline-block">
-              Core Identity
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200 flex justify-between items-center">
-                <div>
-                  <span className="text-slate-400 font-semibold block text-[10px] uppercase">Name</span>
-                  {isEditing ? (
-                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="font-bold text-slate-900 border-b border-slate-400 focus:outline-none" />
-                  ) : (
-                    <span className="font-bold text-slate-900">{name}</span>
-                  )}
-                </div>
-                {isEditing && <span className="material-symbols-outlined text-slate-400 text-sm">edit</span>}
-              </div>
-
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200 flex justify-between items-center">
-                <div>
-                  <span className="text-slate-400 font-semibold block text-[10px] uppercase">Student ID</span>
-                  {isEditing ? (
-                    <input type="text" value={studentId} onChange={(e) => setStudentId(e.target.value)} className="font-bold text-slate-900 border-b border-slate-400 focus:outline-none" />
-                  ) : (
-                    <span className="font-bold text-slate-900">{studentId}</span>
-                  )}
-                </div>
-                {isEditing && <span className="material-symbols-outlined text-slate-400 text-sm">edit</span>}
-              </div>
+        {/* Avatar Selection Drawer in Editing Mode */}
+        {isEditing && (
+          <div className="mt-6 pt-6 border-t border-slate-100 space-y-3">
+            <label className="block text-xs font-bold text-slate-700 font-heading">Choose Avatar Preset</label>
+            <div className="flex flex-wrap gap-3 items-center">
+              {AVATAR_PRESETS.map((preset, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setAvatarUrl(preset)}
+                  className={`w-12 h-12 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                    avatarUrl === preset ? 'border-slate-900 ring-2 ring-slate-900/20 scale-105' : 'border-transparent opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  <img src={preset} alt={`Avatar ${idx + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
             </div>
           </div>
+        )}
+      </div>
 
-          {/* Card 2: Academic Information */}
-          <div className="bg-slate-100 p-6 rounded-2xl space-y-4 shadow-sm border border-slate-200">
-            <div className="bg-slate-900 text-white px-4 py-1.5 rounded-xl font-bold text-xs inline-block">
-              Academic Information
+      {/* Academic Highlights Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="app-card p-4 space-y-1">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-[11px] font-mono font-semibold uppercase">Current SGPA</span>
+            <span className="material-symbols-outlined text-base">grade</span>
+          </div>
+          <p className="font-heading text-2xl font-bold text-slate-900">3.84</p>
+          <p className="text-[10px] text-emerald-600 font-semibold flex items-center gap-0.5">
+            <span className="material-symbols-outlined text-xs">trending_up</span> Top 5% standing
+          </p>
+        </div>
+
+        <div className="app-card p-4 space-y-1">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-[11px] font-mono font-semibold uppercase">Target GPA</span>
+            <span className="material-symbols-outlined text-base">flag</span>
+          </div>
+          <p className="font-heading text-2xl font-bold text-slate-900">{targetGpa}</p>
+          <p className="text-[10px] text-slate-500">Target for 2026</p>
+        </div>
+
+        <div className="app-card p-4 space-y-1">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-[11px] font-mono font-semibold uppercase">Enrolled Courses</span>
+            <span className="material-symbols-outlined text-base">auto_stories</span>
+          </div>
+          <p className="font-heading text-2xl font-bold text-slate-900">{enrolledSubjects.length || 6}</p>
+          <p className="text-[10px] text-slate-500">18 total credits</p>
+        </div>
+
+        <div className="app-card p-4 space-y-1">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-[11px] font-mono font-semibold uppercase">Completed Tasks</span>
+            <span className="material-symbols-outlined text-base">task_alt</span>
+          </div>
+          <p className="font-heading text-2xl font-bold text-slate-900">{completedTasks}</p>
+          <p className="text-[10px] text-blue-600 font-semibold">{tasks.length} total assigned</p>
+        </div>
+      </div>
+
+      {/* Main Details Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left 2 Cols: Academic Bio & Profile Information */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="app-card p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-heading text-sm font-bold text-slate-900">Academic Summary & Research Interests</h3>
+              <span className="text-slate-400 text-xs font-mono">Overview</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200 flex justify-between items-center col-span-1 md:col-span-2">
+            {isEditing ? (
+              <div className="space-y-4">
                 <div>
-                  <span className="text-slate-400 font-semibold block text-[10px] uppercase">Institution</span>
-                  {isEditing ? (
-                    <input type="text" value={institution} onChange={(e) => setInstitution(e.target.value)} className="font-bold text-slate-900 border-b border-slate-400 focus:outline-none w-full" />
-                  ) : (
-                    <span className="font-bold text-slate-900">{institution}</span>
-                  )}
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+                  <input 
+                    type="text" 
+                    value={name} 
+                    onChange={(e) => setName(e.target.value)} 
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+                  />
                 </div>
-                {isEditing && <span className="material-symbols-outlined text-slate-400 text-sm">edit</span>}
-              </div>
 
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200 flex justify-between items-center">
                 <div>
-                  <span className="text-slate-400 font-semibold block text-[10px] uppercase">Current Semester</span>
-                  {isEditing ? (
-                    <input type="text" value={semester} onChange={(e) => setSemester(e.target.value)} className="font-bold text-slate-900 border-b border-slate-400 focus:outline-none" />
-                  ) : (
-                    <span className="font-bold text-slate-900">{semester}</span>
-                  )}
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Degree & Major</label>
+                  <input 
+                    type="text" 
+                    value={degree} 
+                    onChange={(e) => setDegree(e.target.value)} 
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+                  />
                 </div>
-                {isEditing && <span className="material-symbols-outlined text-slate-400 text-sm">edit</span>}
-              </div>
 
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200 flex justify-between items-center">
                 <div>
-                  <span className="text-slate-400 font-semibold block text-[10px] uppercase">Program</span>
-                  {isEditing ? (
-                    <input type="text" value={program} onChange={(e) => setProgram(e.target.value)} className="font-bold text-slate-900 border-b border-slate-400 focus:outline-none" />
-                  ) : (
-                    <span className="font-bold text-slate-900">{program}</span>
-                  )}
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Academic Statement & Bio</label>
+                  <textarea 
+                    rows={4} 
+                    value={bio} 
+                    onChange={(e) => setBio(e.target.value)} 
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
+                  />
                 </div>
-                {isEditing && <span className="material-symbols-outlined text-slate-400 text-sm">edit</span>}
-              </div>
 
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200 flex justify-between items-center col-span-1 md:col-span-2">
-                <div>
-                  <span className="text-slate-400 font-semibold block text-[10px] uppercase">Year of Study</span>
-                  {isEditing ? (
-                    <input type="text" value={yearOfStudy} onChange={(e) => setYearOfStudy(e.target.value)} className="font-bold text-slate-900 border-b border-slate-400 focus:outline-none" />
-                  ) : (
-                    <span className="font-bold text-slate-900">{yearOfStudy}</span>
-                  )}
+                <div className="flex justify-end gap-3 pt-2">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsEditing(false)} 
+                    className="app-btn-secondary text-xs"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={handleSave} 
+                    className="app-btn-primary text-xs"
+                  >
+                    Save Changes
+                  </button>
                 </div>
-                {isEditing && <span className="material-symbols-outlined text-slate-400 text-sm">edit</span>}
               </div>
-            </div>
+            ) : (
+              <p className="text-xs text-slate-600 leading-relaxed">
+                {bio}
+              </p>
+            )}
           </div>
 
-          {/* Card 3: Contact Details */}
-          <div className="assignify-card-lavender p-6 rounded-2xl space-y-4 shadow-sm">
-            <div className="bg-[#231f5c] text-white px-4 py-1.5 rounded-xl font-bold text-xs inline-block">
-              Contact Details
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div className="bg-white p-3.5 rounded-xl border border-indigo-100 flex justify-between items-center">
-                <div>
-                  <span className="text-slate-400 font-semibold block text-[10px] uppercase">University Mail</span>
-                  {isEditing ? (
-                    <input type="email" value={uniMail} onChange={(e) => setUniMail(e.target.value)} className="font-bold text-slate-900 border-b border-purple-400 focus:outline-none w-full" />
-                  ) : (
-                    <span className="font-bold text-slate-900">{uniMail}</span>
-                  )}
-                </div>
-                {isEditing && <span className="material-symbols-outlined text-slate-400 text-sm">edit</span>}
-              </div>
-
-              <div className="bg-white p-3.5 rounded-xl border border-indigo-100 flex justify-between items-center">
-                <div>
-                  <span className="text-slate-400 font-semibold block text-[10px] uppercase">Personal Mail</span>
-                  {isEditing ? (
-                    <input type="email" value={personalMail} onChange={(e) => setPersonalMail(e.target.value)} className="font-bold text-slate-900 border-b border-purple-400 focus:outline-none w-full" />
-                  ) : (
-                    <span className="font-bold text-slate-900">{personalMail}</span>
-                  )}
-                </div>
-                {isEditing && <span className="material-symbols-outlined text-slate-400 text-sm">edit</span>}
-              </div>
-
-              <div className="bg-white p-3.5 rounded-xl border border-indigo-100 flex justify-between items-center">
-                <div>
-                  <span className="text-slate-400 font-semibold block text-[10px] uppercase">Contact Number</span>
-                  {isEditing ? (
-                    <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} className="font-bold text-slate-900 border-b border-purple-400 focus:outline-none w-full" />
-                  ) : (
-                    <span className="font-bold text-slate-900">{phone}</span>
-                  )}
-                </div>
-                {isEditing && <span className="material-symbols-outlined text-slate-400 text-sm">edit</span>}
-              </div>
-            </div>
-          </div>
-
-          {/* Card 4: Other Links */}
-          <div className="assignify-card-lavender p-6 rounded-2xl space-y-4 shadow-sm">
-            <div className="bg-[#231f5c] text-white px-4 py-1.5 rounded-xl font-bold text-xs inline-block">
-              Other Links
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div className="bg-white p-3.5 rounded-xl border border-indigo-100 flex justify-between items-center">
-                <div className="w-full">
-                  <span className="text-slate-400 font-semibold block text-[10px] uppercase">Link 1</span>
-                  {isEditing ? (
-                    <input type="text" value={link1} onChange={(e) => setLink1(e.target.value)} className="font-bold text-slate-900 border-b border-purple-400 focus:outline-none w-full" />
-                  ) : (
-                    <a href={link1} target="_blank" rel="noreferrer" className="font-bold text-purple-700 hover:underline">
-                      {link1 || 'Not specified'}
-                    </a>
-                  )}
-                </div>
-                {isEditing && <span className="material-symbols-outlined text-slate-400 text-sm">edit</span>}
-              </div>
-
-              <div className="bg-white p-3.5 rounded-xl border border-indigo-100 flex justify-between items-center">
-                <div className="w-full">
-                  <span className="text-slate-400 font-semibold block text-[10px] uppercase">Link 2</span>
-                  {isEditing ? (
-                    <input type="text" value={link2} onChange={(e) => setLink2(e.target.value)} className="font-bold text-slate-900 border-b border-purple-400 focus:outline-none w-full" />
-                  ) : (
-                    <a href={link2} target="_blank" rel="noreferrer" className="font-bold text-purple-700 hover:underline">
-                      {link2 || 'Not specified'}
-                    </a>
-                  )}
-                </div>
-                {isEditing && <span className="material-symbols-outlined text-slate-400 text-sm">edit</span>}
-              </div>
-            </div>
-          </div>
-
-          {/* Form Submit Bar when in Edit Mode */}
-          {isEditing && (
-            <div className="flex gap-4 pt-2">
+          {/* Enrolled Courses Summary */}
+          <div className="app-card p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-heading text-sm font-bold text-slate-900">Current Semester Curriculum</h3>
               <button 
-                type="button" 
-                onClick={() => setIsEditing(false)}
-                className="flex-1 py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs transition-all cursor-pointer"
+                onClick={() => setCurrentView('subjects')} 
+                className="text-xs text-blue-600 hover:underline font-semibold"
               >
-                Cancel
-              </button>
-              <button 
-                type="button" 
-                onClick={handleSaveProfile}
-                className="flex-1 py-3 bg-[#231f5c] hover:bg-purple-900 text-white font-bold rounded-xl text-xs transition-all shadow cursor-pointer"
-              >
-                Save Profile Changes
+                View Details
               </button>
             </div>
-          )}
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {enrolledSubjects.map((sub) => (
+                <div key={sub.code} className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span className="font-mono text-[10px] font-bold text-slate-500">{sub.code}</span>
+                    <p className="text-xs font-bold text-slate-900 mt-0.5">{sub.name}</p>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-slate-700 bg-white px-2 py-1 rounded-md border border-slate-200">
+                    3 CR
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right 1 Col: Account & Metadata */}
+        <div className="space-y-6">
+          <div className="app-card p-6 space-y-4">
+            <h3 className="font-heading text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">
+              Contact & Credentials
+            </h3>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <span className="text-[10px] uppercase font-mono font-semibold text-slate-400 block">Primary University Email</span>
+                <p className="font-medium text-slate-900 mt-0.5">{email}</p>
+              </div>
+
+              <div>
+                <span className="text-[10px] uppercase font-mono font-semibold text-slate-400 block">Repository / Portfolio</span>
+                <a 
+                  href={githubUrl} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="font-medium text-blue-600 hover:underline mt-0.5 block truncate"
+                >
+                  {githubUrl}
+                </a>
+              </div>
+
+              <div>
+                <span className="text-[10px] uppercase font-mono font-semibold text-slate-400 block">Student Identity Verification</span>
+                <span className="inline-flex items-center gap-1 mt-1 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 font-semibold text-[11px] border border-emerald-200">
+                  <span className="material-symbols-outlined text-xs">verified</span> Active Registered Student
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
-
     </div>
   );
 }
