@@ -69,7 +69,7 @@ export default function Settings() {
       console.error('Failed to send reset email:', err);
       setResetFeedback({
         type: 'error',
-        message: err.message || 'Failed to send reset email. Supabase allows 1 reset per minute.'
+        message: err.message || 'Failed to send reset email. Rate limit: 1 reset allowed per minute.'
       });
     } finally {
       setIsSendingReset(false);
@@ -174,7 +174,7 @@ export default function Settings() {
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-400"
                   />
                   <span className="text-[10px] text-slate-400 mt-1 block font-mono">
-                    {user?.email ? `Current Account Email: ${user.email}` : 'Managed securely via Supabase Auth'}
+                    {user?.email ? `Current Account Email: ${user.email}` : 'Managed securely via Encrypted Cloud Auth'}
                   </span>
                 </div>
 
@@ -183,7 +183,7 @@ export default function Settings() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <h4 className="text-xs font-bold text-slate-900">Password Recovery</h4>
-                      <p className="text-[11px] text-slate-500">Send an official Supabase password reset link to your email.</p>
+                      <p className="text-[11px] text-slate-500">Send an official password reset link to your registered email.</p>
                     </div>
                     <button 
                       type="button" 
@@ -349,7 +349,7 @@ export default function Settings() {
             <div className="space-y-6 animate-fade-in">
               <div>
                 <h3 className="font-heading text-base font-bold text-slate-900">Cloud Sync & Data Portability</h3>
-                <p className="text-xs text-slate-500">Manage Supabase cloud database synchronization and backup your records.</p>
+                <p className="text-xs text-slate-500">Manage encrypted cloud database synchronization and backup your records.</p>
               </div>
 
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
@@ -358,7 +358,7 @@ export default function Settings() {
                     <span className="material-symbols-outlined text-base">cloud_done</span>
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">Supabase Cloud Sync</h4>
+                    <h4 className="text-xs font-bold text-slate-900">Encrypted Cloud Sync</h4>
                     <p className="text-[11px] text-slate-500">All tasks and enrolled subjects are backed up in real time.</p>
                   </div>
                 </div>
@@ -383,7 +383,7 @@ export default function Settings() {
               {/* Cache Management */}
               <div className="pt-4 border-t border-slate-100 space-y-3">
                 <h4 className="text-xs font-bold text-slate-900">Cache Management</h4>
-                <p className="text-xs text-slate-500">Force clear temporary local browser storage and refresh active data from Supabase.</p>
+                <p className="text-xs text-slate-500">Force clear temporary local browser storage and refresh active data from cloud storage.</p>
                 <button 
                   type="button" 
                   onClick={() => {

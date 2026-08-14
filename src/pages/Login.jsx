@@ -167,13 +167,13 @@ export default function Login() {
             Structure your coursework. Elevate your GPA.
           </h1>
           <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-            All your syllabus requirements, project milestones, and exam dates synchronized with live Supabase cloud storage.
+            All your syllabus requirements, project milestones, and exam dates synchronized with live encrypted cloud storage.
           </p>
         </div>
 
         {/* Bottom Footer Note */}
         <div className="relative z-10 text-[11px] text-slate-400 font-mono">
-          <span>Protected by Supabase Auth & Row Level Security</span>
+          <span>Protected by Enterprise Encryption & Multi-Tenant Access Control</span>
         </div>
       </div>
 
