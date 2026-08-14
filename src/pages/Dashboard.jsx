@@ -1,288 +1,394 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 
 export default function Dashboard() {
-  const { user, tasks, subjects, setCurrentView, setSelectedTaskId, updateTaskMilestone } = useContext(AppContext);
-  const [quickNote, setQuickNote] = useState('');
-  const [showNoteBox, setShowNoteBox] = useState(false);
+  const { 
+    user, 
+    tasks = [], 
+    enrolledSubjects = [], 
+    setCurrentView, 
+    setSelectedTaskId, 
+    updateTaskMilestone 
+  } = useContext(AppContext);
 
+  // Quick Scratchpad note synced with localStorage
+  const [quickNote, setQuickNote] = useState(() => {
+    return localStorage.getItem('scholar_scratchpad_notes') || '';
+  });
+
+  const handleNoteChange = (e) => {
+    setQuickNote(e.target.value);
+    localStorage.setItem('scholar_scratchpad_notes', e.target.value);
+  };
+
+  // Dynamic Date Greeting
+  const now = new Date();
+  const currentHour = now.getHours();
+  const greeting = currentHour < 12 ? 'Good morning' : currentHour < 18 ? 'Good afternoon' : 'Good evening';
+  const formattedToday = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+  const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Scholar';
+
+  // Dynamic Workspace Metrics
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(t => t.status === 'completed').length;
   const pendingTasks = tasks.filter(t => t.status !== 'completed');
-  const completedCount = tasks.filter(t => t.status === 'completed').length;
-  const overallProgress = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 60;
+  const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 75;
+
+  // Urgent deliverables due in next 48 hours or overdue
+  const urgentTasks = pendingTasks.filter(t => {
+    if (!t.dueDate) return false;
+    const taskDate = new Date(t.dueDate);
+    taskDate.setHours(0, 0, 0, 0);
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+    const diffDays = Math.ceil((taskDate - todayDate) / (1000 * 60 * 60 * 24));
+    return diffDays <= 2;
+  });
+
+  const totalMilestones = tasks.reduce((sum, t) => sum + (t.milestones ? t.milestones.length : 0), 0);
+  const completedMilestones = tasks.reduce((sum, t) => sum + (t.milestones ? t.milestones.filter(m => m.completed).length : 0), 0);
+  const milestoneVelocity = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 80;
+
+  const targetGpa = user?.user_metadata?.target_gpa || '3.85';
+
+  const getSubjectBadgeStyle = (code) => {
+    if (!code) return 'bg-slate-100 text-slate-700 border-slate-200';
+    if (code.startsWith('CS') || code.startsWith('SE')) return 'bg-blue-50 text-blue-700 border-blue-200';
+    if (code.startsWith('MATH') || code.startsWith('STAT')) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    if (code.startsWith('HIST') || code.startsWith('ENG')) return 'bg-amber-50 text-amber-700 border-amber-200';
+    return 'bg-purple-50 text-purple-700 border-purple-200';
+  };
+
+  // Mini Calendar generation for current month
+  const currentMonthDays = [];
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const firstDayOffset = (new Date(now.getFullYear(), now.getMonth(), 1).getDay() + 6) % 7; // Monday start
+  
+  for (let i = 0; i < firstDayOffset; i++) {
+    currentMonthDays.push({ num: '', isCurrent: false });
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const hasDeadline = tasks.some(t => t.dueDate === dStr && t.status !== 'completed');
+    currentMonthDays.push({
+      num: d,
+      dateStr: dStr,
+      isToday: d === now.getDate(),
+      isCurrent: true,
+      hasDeadline
+    });
+  }
 
   return (
-    <div className="animate-fade-in max-w-7xl mx-auto space-y-10 text-left p-4 md:p-8 pb-24">
-      {/* Progress Header Row */}
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-        {/* Overall Progress Gauge */}
-        <div className="bg-white rounded-2xl p-8 flex items-center justify-center xl:col-span-1 shadow-sm border border-slate-200 hover:border-blue-500 transition-all">
-          <div className="text-center w-full">
-            <h3 className="font-headline text-slate-700 mb-6 text-[15px] tracking-wide font-semibold">Overall Progress</h3>
-            <div className="relative w-36 h-36 mx-auto">
-              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                <defs>
-                  <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#3b82f6" />
-                    <stop offset="100%" stopColor="#1d4ed8" />
-                  </linearGradient>
-                </defs>
-                <circle cx="50" cy="50" r="42" fill="none" stroke="#f1f5f9" strokeWidth="8" />
-                <circle 
-                  className="transition-all duration-1000 ease-out" 
-                  cx="50" 
-                  cy="50" 
-                  fill="none" 
-                  r="42" 
-                  stroke="url(#progressGrad)" 
-                  strokeDasharray="263.89" 
-                  strokeDashoffset={263.89 - (263.89 * overallProgress) / 100} 
-                  strokeLinecap="round" 
-                  strokeWidth="8" 
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center flex-col">
-                <span className="font-headline text-3xl text-slate-800 font-extrabold tracking-tighter">{overallProgress}%</span>
-              </div>
-            </div>
-          </div>
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 space-y-8 animate-fade-in text-left pb-24">
+      
+      {/* Top Welcome & Horizon Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-6">
+        <div>
+          <span className="text-[11px] font-mono font-bold uppercase text-slate-400 tracking-wider block mb-1">
+            {formattedToday}
+          </span>
+          <h1 className="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            {greeting}, {userName}
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            You have <span className="font-semibold text-slate-900">{pendingTasks.length} active deliverables</span> across {enrolledSubjects.length} enrolled modules.
+          </p>
         </div>
 
-        {/* Stats Row */}
-        <div className="bg-white rounded-2xl p-8 xl:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-8 shadow-sm border border-slate-200">
-          {/* Current GPA */}
-          <div className="flex flex-col justify-between">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-headline text-slate-600 text-xs font-bold tracking-wider uppercase">Current GPA</h3>
-              <span className="font-mono text-blue-600 font-bold text-lg bg-blue-50 px-3 py-1 rounded-md">3.8</span>
-            </div>
-            <div className="h-28 rounded-xl flex items-end px-1 pb-1 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-t from-blue-50/50 to-transparent"></div>
-              <svg className="w-full h-full drop-shadow-sm" preserveAspectRatio="none" viewBox="0 0 100 40">
-                <defs>
-                  <linearGradient id="lineGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#60a5fa" />
-                    <stop offset="100%" stopColor="#2563eb" />
-                  </linearGradient>
-                  <linearGradient id="fillGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
-                    <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <path d="M0,35 C15,35 20,15 35,25 C50,35 55,5 70,10 C85,15 90,30 100,20 L100,40 L0,40 Z" fill="url(#fillGrad1)" />
-                <path d="M0,35 C15,35 20,15 35,25 C50,35 55,5 70,10 C85,15 90,30 100,20" fill="none" stroke="url(#lineGrad1)" strokeLinecap="round" strokeWidth="2.5" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Tasks Completed */}
-          <div className="flex flex-col justify-between">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-headline text-slate-600 text-xs font-bold tracking-wider uppercase">Tasks Completed</h3>
-              <span className="font-mono text-slate-800 font-bold text-base">
-                <span className="text-slate-900">{completedCount}</span> <span className="text-slate-400 font-normal">/ {tasks.length}</span>
-              </span>
-            </div>
-            <div className="h-28 rounded-xl flex items-end px-1 pb-1 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-t from-emerald-50/50 to-transparent"></div>
-              <svg className="w-full h-full drop-shadow-sm" preserveAspectRatio="none" viewBox="0 0 100 40">
-                <defs>
-                  <linearGradient id="lineGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#34d399" />
-                    <stop offset="100%" stopColor="#059669" />
-                  </linearGradient>
-                  <linearGradient id="fillGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <path d="M0,30 C20,35 30,25 45,20 C60,15 75,5 100,10 L100,40 L0,40 Z" fill="url(#fillGrad2)" />
-                <path d="M0,30 C20,35 30,25 45,20 C60,15 75,5 100,10" fill="none" stroke="url(#lineGrad2)" strokeLinecap="round" strokeWidth="2.5" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Course Performance */}
-          <div className="flex flex-col justify-between">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-headline text-slate-600 text-xs font-bold tracking-wider uppercase">Course Performance</h3>
-              <span className="font-mono text-blue-600 font-bold text-sm bg-blue-50 px-2.5 py-1 rounded-md">Top 15%</span>
-            </div>
-            <div className="h-28 rounded-xl flex items-end px-1 pb-1 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-t from-blue-50/50 to-transparent"></div>
-              <svg className="w-full h-full drop-shadow-sm" preserveAspectRatio="none" viewBox="0 0 100 40">
-                <defs>
-                  <linearGradient id="lineGrad3" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#60a5fa" />
-                    <stop offset="100%" stopColor="#2563eb" />
-                  </linearGradient>
-                  <linearGradient id="fillGrad3" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
-                    <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <path d="M0,25 C20,15 40,30 60,15 C80,0 90,10 100,5 L100,40 L0,40 Z" fill="url(#fillGrad3)" />
-                <path d="M0,25 C20,15 40,30 60,15 C80,0 90,10 100,5" fill="none" stroke="url(#lineGrad3)" strokeLinecap="round" strokeWidth="2.5" />
-              </svg>
-            </div>
-          </div>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setCurrentView('tasks')}
+            className="app-btn-primary text-xs"
+          >
+            <span className="material-symbols-outlined text-sm">add_task</span>
+            <span>New Task</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrentView('calendar')}
+            className="app-btn-secondary text-xs"
+          >
+            <span className="material-symbols-outlined text-sm">calendar_month</span>
+            <span>Calendar</span>
+          </button>
         </div>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Left Column: Pending Scholarly Works Table */}
-        <div className="xl:col-span-2 space-y-8">
-          <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-              <div>
-                <h3 className="font-headline text-slate-800 text-lg font-bold">Pending Scholarly Works</h3>
-                <p className="text-xs text-slate-500 mt-1">Upcoming assignments and active deliverables</p>
-              </div>
-              <div className="flex gap-3">
-                <button 
-                  onClick={() => setCurrentView('tasks')}
-                  className="px-4 py-2 bg-[#0f172a] text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-sm">add</span>
-                  <span>New Task</span>
-                </button>
-              </div>
-            </div>
+      {/* KPI Metrics Row (Minimal Frosted Glass) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        {/* Progress Gauge */}
+        <div className="app-card p-5 flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
+              Deliverables
+            </span>
+            <div className="font-heading text-2xl font-bold text-slate-900">{overallProgress}%</div>
+            <span className="text-[11px] text-slate-500 block">
+              {completedTasks} of {totalTasks} cleared
+            </span>
+          </div>
 
-            <div className="overflow-x-auto">
-              <table class="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50/50">
-                    <th className="p-4 pl-6 font-mono text-slate-500 font-semibold text-[11px] uppercase border-b border-slate-100">Assignment</th>
-                    <th className="p-4 font-mono text-slate-500 font-semibold text-[11px] uppercase border-b border-slate-100">Course</th>
-                    <th className="p-4 font-mono text-slate-500 font-semibold text-[11px] uppercase border-b border-slate-100">Due Date</th>
-                    <th className="p-4 font-mono text-slate-500 font-semibold text-[11px] uppercase border-b border-slate-100">Status</th>
-                    <th className="p-4 font-mono text-slate-500 font-semibold text-[11px] uppercase border-b border-slate-100">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="text-xs">
-                  {tasks.map((task) => (
-                    <tr key={task.id} className="border-b border-slate-50 hover:bg-slate-50/80 transition-colors group">
-                      <td 
-                        onClick={() => { setSelectedTaskId(task.id); setCurrentView('assignment-details'); }}
-                        className="p-4 pl-6 font-semibold text-slate-800 flex items-center gap-3 cursor-pointer group-hover:text-blue-600"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
-                          <span className="material-symbols-outlined text-sm">description</span>
-                        </div>
-                        <span className="truncate max-w-[200px]">{task.title}</span>
-                      </td>
-                      <td className="p-4 text-slate-500 font-mono font-medium">{task.subject}</td>
-                      <td className="p-4 font-mono text-slate-600">{task.dueDate}</td>
-                      <td className="p-4">
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono tracking-wide uppercase ${
-                          task.status === 'completed'
-                            ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                            : 'bg-amber-100 text-amber-700 border border-amber-200'
-                        }`}>
-                          {task.status === 'completed' ? 'Completed' : 'In Progress'}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <button 
-                          onClick={() => { setSelectedTaskId(task.id); setCurrentView('assignment-details'); }}
-                          className="text-blue-600 hover:text-blue-800 font-mono font-bold text-xs"
-                        >
-                          View →
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="relative w-14 h-14 flex-shrink-0">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+              <path
+                className="text-slate-100"
+                strokeWidth="3.5"
+                stroke="currentColor"
+                fill="none"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+              <path
+                className="text-blue-600 transition-all duration-1000 ease-out"
+                strokeDasharray={`${overallProgress}, 100`}
+                strokeWidth="3.5"
+                strokeLinecap="round"
+                stroke="currentColor"
+                fill="none"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center font-mono text-[10px] font-bold text-slate-800">
+              {completedTasks}
+            </span>
           </div>
         </div>
 
-        {/* Right Sidebar Widgets */}
-        <div className="space-y-8">
-          {/* Calendar Widget */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-headline text-slate-800 text-base font-bold">October 2024</h3>
-              <button 
+        {/* Target GPA */}
+        <div className="app-card p-5 space-y-1 flex flex-col justify-between">
+          <div className="flex justify-between items-start">
+            <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider">
+              Target GPA
+            </span>
+            <span className="p-1 rounded-md bg-blue-50 text-blue-600">
+              <span className="material-symbols-outlined text-sm">school</span>
+            </span>
+          </div>
+          <div>
+            <div className="font-heading text-2xl font-bold text-slate-900">{targetGpa}</div>
+            <span className="text-[11px] font-mono text-emerald-600 font-semibold mt-0.5 block">
+              Cumulative Standing
+            </span>
+          </div>
+        </div>
+
+        {/* Urgent Deadlines */}
+        <div className="app-card p-5 space-y-1 flex flex-col justify-between">
+          <div className="flex justify-between items-start">
+            <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider">
+              Urgent (<span className="text-rose-500">48h</span>)
+            </span>
+            <span className="p-1 rounded-md bg-rose-50 text-rose-600">
+              <span className="material-symbols-outlined text-sm">alarm</span>
+            </span>
+          </div>
+          <div>
+            <div className="font-heading text-2xl font-bold text-slate-900">{urgentTasks.length}</div>
+            <span className="text-[11px] text-slate-500 mt-0.5 block">
+              {urgentTasks.length > 0 ? 'Action required soon' : 'All caught up'}
+            </span>
+          </div>
+        </div>
+
+        {/* Milestone Velocity */}
+        <div className="app-card p-5 space-y-1 flex flex-col justify-between">
+          <div className="flex justify-between items-start">
+            <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider">
+              Velocity
+            </span>
+            <span className="p-1 rounded-md bg-emerald-50 text-emerald-600">
+              <span className="material-symbols-outlined text-sm">trending_up</span>
+            </span>
+          </div>
+          <div>
+            <div className="font-heading text-2xl font-bold text-slate-900">{milestoneVelocity}%</div>
+            <span className="text-[11px] font-mono text-blue-600 font-semibold mt-0.5 block">
+              {completedMilestones}/{totalMilestones} checkpoints
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Main Split Layout: Active Deliverables & Side Widgets */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* Left Column: Active Deliverables Feed (8 Cols) */}
+        <div className="lg:col-span-8 app-card p-6 space-y-5">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h2 className="font-heading text-base font-bold text-slate-900">Active Deliverables</h2>
+              <p className="text-xs text-slate-500">Priority assignments ordered by submission deadline.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCurrentView('tasks')}
+              className="text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <span>View all ({totalTasks})</span>
+              <span className="material-symbols-outlined text-xs">arrow_forward</span>
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {pendingTasks.length > 0 ? (
+              pendingTasks.slice(0, 5).map((task) => {
+                const completedM = task.milestones ? task.milestones.filter(m => m.completed).length : 0;
+                const totalM = task.milestones ? task.milestones.length : 0;
+                const progress = task.progress !== undefined ? task.progress : 0;
+
+                return (
+                  <div
+                    key={task.id}
+                    className="p-4 rounded-xl border border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-sm transition-all space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase border ${getSubjectBadgeStyle(task.subject)}`}>
+                            {task.subject}
+                          </span>
+                          <span className="text-[11px] font-mono font-semibold text-rose-600 flex items-center gap-0.5">
+                            <span className="material-symbols-outlined text-xs">event</span>
+                            <span>{task.dueDate}</span>
+                          </span>
+                          <span className="text-[11px] font-mono text-slate-400">
+                            {task.dueTime}
+                          </span>
+                        </div>
+                        <h3
+                          onClick={() => {
+                            setSelectedTaskId(task.id);
+                            setCurrentView('assignment-details');
+                          }}
+                          className="font-heading text-sm font-bold text-slate-900 hover:text-blue-600 transition-colors cursor-pointer"
+                        >
+                          {task.title}
+                        </h3>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedTaskId(task.id);
+                          setCurrentView('assignment-details');
+                        }}
+                        className="text-xs text-slate-400 hover:text-slate-700 font-semibold p-1"
+                      >
+                        <span className="material-symbols-outlined text-base">open_in_new</span>
+                      </button>
+                    </div>
+
+                    {/* Milestone checkoffs */}
+                    {task.milestones && task.milestones.length > 0 && (
+                      <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                        <div className="flex justify-between items-center text-[10px] font-mono text-slate-400">
+                          <span>Milestones ({completedM}/{totalM})</span>
+                          <span className="font-bold text-slate-700">{progress}%</span>
+                        </div>
+                        <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-600 rounded-full transition-all duration-300"
+                            style={{ width: `${progress}%` }}
+                          ></div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                          {task.milestones.slice(0, 2).map((m) => (
+                            <label key={m.id} className="flex items-center gap-2 text-[11px] text-slate-600 cursor-pointer truncate">
+                              <input
+                                type="checkbox"
+                                checked={m.completed}
+                                onChange={(e) => updateTaskMilestone(task.id, m.id, e.target.checked)}
+                                className="rounded text-blue-600 focus:ring-blue-500 h-3 w-3"
+                              />
+                              <span className={m.completed ? 'line-through text-slate-400' : ''}>{m.title}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="p-8 text-center bg-slate-50/70 rounded-2xl border border-slate-200/60 space-y-2">
+                <span className="material-symbols-outlined text-3xl text-slate-300">task_alt</span>
+                <p className="text-xs text-slate-500 font-medium">All active coursework completed!</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: Mini Calendar & Academic Scratchpad (4 Cols) */}
+        <div className="lg:col-span-4 space-y-6">
+          
+          {/* Dynamic Mini Calendar */}
+          <div className="app-card p-5 space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <span className="font-heading text-xs font-bold text-slate-900">
+                {now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </span>
+              <button
+                type="button"
                 onClick={() => setCurrentView('calendar')}
-                className="text-xs font-mono text-blue-600 font-bold hover:underline cursor-pointer"
+                className="text-[11px] text-blue-600 font-semibold hover:underline"
               >
-                View Full
+                Open Calendar →
               </button>
             </div>
-            <div className="grid grid-cols-7 gap-y-2 gap-x-1 text-center text-xs">
-              <div className="text-slate-400 font-mono text-[11px] mb-1">Su</div>
-              <div className="text-slate-400 font-mono text-[11px] mb-1">Mo</div>
-              <div className="text-slate-400 font-mono text-[11px] mb-1">Tu</div>
-              <div className="text-slate-400 font-mono text-[11px] mb-1">We</div>
-              <div className="text-slate-400 font-mono text-[11px] mb-1">Th</div>
-              <div className="text-slate-400 font-mono text-[11px] mb-1">Fr</div>
-              <div className="text-slate-400 font-mono text-[11px] mb-1">Sa</div>
-              
-              <div className="text-slate-300 py-1">29</div>
-              <div className="text-slate-300 py-1">30</div>
-              <div className="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">1</div>
-              <div className="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">2</div>
-              <div className="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">3</div>
-              <div className="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">4</div>
-              <div className="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">5</div>
-              <div className="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">6</div>
-              <div className="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">7</div>
-              <div className="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">8</div>
-              <div className="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">9</div>
-              <div className="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">10</div>
-              <div className="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer">11</div>
-              <div className="bg-[#0f172a] text-white rounded-lg py-1 font-bold shadow-sm cursor-pointer">12</div>
-              <div className="py-1 text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer relative">
-                14<span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-rose-500 rounded-full"></span>
-              </div>
+
+            <div className="grid grid-cols-7 text-center font-mono text-[10px] font-bold text-slate-400 pb-1">
+              <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+            </div>
+
+            <div className="grid grid-cols-7 gap-1 text-center text-xs">
+              {currentMonthDays.map((d, i) => (
+                <div
+                  key={i}
+                  className={`h-7 flex flex-col items-center justify-center rounded-lg text-[11px] relative transition-all ${
+                    d.isToday
+                      ? 'bg-slate-900 text-white font-bold shadow-xs'
+                      : d.isCurrent
+                      ? 'text-slate-700 hover:bg-slate-100 cursor-pointer'
+                      : 'text-transparent'
+                  }`}
+                >
+                  <span>{d.num}</span>
+                  {d.hasDeadline && !d.isToday && (
+                    <span className="absolute bottom-0.5 w-1 h-1 rounded-full bg-blue-600"></span>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Quick Notes */}
-          <div className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl p-6 shadow-sm text-white flex flex-col justify-between space-y-3">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="font-headline text-sm font-bold tracking-wide uppercase text-slate-200">Quill & Scroll</h3>
-                <p className="text-slate-400 text-xs mt-0.5">Quick Academic Scratchpad</p>
+          {/* Academic Scratchpad (Persistent Notes) */}
+          <div className="app-card p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-base text-slate-600">edit_note</span>
+                <h3 className="font-heading text-xs font-bold text-slate-900">Academic Scratchpad</h3>
               </div>
-              <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center">
-                <span className="material-symbols-outlined text-white text-base">edit_document</span>
-              </div>
+              <span className="text-[10px] font-mono text-slate-400">Auto-saved</span>
             </div>
-            
-            <textarea 
-              rows={3} 
+
+            <textarea
+              rows={4}
               value={quickNote}
-              onChange={(e) => setQuickNote(e.target.value)}
-              placeholder="Type quick notes, research ideas, or lecture reminders..."
-              className="w-full bg-white/10 text-white placeholder-slate-400 text-xs p-3 rounded-xl border border-white/10 focus:outline-none focus:border-blue-400"
+              onChange={handleNoteChange}
+              placeholder="Jot down quick lecture takeaways, formula notes, or thesis ideas..."
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-slate-400 resize-none"
             />
           </div>
 
-          {/* Task Prioritization Widget */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-            <h3 className="font-headline text-slate-800 text-base font-bold mb-4">Task Prioritization</h3>
-            <ul className="space-y-3">
-              {pendingTasks.slice(0, 3).map((task) => (
-                <li 
-                  key={task.id} 
-                  onClick={() => { setSelectedTaskId(task.id); setCurrentView('assignment-details'); }}
-                  className="flex items-start gap-3 group cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors"
-                >
-                  <div className="w-2 h-2 rounded-full bg-rose-500 mt-1.5 ring-4 ring-rose-50 flex-shrink-0"></div>
-                  <div>
-                    <p className="font-semibold text-slate-800 text-xs group-hover:text-blue-600 transition-colors">{task.title}</p>
-                    <p className="text-[11px] text-slate-500 font-mono mt-0.5">{task.subject} • Due {task.dueDate}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
+
       </div>
+
     </div>
   );
 }
